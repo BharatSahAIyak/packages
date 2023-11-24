@@ -1,5 +1,5 @@
 // src/GupShupWhatsappAdapter.ts
-import axios2 from "axios";
+import axios from "axios";
 
 // src/utils.ts
 import * as fs from "fs";
@@ -212,255 +212,6 @@ var MediaSizeLimit = class {
 // src/GupShupWhatsappAdapter.ts
 import { URLSearchParams } from "url";
 
-// ../../services/bot/src/bot.service.ts
-import axios from "axios";
-
-// ../../services/bot/src/botutil.ts
-var _BotUtil = class _BotUtil {
-  /**
-   * Get true if bot is valid else invalid message, from JSON node data
-   * @param data
-   * @return
-   */
-  static getBotValidFromJsonNode(data) {
-    const status = data["status"].toString();
-    const startDate = data["startDate"].toString();
-    const endDate = data["endDate"].toString();
-    console.log(`Bot Status: ${status}, Start Date: ${startDate}, End Date: ${endDate}`);
-    return _BotUtil.getBotValid(status, startDate, endDate);
-  }
-  /**
-   * Get true if bot is valid else invalid message, by status, start date & end date
-   * @param status
-   * @param startDate
-   * @param endDate
-   * @return
-   */
-  static getBotValid(status, startDate, endDate) {
-    if (!_BotUtil.checkBotLiveStatus(status)) {
-      return `This conversation is not active yet. Please contact your state admin to seek help with this.`;
-    } else if (startDate == null || startDate === "null" || startDate === "") {
-      console.log("Bot start date is empty.");
-      return `This conversation is not active yet. Please contact your state admin to seek help with this.`;
-    } else if (!_BotUtil.checkBotStartDateValid(startDate)) {
-      if (startDate == null || startDate === "null" || startDate === "") {
-        return `This conversation is not active yet. It will be enabled on ${startDate}. Please try again then.`;
-      }
-      return `This conversation is not active yet. Please try again then.`;
-    } else if (!_BotUtil.checkBotEndDateValid(endDate)) {
-      return `This conversation has expired now. Please contact your state admin to seek help with this.`;
-    }
-    return "true";
-  }
-  /**
-   * Check if bot is valid or not, by JSON node data
-   * @param data
-   * @return
-   */
-  static checkBotValidFromJsonNode(data) {
-    const status = data["status"]?.toString();
-    const startDate = data["startDate"]?.toString();
-    const endDate = data["endDate"]?.toString();
-    console.log(`Bot Status: ${status}, Start Date: ${startDate}, End Date: ${endDate}`);
-    return _BotUtil.checkBotValid(status, startDate, endDate);
-  }
-  /**
-   * Check if bot is valid or not, by status, start date & end date
-   * @param status
-   * @param startDate
-   * @param endDate
-   * @return
-   */
-  static checkBotValid(status, startDate, endDate) {
-    return _BotUtil.checkBotLiveStatus(status) && _BotUtil.checkBotStartDateValid(startDate) && _BotUtil.checkBotEndDateValid(endDate) && !(startDate == null || startDate === "null" || startDate === "");
-  }
-  /**
-   * Check if bot' status is live/enabled
-   * @param status
-   * @return
-   */
-  static checkBotLiveStatus(status) {
-    status = status.toLowerCase();
-    if (status === _BotUtil.botLiveStatus || status === _BotUtil.botEnabledStatus) {
-      return true;
-    }
-    console.log("Bot is invalid as its status is not live or enabled.");
-    return false;
-  }
-  /**
-   * Check if bot's start date is valid (Should be less than or equal to the current date)
-   * @param startDate
-   * @return
-   */
-  static checkBotStartDateValid(startDate) {
-    try {
-      const currentDate = /* @__PURE__ */ new Date();
-      const botStartDate = new Date(startDate);
-      return currentDate >= botStartDate;
-    } catch (error) {
-      console.error("Error in checkBotStartDateValid:", error);
-    }
-    return false;
-  }
-  /**
-   * Check if bot's end date is valid (Should be empty OR greater than or equal to the current date)
-   * @param endDate
-   * @return
-   */
-  static checkBotEndDateValid(endDate) {
-    try {
-      if (endDate == null || endDate === "null" || endDate === "") {
-        console.log("Bot end date is empty.");
-        return true;
-      }
-      const currentDate = /* @__PURE__ */ new Date();
-      const botEndDate = new Date(endDate);
-      botEndDate.setHours(23, 59, 59);
-      return currentDate < botEndDate;
-    } catch (error) {
-      console.error("Error in checkBotEndDateValid:", error);
-    }
-    return false;
-  }
-};
-_BotUtil.botEnabledStatus = "enabled";
-_BotUtil.botLiveStatus = "live";
-_BotUtil.adminUserId = "admin";
-_BotUtil.transformerTypeBroadcast = "broadcast";
-_BotUtil.transformerTypeGeneric = "generic";
-/**
-* Get value by key from bot json node
-* @param botNode
-* @param key
-* @return
-*/
-_BotUtil.getBotNodeData = (botNode, key) => {
-  if (botNode[key] !== void 0 && botNode[key] !== null && typeof botNode[key] === "string" && botNode[key] !== "null" && botNode[key] !== "") {
-    return botNode[key];
-  }
-  return null;
-};
-var BotUtil = _BotUtil;
-
-// ../../services/bot/src/botServiceConfig.ts
-var BotServiceConfig = class _BotServiceConfig {
-  constructor() {
-    this.config = {};
-  }
-  static getInstance() {
-    if (!_BotServiceConfig.instance) {
-      _BotServiceConfig.instance = new _BotServiceConfig();
-    }
-    return _BotServiceConfig.instance;
-  }
-  setConfig(config) {
-    this.config = { ...this.config, ...config };
-  }
-  getConfig(key) {
-    return this.config[key];
-  }
-};
-var botServiceConfig_default = BotServiceConfig.getInstance();
-
-// ../../services/bot/src/bot.service.ts
-var cache = /* @__PURE__ */ new Map();
-var getAdapterByID = async (adapterID) => {
-  const cacheKey = `adapter-by-id: ${adapterID}`;
-  console.log(
-    `BotService:getAdapterByID::Calling get adapter by id from uci api: ${adapterID}`
-  );
-  if (cache.has(cacheKey)) {
-    console.log(`getAdapterByID from cache: ${cache.get(cacheKey)}`);
-    return cache.get(cacheKey);
-  } else {
-    console.log(`getAdapterByID from webclient: ${cache.get(cacheKey)}`);
-    try {
-      const response = await axios.get(`${botServiceConfig_default.getConfig("baseUrl")}/admin/adapter/${adapterID}`);
-      console.log(
-        `BotService:getAdapterByID::Got Data From UCI Api : cache key : ${cacheKey} cache data : ${cache.get(
-          cacheKey
-        )}`
-      );
-      if (response.data !== null) {
-        const root = response.data;
-        if (root != null && root.result != null && root.result.id != null && root.result.id !== "") {
-          return root.result;
-        }
-        return null;
-      } else {
-        return null;
-      }
-    } catch (error) {
-      console.error(`BotService:getAdapterByID::Exception: ${error}`);
-      return null;
-    }
-  }
-};
-var getAdapterCredentials = async (adapterID) => {
-  const cacheKey = `adapter-credentials: ${adapterID}`;
-  const adapter = await getAdapterByID(adapterID);
-  console.log(`getAdapterByID: ${adapter}`);
-  if (adapter !== null) {
-    let vaultKey;
-    try {
-      vaultKey = adapter.logicIDs[0].adapter.config.credentials.vault;
-    } catch (ex) {
-      console.error(
-        `Exception in fetching adapter variable from json node: ${ex}`
-      );
-      vaultKey = null;
-    }
-    if (vaultKey !== null && vaultKey !== "") {
-      return await getVaultCredentials(vaultKey);
-    }
-  }
-  return null;
-};
-var getVaultCredentials = async (secretKey) => {
-  const adminToken = botServiceConfig_default.getConfig("vaultServiceToken");
-  if (adminToken === null || adminToken === void 0 || adminToken === "") {
-    return null;
-  }
-  const webClient = axios.create({
-    baseURL: botServiceConfig_default.getConfig("vaultServiceUrl"),
-    headers: {
-      ownerId: "8f7ee860-0163-4229-9d2a-01cef53145ba",
-      ownerOrgId: "org1",
-      "admin-token": adminToken
-    }
-  });
-  const cacheKey = `adapter-credentials-by-id: ${secretKey}`;
-  console.log(
-    `BotService:getVaultCredentials::Calling get vault credentials from uci api: ${secretKey}`
-  );
-  if (cache.has(cacheKey)) {
-    console.log(`getVaultCredentials from cache : ${cache.get(cacheKey)}`);
-    return cache.get(cacheKey);
-  } else {
-    console.log(`getVaultCredentials from axios : ${cache.get(cacheKey)}`);
-    const response = await webClient.get(`/admin/secret/${secretKey}`);
-    console.log(
-      `BotService:getVaultCredentials::Got Data From UCI Api : cache key : ${cacheKey} cache data : ${cache.get(
-        cacheKey
-      )}`
-    );
-    if (response.data !== null) {
-      try {
-        const credentials = {};
-        const root = response.data;
-        if (root.result !== null && root.result.logicIDs[0].adapter.config.credentials !== null) {
-          return root.result.logicIDs[0].adapter.config.credentials;
-        }
-        return null;
-      } catch (e) {
-        console.error(`BotService:getVaultCredentials::Exception: ${e}`);
-        return null;
-      }
-    }
-    return null;
-  }
-};
-
 // src/minioClient.ts
 import * as Minio from "minio";
 import { FusionAuthClient } from "@fusionauth/typescript-client";
@@ -532,6 +283,26 @@ async function uploadFileFromPath(filePath, name) {
   }
   return "";
 }
+
+// src/gupshupWhatsappAdapterServiceConfig.ts
+var GupShupWhatsappAdapterServiceConfig = class _GupShupWhatsappAdapterServiceConfig {
+  constructor() {
+    this.config = {};
+  }
+  static getInstance() {
+    if (!_GupShupWhatsappAdapterServiceConfig.instance) {
+      _GupShupWhatsappAdapterServiceConfig.instance = new _GupShupWhatsappAdapterServiceConfig();
+    }
+    return _GupShupWhatsappAdapterServiceConfig.instance;
+  }
+  setConfig(config) {
+    this.config = { ...this.config, ...config };
+  }
+  getConfig(key) {
+    return this.config[key];
+  }
+};
+var gupshupWhatsappAdapterServiceConfig_default = GupShupWhatsappAdapterServiceConfig.getInstance();
 
 // src/GupShupWhatsappAdapter.ts
 var getMessageState = (eventType) => {
@@ -899,7 +670,7 @@ async function optInUser(xMsg, usernameHSM, passwordHSM, username2Way, password2
   const expanded = optInBuilder.toString();
   console.log(expanded);
   try {
-    const response = await axios2.get(expanded);
+    const response = await axios.get(expanded);
     console.log(response.data);
   } catch (error) {
     console.error("Error:", error.response?.data || error.message || error);
@@ -913,7 +684,7 @@ function createSectionRow(id, title) {
 }
 var _GSWhatsappService = class _GSWhatsappService {
   constructor() {
-    this.webClient = axios2.create();
+    this.webClient = axios.create();
   }
   static getInstance() {
     if (_GSWhatsappService.gupshuupService === null) {
@@ -1000,6 +771,80 @@ function setBuilderCredentialsAndMethod(queryParams, method, username, password)
   queryParams.append("password", password);
   return queryParams;
 }
+var getAdapterByID = async (adapterID) => {
+  const cacheKey = `adapter-by-id: ${adapterID}`;
+  console.log(
+    `BotService:getAdapterByID::Calling get adapter by id from uci api: ${adapterID}`
+  );
+  try {
+    const response = await axios.get(`${gupshupWhatsappAdapterServiceConfig_default.getConfig("baseUrl")}/admin/adapter/${adapterID}`);
+    if (response.data !== null) {
+      const root = response.data;
+      if (root != null && root.result != null && root.result.id != null && root.result.id !== "") {
+        return root.result;
+      }
+      return null;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error(`BotService:getAdapterByID::Exception: ${error}`);
+    return null;
+  }
+};
+var getAdapterCredentials = async (adapterID) => {
+  const cacheKey = `adapter-credentials: ${adapterID}`;
+  const adapter = await getAdapterByID(adapterID);
+  console.log(`getAdapterByID: ${adapter}`);
+  if (adapter !== null) {
+    let vaultKey;
+    try {
+      vaultKey = adapter.logicIDs[0].adapter.config.credentials.vault;
+    } catch (ex) {
+      console.error(
+        `Exception in fetching adapter variable from json node: ${ex}`
+      );
+      vaultKey = null;
+    }
+    if (vaultKey !== null && vaultKey !== "") {
+      return await getVaultCredentials(vaultKey);
+    }
+  }
+  return null;
+};
+var getVaultCredentials = async (secretKey) => {
+  const adminToken = gupshupWhatsappAdapterServiceConfig_default.getConfig("vaultServiceToken");
+  if (adminToken === null || adminToken === void 0 || adminToken === "") {
+    return null;
+  }
+  const webClient = axios.create({
+    baseURL: gupshupWhatsappAdapterServiceConfig_default.getConfig("vaultServiceUrl"),
+    headers: {
+      ownerId: "8f7ee860-0163-4229-9d2a-01cef53145ba",
+      ownerOrgId: "org1",
+      "admin-token": adminToken
+    }
+  });
+  const cacheKey = `adapter-credentials-by-id: ${secretKey}`;
+  console.log(
+    `BotService:getVaultCredentials::Calling get vault credentials from uci api: ${secretKey}`
+  );
+  const response = await webClient.get(`/admin/secret/${secretKey}`);
+  if (response.data !== null) {
+    try {
+      const credentials = {};
+      const root = response.data;
+      if (root.result !== null && root.result.logicIDs[0].adapter.config.credentials !== null) {
+        return root.result.logicIDs[0].adapter.config.credentials;
+      }
+      return null;
+    } catch (e) {
+      console.error(`BotService:getVaultCredentials::Exception: ${e}`);
+      return null;
+    }
+  }
+  return null;
+};
 var convertXMessageToMsg = async (xMsg) => {
   const adapterIdFromXML = xMsg.adapterId;
   const adapterId = "44a9df72-3d7a-4ece-94c5-98cf26307324";
