@@ -1,23 +1,23 @@
 type GSWhatsAppMessage = {
     waNumber: string;
     mobile: string;
-    replyId: string;
-    messageId: string;
-    timestamp: number | null;
+    replyId?: string;
+    messageId?: string;
+    timestamp: number | string;
     name: string;
-    version: number | null;
+    version?: number;
     type: string;
-    text: string;
-    image: string;
-    document: string;
-    voice: string;
-    audio: string;
-    video: string;
-    location: string;
-    response: string;
-    extra: string;
-    app: string;
-    interactive: string | null;
+    text?: string;
+    image?: string;
+    document?: string;
+    voice?: string;
+    audio?: string;
+    video?: string;
+    location?: string;
+    response?: string;
+    extra?: string;
+    app?: string;
+    interactive?: string;
 };
 declare class Address {
     city: string;
@@ -120,17 +120,17 @@ declare class Transformer {
     id: string;
     metaData: Map<string, string>;
 }
-declare class XMessagePayload {
-    text: string;
+type XMessagePayload = {
+    text?: string;
     media?: MessageMedia;
     location?: LocationParams;
-    contactCard: ContactCard;
-    buttonChoices: Array<ButtonChoice>;
-    stylingTag: StylingTag;
+    contactCard?: ContactCard;
+    buttonChoices?: Array<ButtonChoice>;
+    stylingTag?: StylingTag;
     flow?: string;
     questionIndex?: number;
     mediaCaption?: string;
-}
+};
 declare class XMessageThread {
     offset: number;
     startDate: string;
@@ -164,7 +164,8 @@ declare enum MessageType {
     IMAGE = "IMAGE",
     VIDEO = "VIDEO",
     AUDIO = "AUDIO",
-    DOCUMENT = "DOCUMENT"
+    DOCUMENT = "DOCUMENT",
+    LOCATION = "LOCATION"
 }
 declare class XMessage {
     app?: string;
@@ -196,4 +197,4 @@ declare class XMessage {
 declare const convertMessageToXMsg: (msg: any) => Promise<XMessage>;
 declare const convertXMessageToMsg: (xMsg: XMessage) => Promise<XMessage | undefined>;
 
-export { Address, ButtonChoice, ContactCard, ConversationStage, DeviceType, type GSWhatsAppMessage, LocationParams, MediaCategory, MediaSizeLimit, MessageId, MessageIdBuilder, MessageMedia, MessageMediaError, MethodType, Provider, SenderReceiverInfo, State, StylingTag, Transformer, XMessagePayload, XMessageThread, convertMessageToXMsg, convertXMessageToMsg };
+export { Address, ButtonChoice, ContactCard, ConversationStage, DeviceType, type GSWhatsAppMessage, LocationParams, MediaCategory, MediaSizeLimit, MessageId, MessageIdBuilder, MessageMedia, MessageMediaError, MethodType, Provider, SenderReceiverInfo, State, StylingTag, Transformer, type XMessagePayload, XMessageThread, convertMessageToXMsg, convertXMessageToMsg };

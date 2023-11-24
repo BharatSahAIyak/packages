@@ -48,7 +48,6 @@ __export(src_exports, {
   State: () => State,
   StylingTag: () => StylingTag,
   Transformer: () => Transformer,
-  XMessagePayload: () => XMessagePayload2,
   XMessageThread: () => XMessageThread,
   convertMessageToXMsg: () => convertMessageToXMsg,
   convertXMessageToMsg: () => convertXMessageToMsg
@@ -238,8 +237,6 @@ var SenderReceiverInfo = class {
 };
 var Transformer = class {
   // templateID, configID, userData
-};
-var XMessagePayload2 = class {
 };
 var XMessageThread = class {
   // last incoming msgId
@@ -521,7 +518,7 @@ var uploadInboundMediaFile = async (messageId, mediaUrl, mime_type) => {
 var getInboundMediaMessage = (message) => {
   const mediaInfo = getMediaInfo(message);
   const mediaData = uploadInboundMediaFile(
-    message.messageId,
+    message.messageId || "",
     mediaInfo.mediaUrl,
     mediaInfo.mime_type
   );
@@ -552,7 +549,7 @@ var getInboundLocationParams = (message) => {
       longitude = node.longitude !== void 0 ? parseFloat(node.longitude) : null;
       latitude = node.latitude !== void 0 ? parseFloat(node.latitude) : null;
       address = node.address !== void 0 ? node.address : "";
-      name = node.name !== void 0 ? node.name : "";
+      name = message.name;
       url = node.url !== void 0 ? node.url : "";
     } catch (error) {
       console.error("Exception in getInboundLocationParams:", error);
@@ -576,7 +573,7 @@ var processedXMessage = (message, xmsgPayload, to, from, messageState, messageId
     messageState,
     messageId: messageIdentifier,
     messageType,
-    timestamp: message.timestamp || Date.now(),
+    timestamp: parseInt(message.timestamp) || Date.now(),
     payload: xmsgPayload
   };
 };
@@ -611,7 +608,7 @@ var convertMessageToXMsg = async (msg) => {
   const to = { userID: "admin" };
   const messageState = ["REPLIED" /* REPLIED */];
   const messageIdentifier = { channelMessageId: "" };
-  const messageType = "TEXT" /* TEXT */;
+  const messageType = message.type.toUpperCase();
   const xmsgPayload = {};
   if (message.response == null && (message.messageId == null || message.messageId === "")) {
     message.messageId = generateNewMessageId();
@@ -635,13 +632,12 @@ var convertMessageToXMsg = async (msg) => {
       messageIdentifier,
       messageType
     );
-  } else if (message.type === "text") {
+  } else if (message.type === "text" && message.text) {
     from.userID = message.mobile.substring(2);
-    console.log("hurray", messageIdentifier);
-    messageIdentifier.replyId = message.replyId;
+    messageIdentifier.replyId = message.replyId || "";
     messageState[0] = "REPLIED" /* REPLIED */;
     xmsgPayload.text = message.text;
-    messageIdentifier.channelMessageId = message.messageId;
+    messageIdentifier.channelMessageId = message.messageId || "";
     return processedXMessage(
       message,
       xmsgPayload,
@@ -656,7 +652,7 @@ var convertMessageToXMsg = async (msg) => {
     messageIdentifier.replyId = message.replyId;
     messageState[0] = "REPLIED" /* REPLIED */;
     xmsgPayload.text = getInboundInteractiveContentText(message);
-    messageIdentifier.channelMessageId = message.messageId;
+    messageIdentifier.channelMessageId = message.messageId || "";
     return processedXMessage(
       message,
       xmsgPayload,
@@ -672,7 +668,7 @@ var convertMessageToXMsg = async (msg) => {
     messageState[0] = "REPLIED" /* REPLIED */;
     xmsgPayload.location = getInboundLocationParams(message);
     xmsgPayload.text = "";
-    messageIdentifier.channelMessageId = message.messageId;
+    messageIdentifier.channelMessageId = message.messageId || "";
     return processedXMessage(
       message,
       xmsgPayload,
@@ -688,7 +684,7 @@ var convertMessageToXMsg = async (msg) => {
     messageState[0] = "REPLIED" /* REPLIED */;
     xmsgPayload.text = "";
     xmsgPayload.media = getInboundMediaMessage(message);
-    messageIdentifier.channelMessageId = message.messageId;
+    messageIdentifier.channelMessageId = message.messageId || "";
     return processedXMessage(
       message,
       xmsgPayload,
@@ -762,9 +758,9 @@ var _GSWhatsappService = class _GSWhatsappService {
 _GSWhatsappService.gupshuupService = null;
 var GSWhatsappService = _GSWhatsappService;
 function getOutboundListActionContent(xMsg) {
-  const rows = xMsg.payload.buttonChoices.map(
+  const rows = xMsg.payload.buttonChoices?.map(
     (choice) => createSectionRow(choice.key, choice.text)
-  );
+  ) || [{ id: "", title: "" }];
   const action = {
     button: "Options",
     sections: [
@@ -788,7 +784,7 @@ function getOutboundListActionContent(xMsg) {
 }
 function getOutboundQRBtnActionContent(xMsg) {
   const buttons = [];
-  xMsg.payload.buttonChoices.forEach((choice) => {
+  xMsg.payload.buttonChoices?.forEach((choice) => {
     const button = {
       type: "reply",
       reply: {
@@ -882,7 +878,6 @@ var getVaultCredentials = async (secretKey) => {
       "admin-token": adminToken
     }
   });
-  const cacheKey = `adapter-credentials-by-id: ${secretKey}`;
   console.log(
     `BotService:getVaultCredentials::Calling get vault credentials from uci api: ${secretKey}`
   );
@@ -904,14 +899,13 @@ var getVaultCredentials = async (secretKey) => {
 };
 var convertXMessageToMsg = async (xMsg) => {
   const adapterIdFromXML = xMsg.adapterId;
-  const adapterId = "44a9df72-3d7a-4ece-94c5-98cf26307324";
   try {
     const credentials = await getAdapterCredentials(adapterIdFromXML);
     if (credentials && !credentials.isEmpty()) {
-      let text = xMsg.payload.text;
+      let text = xMsg.payload.text || "";
       let builder = getURIBuilder();
       if (xMsg.messageState === "OPTED_IN" /* OPTED_IN */) {
-        text += renderMessageChoices(xMsg.payload.buttonChoices);
+        text += renderMessageChoices(xMsg.payload.buttonChoices || []);
         builder = setBuilderCredentialsAndMethod(
           builder,
           "OPT_IN" /* OPTIN */.toString(),
@@ -928,7 +922,7 @@ var convertXMessageToMsg = async (xMsg) => {
           credentials["username2Way"].toString(),
           credentials["password2Way"].toString()
         );
-        text += renderMessageChoices(xMsg.payload.buttonChoices);
+        text += renderMessageChoices(xMsg.payload.buttonChoices || []);
         builder = setBuilderCredentialsAndMethod(
           builder,
           "SendMessage" /* SIMPLEMESSAGE */.toString(),
@@ -947,7 +941,7 @@ var convertXMessageToMsg = async (xMsg) => {
           credentials["username2Way"].toString(),
           credentials["password2Way"].toString()
         );
-        text += renderMessageChoices(xMsg.payload.buttonChoices);
+        text += renderMessageChoices(xMsg.payload.buttonChoices || []);
         builder = setBuilderCredentialsAndMethod(
           builder,
           "SendMessage",
@@ -960,8 +954,7 @@ var convertXMessageToMsg = async (xMsg) => {
         builder.set("msg_type", "HSM" /* HSM */.toString());
       } else if (xMsg.messageState === "REPLIED" /* REPLIED */) {
         let plainText = true;
-        let msgType = "TEXT" /* TEXT */;
-        const stylingTag = xMsg.payload.stylingTag !== null ? xMsg.payload.stylingTag : null;
+        const stylingTag = xMsg.payload.stylingTag !== null ? xMsg.payload.stylingTag : void 0;
         builder = setBuilderCredentialsAndMethod(
           builder,
           "SendMessage" /* SIMPLEMESSAGE */.toString(),
@@ -970,7 +963,7 @@ var convertXMessageToMsg = async (xMsg) => {
         );
         builder.set("send_to", "91" + xMsg.to.userID);
         builder.set("msg_type", "TEXT" /* TEXT */.toString());
-        if (stylingTag !== null && FileUtil.isStylingTagIntercativeType(stylingTag) && FileUtil.validateInteractiveStylingTag(xMsg.payload)) {
+        if (stylingTag !== void 0 && FileUtil.isStylingTagIntercativeType(stylingTag) && FileUtil.validateInteractiveStylingTag(xMsg.payload)) {
           if (stylingTag === "LIST" /* LIST */) {
             const content = getOutboundListActionContent(xMsg);
             console.log("list content: ", content);
@@ -1004,7 +997,7 @@ var convertXMessageToMsg = async (xMsg) => {
           plainText = false;
         }
         if (plainText) {
-          text += renderMessageChoices(xMsg.payload.buttonChoices);
+          text += renderMessageChoices(xMsg.payload.buttonChoices || []);
           builder.set("msg", text);
         }
       }
@@ -1060,7 +1053,6 @@ var convertXMessageToMsg = async (xMsg) => {
   State,
   StylingTag,
   Transformer,
-  XMessagePayload,
   XMessageThread,
   convertMessageToXMsg,
   convertXMessageToMsg
