@@ -62,7 +62,7 @@ const isInboundMediaMessage = (type: String) => {
 
 const getInboundInteractiveContentText = (message: GSWhatsAppMessage) => {
   let text: string = '';
-  const interactiveContent: string | null = message.interactive;
+  const interactiveContent: string | undefined = message.interactive;
 
   if (interactiveContent && interactiveContent.length > 0) {
     try {
@@ -233,7 +233,7 @@ const uploadInboundMediaFile = async (
 const getInboundMediaMessage = (message: GSWhatsAppMessage): MessageMedia => {
   const mediaInfo: Record<string, any> = getMediaInfo(message);
   const mediaData: Record<string, any> = uploadInboundMediaFile(
-    message.messageId,
+    message.messageId || '',
     mediaInfo.mediaUrl,
     mediaInfo.mime_type
   );
@@ -263,7 +263,7 @@ const getInboundLocationParams = (
   let address: string = '';
   let name: string = '';
   let url: string = '';
-  const locationContent: string | null = message.location;
+  const locationContent: string | undefined = message.location;
 
   if (locationContent && locationContent.length > 0) {
     try {
@@ -274,7 +274,7 @@ const getInboundLocationParams = (
         node.longitude !== undefined ? parseFloat(node.longitude) : null;
       latitude = node.latitude !== undefined ? parseFloat(node.latitude) : null;
       address = node.address !== undefined ? node.address : '';
-      name = node.name !== undefined ? node.name : '';
+      name = message.name;
       url = node.url !== undefined ? node.url : '';
     } catch (error) {
       console.error('Exception in getInboundLocationParams:', error);
@@ -309,7 +309,7 @@ const processedXMessage = (
     messageState: messageState,
     messageId: messageIdentifier,
     messageType: messageType,
-    timestamp: message.timestamp || Date.now(),
+    timestamp: parseInt(message.timestamp as string) || Date.now(),
     payload: xmsgPayload,
   };
 };
@@ -355,7 +355,7 @@ export const convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
 
   const messageState: MessageState[] = [MessageState.REPLIED];
   const messageIdentifier: MessageId = { channelMessageId: '' }; // Replace with actual initialization
-  const messageType: MessageType = MessageType.TEXT;
+  const messageType: MessageType = message.type.toUpperCase() as MessageType;
   // @ts-ignore
   const xmsgPayload: XMessagePayload = {}; // Replace with actual initialization
 
@@ -386,10 +386,9 @@ export const convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
       messageIdentifier,
       messageType
     );
-  } else if (message.type === 'text') {
+  } else if (message.type === 'text' && message.text) {
     from.userID = message.mobile.substring(2);
-    console.log("hurray", messageIdentifier)
-    messageIdentifier.replyId = message.replyId;
+    messageIdentifier.replyId = message.replyId || '';
 
     // if (message.type === 'OPT_IN') {
     //   messageState[0] = MessageState.OPTED_IN;
@@ -404,7 +403,7 @@ export const convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
 
     messageState[0] = MessageState.REPLIED;
     xmsgPayload.text = message.text;
-    messageIdentifier.channelMessageId = message.messageId;
+    messageIdentifier.channelMessageId = message.messageId || '';
 
     return processedXMessage(
       message,
@@ -421,7 +420,7 @@ export const convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
 
     messageState[0] = MessageState.REPLIED;
     xmsgPayload.text = getInboundInteractiveContentText(message);
-    messageIdentifier.channelMessageId = message.messageId;
+    messageIdentifier.channelMessageId = message.messageId || '';
 
     return processedXMessage(
       message,
@@ -439,7 +438,7 @@ export const convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
     messageState[0] = MessageState.REPLIED;
     xmsgPayload.location = getInboundLocationParams(message);
     xmsgPayload.text = '';
-    messageIdentifier.channelMessageId = message.messageId;
+    messageIdentifier.channelMessageId = message.messageId || '';
 
     return processedXMessage(
       message,
@@ -457,7 +456,7 @@ export const convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
     messageState[0] = MessageState.REPLIED;
     xmsgPayload.text = '';
     xmsgPayload.media = getInboundMediaMessage(message);
-    messageIdentifier.channelMessageId = message.messageId;
+    messageIdentifier.channelMessageId = message.messageId || '';
 
     return processedXMessage(
       message,
@@ -589,9 +588,9 @@ class GSWhatsappService {
 }
 
 function getOutboundListActionContent(xMsg: XMessage): string {
-  const rows: SectionRow[] = xMsg.payload.buttonChoices.map((choice) =>
+  const rows: SectionRow[] = xMsg.payload.buttonChoices?.map((choice) =>
     createSectionRow(choice.key, choice.text)
-  );
+  ) || [{id: "", title: ""}];
 
   const action: Action = {
     button: 'Options',
@@ -621,7 +620,7 @@ function getOutboundListActionContent(xMsg: XMessage): string {
 function getOutboundQRBtnActionContent(xMsg: XMessage): string {
   const buttons: Button[] = [];
 
-  xMsg.payload.buttonChoices.forEach((choice) => {
+  xMsg.payload.buttonChoices?.forEach((choice) => {
     const button: Button = {
       type: 'reply',
       reply: {
@@ -765,7 +764,7 @@ export const getVaultCredentials = async (
     },
   });
 
-  const cacheKey = `adapter-credentials-by-id: ${secretKey}`;
+  // const cacheKey = `adapter-credentials-by-id: ${secretKey}`;
 
   console.log(
     `BotService:getVaultCredentials::Calling get vault credentials from uci api: ${secretKey}`
@@ -806,17 +805,17 @@ export const getVaultCredentials = async (
 export const convertXMessageToMsg = async (xMsg: XMessage) => {
   // @ts-ignore
   const adapterIdFromXML: string = xMsg.adapterId;
-  const adapterId: string = '44a9df72-3d7a-4ece-94c5-98cf26307324';
+  // const adapterId: string = '44a9df72-3d7a-4ece-94c5-98cf26307324';
 
   try {
     const credentials = await getAdapterCredentials(adapterIdFromXML);
 
     if (credentials && !credentials.isEmpty()) {
-      let text: string = xMsg.payload.text;
+      let text: string = xMsg.payload.text || "";
       let builder = getURIBuilder();
 
       if (xMsg.messageState === MessageState.OPTED_IN) {
-        text += renderMessageChoices(xMsg.payload.buttonChoices);
+        text += renderMessageChoices(xMsg.payload.buttonChoices || []);
 
         builder = setBuilderCredentialsAndMethod(
           builder,
@@ -839,7 +838,7 @@ export const convertXMessageToMsg = async (xMsg: XMessage) => {
           credentials['password2Way'].toString()
         );
 
-        text += renderMessageChoices(xMsg.payload.buttonChoices);
+        text += renderMessageChoices(xMsg.payload.buttonChoices || []);
 
         builder = setBuilderCredentialsAndMethod(
           builder,
@@ -864,7 +863,7 @@ export const convertXMessageToMsg = async (xMsg: XMessage) => {
           credentials['password2Way'].toString()
         );
 
-        text += renderMessageChoices(xMsg.payload.buttonChoices);
+        text += renderMessageChoices(xMsg.payload.buttonChoices || []);
 
         builder = setBuilderCredentialsAndMethod(
           builder,
@@ -879,9 +878,9 @@ export const convertXMessageToMsg = async (xMsg: XMessage) => {
         builder.set('msg_type', MessageType.HSM.toString());
       } else if (xMsg.messageState === MessageState.REPLIED) {
         let plainText: boolean = true;
-        let msgType: MessageType = MessageType.TEXT;
-        const stylingTag: StylingTag | null =
-          xMsg.payload.stylingTag !== null ? xMsg.payload.stylingTag : null;
+        // let msgType: MessageType = MessageType.TEXT;
+        const stylingTag: StylingTag | undefined =
+          xMsg.payload.stylingTag !== null ? xMsg.payload.stylingTag : undefined;
 
         builder = setBuilderCredentialsAndMethod(
           builder,
@@ -894,7 +893,7 @@ export const convertXMessageToMsg = async (xMsg: XMessage) => {
         builder.set('msg_type', MessageType.TEXT.toString());
 
         if (
-          stylingTag !== null &&
+          stylingTag !== undefined &&
           FileUtil.isStylingTagIntercativeType(stylingTag) &&
           FileUtil.validateInteractiveStylingTag(xMsg.payload)
         ) {
@@ -937,7 +936,7 @@ export const convertXMessageToMsg = async (xMsg: XMessage) => {
         }
 
         if (plainText) {
-          text += renderMessageChoices(xMsg.payload.buttonChoices);
+          text += renderMessageChoices(xMsg.payload.buttonChoices || []);
           builder.set('msg', text);
         }
       }

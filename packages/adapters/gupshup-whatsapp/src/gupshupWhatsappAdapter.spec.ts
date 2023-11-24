@@ -1,5 +1,6 @@
 import { GSWhatsAppMessage } from './types';
-import { convertMessageToXMsg } from './GupShupWhatsappAdapter';
+import { convertMessageToXMsg, convertXMessageToMsg } from './GupShupWhatsappAdapter';
+import { MessageState, MessageType, XMessage } from './xMessage';
 
 const mockGSWhatsappReport = {
   externalId: 'report-123',
@@ -13,31 +14,36 @@ const mockGSWhatsappReport = {
   extra: 'Some extra information for the report',
 };
 
-const mockGSWhatsAppMessage: GSWhatsAppMessage = {
-  waNumber: '1234567890',
-  mobile: '9876543210',
-  replyId: 'abc123',
-  messageId: 'def456',
-  timestamp: 1637680000,
-  name: 'John Doe',
-  version: 1,
-  type: 'text',
-  text: 'Hello, this is a mock message.',
-  image: 'mock-image-url.jpg',
-  document: 'mock-document-url.pdf',
-  voice: 'mock-voice-url.mp3',
-  audio: 'mock-audio-url.mp3',
-  video: 'mock-video-url.mp4',
-  location: 'mock-location-coordinates',
-  response: JSON.stringify([mockGSWhatsappReport]),
-  extra: 'Some extra information',
-  app: 'WhatsApp',
-  interactive: null,
+const mockGSWhatsAppMessage: GSWhatsAppMessage = { 
+  mobile: "917011854675", 
+  type: "text",
+  location: '{"longitude":123.456,"latitude":78.91}',
+  text: "Hello", 
+  timestamp: "1700828617000", 
+  waNumber: "919311415687", 
+  name: "Kanav Dwevedi" 
 };
 
+const mockXMessage: XMessage = {
+  to: { userID: 'admin' },
+  from: { userID: '7011854675' },
+  channelURI: 'WhatsApp',
+  providerURI: 'gupshup',
+  messageState: MessageState.REPLIED,
+  messageId: {
+    channelMessageId: '4464978828693922816-105308573296985680',
+    replyId: ''
+  },
+  messageType: MessageType.TEXT,
+  timestamp: 1700828617000,
+  payload: { text: 'Hello' }
+}
+
 describe('gupshup whatsapp adapter', () => {
-  it("convert message to xmessage", async () => {
-    const result = await convertMessageToXMsg(mockGSWhatsAppMessage);
-    console.log("hurray", result)
+  it("convert messages", async () => {
+    const message = await convertXMessageToMsg(mockXMessage);
+    console.log("converted Message:", message);
+    const xmessage = await convertMessageToXMsg(mockGSWhatsAppMessage);
+    console.log("converted XMessage:", xmessage);
   })
 })

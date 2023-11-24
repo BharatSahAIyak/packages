@@ -1,23 +1,23 @@
 export type GSWhatsAppMessage = {
   waNumber: string; // botNumber
   mobile: string; // user's number
-  replyId: string;
-  messageId: string;
-  timestamp: number | null;
+  replyId?: string;
+  messageId?: string;
+  timestamp: number | string;
   name: string;
-  version: number | null;
+  version?: number;
   type: string;
-  text: string;
-  image: string;
-  document: string;
-  voice: string;
-  audio: string;
-  video: string;
-  location: string;
-  response: string;
-  extra: string;
-  app: string;
-  interactive: string | null;
+  text?: string;
+  image?: string;
+  document?: string;
+  voice?: string;
+  audio?: string;
+  video?: string;
+  location?: string;
+  response?: string;
+  extra?: string;
+  app?: string;
+  interactive?: string;
 }
 
 export class Address {
@@ -162,13 +162,13 @@ export class Transformer {
   metaData!: Map<string, string>; // templateID, configID, userData
 }
 
-export class XMessagePayload {
-  text!: string;
+export type XMessagePayload = {
+  text?: string;
   media?: MessageMedia;
   location?: LocationParams;
-  contactCard!: ContactCard;
-  buttonChoices!: Array<ButtonChoice>;
-  stylingTag!: StylingTag;
+  contactCard?: ContactCard;
+  buttonChoices?: Array<ButtonChoice>;
+  stylingTag?: StylingTag;
   flow?: string;
   questionIndex?: number;
   mediaCaption?: string;
