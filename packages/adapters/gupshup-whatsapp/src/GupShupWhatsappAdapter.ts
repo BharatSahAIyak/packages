@@ -685,9 +685,13 @@ export const getAdapterByID = async (
   //   return cache.get(cacheKey);
   // } else {
   //   console.log(`getAdapterByID from webclient: ${cache.get(cacheKey)}`);
-
+  const config = {
+    headers: {
+      'admin-token': configService.getConfig('adminToken'),
+    },
+  };
     try {
-      const response = await axios.get(`${configService.getConfig('baseUrl')}/admin/adapter/${adapterID}`);
+      const response = await axios.get(`${configService.getConfig('baseUrl')}/admin/adapter/${adapterID}`, config);
       // console.log(
       //   `BotService:getAdapterByID::Got Data From UCI Api : cache key : ${cacheKey} cache data : ${cache.get(
       //     cacheKey
