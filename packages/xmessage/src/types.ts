@@ -53,15 +53,15 @@ export class MessageIdBuilder {
 export class SenderReceiverInfo {
   // persist
   userID!: string; // PhoneNo
-  groups!: Array<string>;
-  campaignID!: string;
-  formID!: string;
-  bot!: boolean;
-  broadcast!: boolean;
-  meta!: Map<string, string>;
-  deviceType!: DeviceType;
-  deviceID!: string; // UUID
-  encryptedDeviceID!: string; // Encrypted Device String
+  groups?: Array<string>;
+  campaignID?: string;
+  formID?: string;
+  bot?: boolean;
+  broadcast?: boolean;
+  meta?: Map<string, string>;
+  deviceType?: DeviceType;
+  deviceID?: string; // UUID
+  encryptedDeviceID?: string; // Encrypted Device String
 }
 
 export enum DeviceType {

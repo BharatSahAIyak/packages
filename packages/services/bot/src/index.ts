@@ -7,5 +7,5 @@ export {
   getFirstFormByBotID,
   getBotNameByBotID,
 } from './bot.service';
-import configService from './botServiceConfig';
-export { configService };
+import botServiceConfig from './botServiceConfig';
+export { botServiceConfig };

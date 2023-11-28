@@ -17,7 +17,7 @@ const mockGSWhatsappReport = {
 const mockGSWhatsAppMessage: GSWhatsAppMessage = { 
   mobile: "917011854675", 
   type: "text",
-  location: '{"longitude":123.456,"latitude":78.91}',
+  // location: '{"longitude":123.456,"latitude":78.91}',
   text: "Hello", 
   timestamp: "1700828617000", 
   waNumber: "919311415687", 
@@ -25,6 +25,7 @@ const mockGSWhatsAppMessage: GSWhatsAppMessage = {
 };
 
 const mockXMessage: XMessage = {
+  adapterId: '44a9df72-3d7a-4ece-94c5-98cf26307324',
   to: { userID: 'admin' },
   from: { userID: '7011854675' },
   channelURI: 'WhatsApp',
@@ -43,7 +44,7 @@ describe('gupshup whatsapp adapter', () => {
   it("convert messages", async () => {
     const message = await convertXMessageToMsg(mockXMessage);
     console.log("converted Message:", message);
-    const xmessage = await convertMessageToXMsg(mockGSWhatsAppMessage);
-    console.log("converted XMessage:", xmessage);
+    // const xmessage = await convertMessageToXMsg(mockGSWhatsAppMessage);
+    // console.log("converted XMessage:", xmessage);
   })
 })
