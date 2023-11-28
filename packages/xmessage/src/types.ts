@@ -73,16 +73,16 @@ export class Transformer {
   metaData!: Map<string, string>; // templateID, configID, userData
 }
 
-export class XMessagePayload {
-  text!: string;
-  media!: MessageMedia;
-  location!: LocationParams;
-  contactCard!: ContactCard;
-  buttonChoices!: Array<ButtonChoice>;
-  stylingTag!: StylingTag;
-  flow!: string;
-  questionIndex!: number;
-  mediaCaption!: string;
+export type XMessagePayload = {
+  text?: string;
+  media?: MessageMedia;
+  location?: LocationParams;
+  contactCard?: ContactCard;
+  buttonChoices?: Array<ButtonChoice>;
+  stylingTag?: StylingTag;
+  flow?: string;
+  questionIndex?: number;
+  mediaCaption?: string;
 }
 
 export class XMessageThread {
