@@ -1,6 +1,4 @@
 import {
-  getAdapterByID,
-  getAdapterCredentials,
   getBotIdFromBotName,
   getBotNameByBotID,
   getBotNodeFromId,
@@ -241,48 +239,6 @@ describe('BotService', () => {
     configService.setConfig(appConfig);
     const result = await updateUser('testUserId', 'testBotName');
     expect(result).toEqual(new Pair(true, 'testUserId'));
-  });
-
-  it('get adapter by id', async () => {
-    const mock = new MockAdapter(axios);
-
-    mock.onGet(`testUrl6/admin/adapter/testAdapterId`, {}).reply(200, {
-      result: { data: mockBotsDb[0], id: 'testId' },
-    });
-
-    const appConfig = {
-      baseUrl: 'testUrl6',
-    };
-
-    configService.setConfig(appConfig);
-    const result = await getAdapterByID('testAdapterId');
-    expect(result).toEqual({ data: mockBotsDb[0], id: 'testId' });
-  });
-
-  it('get adapter credentials', async () => {
-    const mock = new MockAdapter(axios);
-
-    mock.onGet(`testUrl7/admin/adapter/testAdapterId`, {}).reply(200, {
-      result: mockBotsDb[0],
-      id: 'testId',
-    });
-
-    mock.onGet(`vaultTestUrl/admin/secret/testVault`, {}).reply(200, {
-      result: mockBotsDb[0],
-      id: 'testId',
-    });
-
-    const appConfig = {
-      baseUrl: 'testUrl7',
-      vaultServiceToken: 'abcd',
-      vaultServiceUrl: 'vaultTestUrl',
-    };
-
-    configService.setConfig(appConfig);
-    const result = await getAdapterCredentials('testAdapterId');
-    expect(result).toEqual(
-      mockBotsDb[0].logicIDs[0].adapter.config.credentials
-    );
   });
 
   it('get first form by bot id', async () => {
