@@ -158,7 +158,7 @@ describe('BotService', () => {
 
     configService.setConfig(appConfig);
     const result = await getBotNodeFromName('testName');
-    expect(result).toEqual(mockBotsDb);
+    expect(result).toEqual(mockBotsDb[0]);
   });
 
   it('get bode node from id', async () => {
