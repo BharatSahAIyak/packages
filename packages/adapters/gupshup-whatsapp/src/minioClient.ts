@@ -1,14 +1,15 @@
 import * as Minio from 'minio';
 import {FusionAuthClient} from '@fusionauth/typescript-client';
-let fusionAuth = new FusionAuthClient('bf69486b-4733-4470-a592-f1bfce7af580', 'https://local.fusionauth.io');
+import configService from './gupshupWhatsappAdapterServiceConfig';
+let fusionAuth = new FusionAuthClient(configService.getConfig('fusionAuthAppID') || 'bf69486b-4733-4470-a592-f1bfce7af580', configService.getConfig('fusionAuthUrl') || 'https://local.fusionauth.io');
 
-  const minioLoginId = process.env.CDN_MINIO_LOGIN_ID || '';
-  let minioPassword = process.env.CDN_MINIO_PASSWORD || '';
-  let minioAppId = process.env.CDN_MINIO_APPLICATION_ID || '';
-  let minioBucketId = process.env.CDN_MINIO_BUCKET_ID || '';
-  let minioUrl = process.env.CDN_MINIO_URL || '';
-  let minioFAKey = process.env.CDN_MINIO_FA_KEY || '';
-  let minioFAUrl = process.env.CDN_MINIO_FA_URL || '';
+  const minioLoginId = configService.getConfig('CDN_MINIO_LOGIN_ID') || '';
+  let minioPassword = configService.getConfig('CDN_MINIO_PASSWORD') || '';
+  let minioAppId = configService.getConfig('CDN_MINIO_APPLICATION_ID') || '';
+  let minioBucketId = configService.getConfig('CDN_MINIO_BUCKET_ID') || '';
+  let minioUrl = configService.getConfig('CDN_MINIO_URL') || '';
+  let minioFAKey = configService.getConfig('CDN_MINIO_FA_KEY') || '';
+  let minioFAUrl = configService.getConfig('CDN_MINIO_FA_URL') || '';
 
 const loadDefaultObjects = (): void => {
   console.log(`Minio details, loginID: ${minioLoginId}, password: ${minioPassword}, appId: ${minioAppId}, bucketId: ${minioBucketId}, faKey: ${minioFAKey}, faUrl: ${minioFAUrl}, url: ${minioUrl}`);

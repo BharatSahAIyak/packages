@@ -270,14 +270,36 @@ var import_url = require("url");
 // src/minioClient.ts
 var Minio = __toESM(require("minio"));
 var import_typescript_client = require("@fusionauth/typescript-client");
-var fusionAuth = new import_typescript_client.FusionAuthClient("bf69486b-4733-4470-a592-f1bfce7af580", "https://local.fusionauth.io");
-var minioLoginId = process.env.CDN_MINIO_LOGIN_ID || "";
-var minioPassword = process.env.CDN_MINIO_PASSWORD || "";
-var minioAppId = process.env.CDN_MINIO_APPLICATION_ID || "";
-var minioBucketId = process.env.CDN_MINIO_BUCKET_ID || "";
-var minioUrl = process.env.CDN_MINIO_URL || "";
-var minioFAKey = process.env.CDN_MINIO_FA_KEY || "";
-var minioFAUrl = process.env.CDN_MINIO_FA_URL || "";
+
+// src/gupshupWhatsappAdapterServiceConfig.ts
+var GupShupWhatsappAdapterServiceConfig = class _GupShupWhatsappAdapterServiceConfig {
+  constructor() {
+    this.config = {};
+  }
+  static getInstance() {
+    if (!_GupShupWhatsappAdapterServiceConfig.instance) {
+      _GupShupWhatsappAdapterServiceConfig.instance = new _GupShupWhatsappAdapterServiceConfig();
+    }
+    return _GupShupWhatsappAdapterServiceConfig.instance;
+  }
+  setConfig(config) {
+    this.config = { ...this.config, ...config };
+  }
+  getConfig(key) {
+    return this.config[key];
+  }
+};
+var gupshupWhatsappAdapterServiceConfig_default = GupShupWhatsappAdapterServiceConfig.getInstance();
+
+// src/minioClient.ts
+var fusionAuth = new import_typescript_client.FusionAuthClient(gupshupWhatsappAdapterServiceConfig_default.getConfig("fusionAuthAppID") || "bf69486b-4733-4470-a592-f1bfce7af580", gupshupWhatsappAdapterServiceConfig_default.getConfig("fusionAuthUrl") || "https://local.fusionauth.io");
+var minioLoginId = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_LOGIN_ID") || "";
+var minioPassword = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_PASSWORD") || "";
+var minioAppId = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_APPLICATION_ID") || "";
+var minioBucketId = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_BUCKET_ID") || "";
+var minioUrl = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_URL") || "";
+var minioFAKey = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_FA_KEY") || "";
+var minioFAUrl = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_FA_URL") || "";
 var loadDefaultObjects = () => {
   console.log(`Minio details, loginID: ${minioLoginId}, password: ${minioPassword}, appId: ${minioAppId}, bucketId: ${minioBucketId}, faKey: ${minioFAKey}, faUrl: ${minioFAUrl}, url: ${minioUrl}`);
   let appID = null;
@@ -338,26 +360,6 @@ async function uploadFileFromPath(filePath, name) {
   }
   return "";
 }
-
-// src/gupshupWhatsappAdapterServiceConfig.ts
-var GupShupWhatsappAdapterServiceConfig = class _GupShupWhatsappAdapterServiceConfig {
-  constructor() {
-    this.config = {};
-  }
-  static getInstance() {
-    if (!_GupShupWhatsappAdapterServiceConfig.instance) {
-      _GupShupWhatsappAdapterServiceConfig.instance = new _GupShupWhatsappAdapterServiceConfig();
-    }
-    return _GupShupWhatsappAdapterServiceConfig.instance;
-  }
-  setConfig(config) {
-    this.config = { ...this.config, ...config };
-  }
-  getConfig(key) {
-    return this.config[key];
-  }
-};
-var gupshupWhatsappAdapterServiceConfig_default = GupShupWhatsappAdapterServiceConfig.getInstance();
 
 // src/GupShupWhatsappAdapter.ts
 var getMessageState = (eventType) => {
