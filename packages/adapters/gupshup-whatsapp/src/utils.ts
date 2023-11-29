@@ -4,18 +4,22 @@ import {StylingTag, XMessagePayload} from './types';
 
 export class FileUtil {
   static isFileTypeImage(mimeType: string): boolean {
+    if(!mimeType) return false;
     return mimeType.startsWith('image/');
   }
 
   static isFileTypeAudio(mimeType: string): boolean {
+    if(!mimeType) return false;
     return mimeType.startsWith('audio/');
   }
 
   static isFileTypeVideo(mimeType: string): boolean {
+    if(!mimeType) return false;
     return mimeType.startsWith('video/');
   }
 
   static isFileTypeDocument(mimeType: string): boolean {
+    if(!mimeType) return false;
     // For simplicity, let's assume common document file extensions
     const documentExtensions = ['pdf', 'doc', 'docx', 'txt'];
     const lowerCaseMimeType = mimeType.toLowerCase();
