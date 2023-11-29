@@ -348,102 +348,6 @@ var updateUser = async (userID, botName) => {
     return new Pair(false, "");
   }
 };
-var getAdapterByID = async (adapterID) => {
-  const cacheKey = `adapter-by-id: ${adapterID}`;
-  console.log(
-    `BotService:getAdapterByID::Calling get adapter by id from uci api: ${adapterID}`
-  );
-  if (cache.has(cacheKey)) {
-    console.log(`getAdapterByID from cache: ${cache.get(cacheKey)}`);
-    return cache.get(cacheKey);
-  } else {
-    console.log(`getAdapterByID from webclient: ${cache.get(cacheKey)}`);
-    try {
-      const response = await axios.get(`${botServiceConfig_default.getConfig("baseUrl")}/admin/adapter/${adapterID}`);
-      console.log(
-        `BotService:getAdapterByID::Got Data From UCI Api : cache key : ${cacheKey} cache data : ${cache.get(
-          cacheKey
-        )}`
-      );
-      if (response.data !== null) {
-        const root = response.data;
-        if (root != null && root.result != null && root.result.id != null && root.result.id !== "") {
-          return root.result;
-        }
-        return null;
-      } else {
-        return null;
-      }
-    } catch (error) {
-      console.error(`BotService:getAdapterByID::Exception: ${error}`);
-      return null;
-    }
-  }
-};
-var getAdapterCredentials = async (adapterID) => {
-  const cacheKey = `adapter-credentials: ${adapterID}`;
-  const adapter = await getAdapterByID(adapterID);
-  console.log(`getAdapterByID: ${adapter}`);
-  if (adapter !== null) {
-    let vaultKey;
-    try {
-      vaultKey = adapter.logicIDs[0].adapter.config.credentials.vault;
-    } catch (ex) {
-      console.error(
-        `Exception in fetching adapter variable from json node: ${ex}`
-      );
-      vaultKey = null;
-    }
-    if (vaultKey !== null && vaultKey !== "") {
-      return await getVaultCredentials(vaultKey);
-    }
-  }
-  return null;
-};
-var getVaultCredentials = async (secretKey) => {
-  const adminToken = botServiceConfig_default.getConfig("vaultServiceToken");
-  if (adminToken === null || adminToken === void 0 || adminToken === "") {
-    return null;
-  }
-  const webClient = axios.create({
-    baseURL: botServiceConfig_default.getConfig("vaultServiceUrl"),
-    headers: {
-      ownerId: "8f7ee860-0163-4229-9d2a-01cef53145ba",
-      ownerOrgId: "org1",
-      "admin-token": adminToken
-    }
-  });
-  const cacheKey = `adapter-credentials-by-id: ${secretKey}`;
-  console.log(
-    `BotService:getVaultCredentials::Calling get vault credentials from uci api: ${secretKey}`
-  );
-  if (cache.has(cacheKey)) {
-    console.log(`getVaultCredentials from cache : ${cache.get(cacheKey)}`);
-    return cache.get(cacheKey);
-  } else {
-    console.log(`getVaultCredentials from axios : ${cache.get(cacheKey)}`);
-    const response = await webClient.get(`/admin/secret/${secretKey}`);
-    console.log(
-      `BotService:getVaultCredentials::Got Data From UCI Api : cache key : ${cacheKey} cache data : ${cache.get(
-        cacheKey
-      )}`
-    );
-    if (response.data !== null) {
-      try {
-        const credentials = {};
-        const root = response.data;
-        if (root.result !== null && root.result.logicIDs[0].adapter.config.credentials !== null) {
-          return root.result.logicIDs[0].adapter.config.credentials;
-        }
-        return null;
-      } catch (e) {
-        console.error(`BotService:getVaultCredentials::Exception: ${e}`);
-        return null;
-      }
-    }
-    return null;
-  }
-};
 var getFirstFormByBotID = async (botId) => {
   const cacheKey = `form-by-bot-name:${botId}`;
   if (cache.has(cacheKey)) {
@@ -497,15 +401,12 @@ var getBotNameByBotID = async (botId) => {
   }
 };
 export {
-  botServiceConfig_default as configService,
-  getAdapterByID,
-  getAdapterCredentials,
+  botServiceConfig_default as botServiceConfig,
   getBotIdFromBotName,
   getBotNameByBotID,
   getBotNodeFromId,
   getBotNodeFromName,
   getBotNodeFromStartingMessage,
   getFirstFormByBotID,
-  getVaultCredentials,
   updateUser
 };

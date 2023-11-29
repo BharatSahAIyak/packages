@@ -467,8 +467,8 @@ var getInboundMediaMessage = (message) => {
     mediaInfo.mime_type
   );
   const media = {
-    text: mediaData.name.toString(),
-    url: mediaData.url.toString(),
+    text: mediaData.name,
+    url: mediaData.url,
     category: mediaInfo.category
   };
   if (mediaData.error) {
@@ -544,7 +544,7 @@ function generateNewMessageId() {
   const second = BigInt(
     Math.floor(Number(sMin) + Math.random() * (Number(sMax) - Number(sMin) + 1))
   );
-  return first.toString() + "-" + second.toString();
+  return first + "-" + second;
 }
 var convertMessageToXMsg = async (msg) => {
   const message = msg;
@@ -662,12 +662,12 @@ async function optInUser(xMsg, usernameHSM, passwordHSM, username2Way, password2
   optInBuilder.searchParams.append("userid", usernameHSM);
   optInBuilder.searchParams.append("password", passwordHSM);
   optInBuilder.searchParams.append("channel", "WHATSAPP");
-  optInBuilder.searchParams.append("phone_number", phoneNumber);
+  optInBuilder.searchParams.append("send_to", phoneNumber);
   optInBuilder.searchParams.append("messageId", "123456789");
-  const expanded = optInBuilder.toString();
+  const expanded = optInBuilder;
   console.log(expanded);
   try {
-    const response = await axios.get(expanded);
+    const response = await axios.get(expanded.toString());
     console.log(response.data);
   } catch (error) {
     console.error("Error:", error.response?.data || error.message || error);
@@ -773,8 +773,13 @@ var getAdapterByID = async (adapterID) => {
   console.log(
     `BotService:getAdapterByID::Calling get adapter by id from uci api: ${adapterID}`
   );
+  const config = {
+    headers: {
+      "admin-token": gupshupWhatsappAdapterServiceConfig_default.getConfig("adminToken")
+    }
+  };
   try {
-    const response = await axios.get(`${gupshupWhatsappAdapterServiceConfig_default.getConfig("baseUrl")}/admin/adapter/${adapterID}`);
+    const response = await axios.get(`${gupshupWhatsappAdapterServiceConfig_default.getConfig("baseUrl")}/admin/adapter/${adapterID}`, config);
     if (response.data !== null) {
       const root = response.data;
       if (root != null && root.result != null && root.result.id != null && root.result.id !== "") {
@@ -792,11 +797,11 @@ var getAdapterByID = async (adapterID) => {
 var getAdapterCredentials = async (adapterID) => {
   const cacheKey = `adapter-credentials: ${adapterID}`;
   const adapter = await getAdapterByID(adapterID);
-  console.log(`getAdapterByID: ${adapter}`);
+  console.log(`getAdapterByID: ${JSON.stringify(adapter)}`);
   if (adapter !== null) {
     let vaultKey;
     try {
-      vaultKey = adapter.logicIDs[0].adapter.config.credentials.vault;
+      vaultKey = adapter.config.credentials.variable;
     } catch (ex) {
       console.error(
         `Exception in fetching adapter variable from json node: ${ex}`
@@ -830,8 +835,8 @@ var getVaultCredentials = async (secretKey) => {
     try {
       const credentials = {};
       const root = response.data;
-      if (root.result !== null && root.result.logicIDs[0].adapter.config.credentials !== null) {
-        return root.result.logicIDs[0].adapter.config.credentials;
+      if (root.result !== null && root.result !== null) {
+        return root.result[secretKey];
       }
       return null;
     } catch (e) {
@@ -845,68 +850,72 @@ var convertXMessageToMsg = async (xMsg) => {
   const adapterIdFromXML = xMsg.adapterId;
   try {
     const credentials = await getAdapterCredentials(adapterIdFromXML);
-    if (credentials && !credentials.isEmpty()) {
+    console.log(credentials);
+    if (credentials && Object.keys(credentials).length !== 0) {
       let text = xMsg.payload.text || "";
       let builder = getURIBuilder();
       if (xMsg.messageState === "OPTED_IN" /* OPTED_IN */) {
         text += renderMessageChoices(xMsg.payload.buttonChoices || []);
         builder = setBuilderCredentialsAndMethod(
           builder,
-          "OPT_IN" /* OPTIN */.toString(),
-          credentials["username2Way"].toString(),
-          credentials["password2Way"].toString()
+          "OPT_IN" /* OPTIN */,
+          credentials["username2Way"],
+          credentials["password2Way"]
         );
         builder.set("channel", xMsg.channelURI.toLowerCase());
+        builder.set("send_to", "91" + xMsg.to.userID);
         builder.set("phone_number", "91" + xMsg.to.userID);
       } else if (xMsg.messageType !== null && xMsg.messageType === "HSM" /* HSM */) {
         optInUser(
           xMsg,
-          credentials["usernameHSM"].toString(),
-          credentials["passwordHSM"].toString(),
-          credentials["username2Way"].toString(),
-          credentials["password2Way"].toString()
+          credentials["usernameHSM"],
+          credentials["passwordHSM"],
+          credentials["username2Way"],
+          credentials["password2Way"]
         );
         text += renderMessageChoices(xMsg.payload.buttonChoices || []);
         builder = setBuilderCredentialsAndMethod(
           builder,
-          "SendMessage" /* SIMPLEMESSAGE */.toString(),
-          credentials["usernameHSM"].toString(),
-          credentials["passwordHSM"].toString()
+          "SendMessage" /* SIMPLEMESSAGE */,
+          credentials["usernameHSM"],
+          credentials["passwordHSM"]
         );
         builder.set("send_to", "91" + xMsg.to.userID);
         builder.set("msg", text);
         builder.set("isHSM", "true");
-        builder.set("msg_type", "HSM" /* HSM */.toString());
+        builder.set("msg_type", "HSM" /* HSM */);
       } else if (xMsg.messageType !== null && xMsg.messageType === "HSM_WITH_BUTTON" /* HSM_WITH_BUTTON */) {
         optInUser(
           xMsg,
-          credentials["usernameHSM"].toString(),
-          credentials["passwordHSM"].toString(),
-          credentials["username2Way"].toString(),
-          credentials["password2Way"].toString()
+          credentials["usernameHSM"],
+          credentials["passwordHSM"],
+          credentials["username2Way"],
+          credentials["password2Way"]
         );
         text += renderMessageChoices(xMsg.payload.buttonChoices || []);
         builder = setBuilderCredentialsAndMethod(
           builder,
-          "SendMessage",
-          credentials["usernameHSM"].toString(),
-          credentials["passwordHSM"].toString()
+          "OPT_IN" /* OPTIN */,
+          credentials["usernameHSM"],
+          credentials["passwordHSM"]
         );
         builder.set("send_to", "91" + xMsg.to.userID);
         builder.set("msg", text);
         builder.set("isTemplate", "true");
-        builder.set("msg_type", "HSM" /* HSM */.toString());
+        builder.set("msg_type", "HSM" /* HSM */);
       } else if (xMsg.messageState === "REPLIED" /* REPLIED */) {
         let plainText = true;
         const stylingTag = xMsg.payload.stylingTag !== null ? xMsg.payload.stylingTag : void 0;
         builder = setBuilderCredentialsAndMethod(
           builder,
-          "SendMessage" /* SIMPLEMESSAGE */.toString(),
-          credentials["username2Way"].toString(),
-          credentials["password2Way"].toString()
+          "SendMessage" /* SIMPLEMESSAGE */,
+          credentials["username2Way"],
+          credentials["password2Way"]
         );
         builder.set("send_to", "91" + xMsg.to.userID);
-        builder.set("msg_type", "TEXT" /* TEXT */.toString());
+        builder.set("phone_number", "91" + xMsg.to.userID);
+        builder.set("msg_type", xMsg.messageType);
+        builder.set("channel", "WHATSAPP");
         if (stylingTag !== void 0 && FileUtil.isStylingTagIntercativeType(stylingTag) && FileUtil.validateInteractiveStylingTag(xMsg.payload)) {
           if (stylingTag === "LIST" /* LIST */) {
             const content = getOutboundListActionContent(xMsg);
@@ -930,10 +939,10 @@ var convertXMessageToMsg = async (xMsg) => {
         }
         if (xMsg.payload.media && xMsg.payload.media.url) {
           const media = xMsg.payload.media;
-          builder.set("method", "SendMediaMessage" /* MEDIAMESSAGE */.toString());
+          builder.set("method", "SendMediaMessage" /* MEDIAMESSAGE */);
           builder.set(
             "msg_type",
-            getMessageTypeByMediaCategory(media.category).toString()
+            getMessageTypeByMediaCategory(media.category)
           );
           builder.set("media_url", media.url);
           builder.set("caption", media.text);
@@ -946,8 +955,8 @@ var convertXMessageToMsg = async (xMsg) => {
         }
       }
       console.log(text);
-      const expanded = new URL(builder.toString());
-      console.log(expanded.toString());
+      const expanded = new URL(`${gupshupWhatsappAdapterServiceConfig_default.getConfig("gupshupUrl")}?${builder}`);
+      console.log(expanded);
       try {
         const response = await GSWhatsappService.getInstance().sendOutboundMessage(
           expanded.toString()
@@ -998,5 +1007,6 @@ export {
   Transformer,
   XMessageThread,
   convertMessageToXMsg,
-  convertXMessageToMsg
+  convertXMessageToMsg,
+  gupshupWhatsappAdapterServiceConfig_default as gupshupWhatsappAdapterServiceConfig
 };

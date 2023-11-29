@@ -197,4 +197,14 @@ declare class XMessage {
 declare const convertMessageToXMsg: (msg: any) => Promise<XMessage>;
 declare const convertXMessageToMsg: (xMsg: XMessage) => Promise<XMessage | undefined>;
 
-export { Address, ButtonChoice, ContactCard, ConversationStage, DeviceType, type GSWhatsAppMessage, LocationParams, MediaCategory, MediaSizeLimit, MessageId, MessageIdBuilder, MessageMedia, MessageMediaError, MethodType, Provider, SenderReceiverInfo, State, StylingTag, Transformer, type XMessagePayload, XMessageThread, convertMessageToXMsg, convertXMessageToMsg };
+declare class GupShupWhatsappAdapterServiceConfig {
+    private static instance;
+    private config;
+    private constructor();
+    static getInstance(): GupShupWhatsappAdapterServiceConfig;
+    setConfig(config: Record<string, any>): void;
+    getConfig(key: string): any;
+}
+declare const _default: GupShupWhatsappAdapterServiceConfig;
+
+export { Address, ButtonChoice, ContactCard, ConversationStage, DeviceType, type GSWhatsAppMessage, LocationParams, MediaCategory, MediaSizeLimit, MessageId, MessageIdBuilder, MessageMedia, MessageMediaError, MethodType, Provider, SenderReceiverInfo, State, StylingTag, Transformer, type XMessagePayload, XMessageThread, convertMessageToXMsg, convertXMessageToMsg, _default as gupshupWhatsappAdapterServiceConfig };
