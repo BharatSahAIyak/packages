@@ -6,15 +6,23 @@ import * as fs from "fs";
 import * as path from "path";
 var FileUtil = class _FileUtil {
   static isFileTypeImage(mimeType) {
+    if (!mimeType)
+      return false;
     return mimeType.startsWith("image/");
   }
   static isFileTypeAudio(mimeType) {
+    if (!mimeType)
+      return false;
     return mimeType.startsWith("audio/");
   }
   static isFileTypeVideo(mimeType) {
+    if (!mimeType)
+      return false;
     return mimeType.startsWith("video/");
   }
   static isFileTypeDocument(mimeType) {
+    if (!mimeType)
+      return false;
     const documentExtensions = ["pdf", "doc", "docx", "txt"];
     const lowerCaseMimeType = mimeType.toLowerCase();
     return documentExtensions.some((ext) => lowerCaseMimeType.endsWith(`/${ext}`));
