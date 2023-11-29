@@ -1,0 +1,37 @@
+name: Unit Testing
+
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies and run tests
+        run: |
+          # Navigate to each package folder and run npm install and npm test
+          for dir in packages/*; do
+            if [ -f "$dir/package.json" ]; then
+              echo "Installing dependencies and running tests in $dir"
+              cd "$dir"
+              npm ci
+              npm run test
+              cd - # return to the previous directory
+            fi
+          done
