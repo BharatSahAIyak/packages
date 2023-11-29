@@ -48,6 +48,7 @@ var MessageType = /* @__PURE__ */ ((MessageType2) => {
   MessageType2["VIDEO"] = "VIDEO";
   MessageType2["AUDIO"] = "AUDIO";
   MessageType2["DOCUMENT"] = "DOCUMENT";
+  MessageType2["LOCATION"] = "LOCATION";
   return MessageType2;
 })(MessageType || {});
 var XMessage = class {

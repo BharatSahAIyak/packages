@@ -25,15 +25,15 @@ declare class MessageIdBuilder {
 }
 declare class SenderReceiverInfo {
     userID: string;
-    groups: Array<string>;
-    campaignID: string;
-    formID: string;
-    bot: boolean;
-    broadcast: boolean;
-    meta: Map<string, string>;
-    deviceType: DeviceType;
-    deviceID: string;
-    encryptedDeviceID: string;
+    groups?: Array<string>;
+    campaignID?: string;
+    formID?: string;
+    bot?: boolean;
+    broadcast?: boolean;
+    meta?: Map<string, string>;
+    deviceType?: DeviceType;
+    deviceID?: string;
+    encryptedDeviceID?: string;
 }
 declare enum DeviceType {
     PHONE = "PHONE"
@@ -42,17 +42,17 @@ declare class Transformer {
     id: string;
     metaData: Map<string, string>;
 }
-declare class XMessagePayload {
-    text: string;
-    media: MessageMedia;
-    location: LocationParams;
-    contactCard: ContactCard;
-    buttonChoices: Array<ButtonChoice>;
-    stylingTag: StylingTag;
-    flow: string;
-    questionIndex: number;
-    mediaCaption: string;
-}
+type XMessagePayload = {
+    text?: string;
+    media?: MessageMedia;
+    location?: LocationParams;
+    contactCard?: ContactCard;
+    buttonChoices?: Array<ButtonChoice>;
+    stylingTag?: StylingTag;
+    flow?: string;
+    questionIndex?: number;
+    mediaCaption?: string;
+};
 declare class XMessageThread {
     offset: number;
     startDate: string;
@@ -127,7 +127,8 @@ declare enum MessageType {
     IMAGE = "IMAGE",
     VIDEO = "VIDEO",
     AUDIO = "AUDIO",
-    DOCUMENT = "DOCUMENT"
+    DOCUMENT = "DOCUMENT",
+    LOCATION = "LOCATION"
 }
 declare class XMessage {
     app?: string;
