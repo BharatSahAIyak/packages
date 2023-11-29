@@ -27,7 +27,8 @@ export enum MessageType {
   IMAGE = "IMAGE",
   VIDEO = "VIDEO",
   AUDIO = "AUDIO",
-  DOCUMENT = "DOCUMENT"
+  DOCUMENT = "DOCUMENT",
+  LOCATION = "LOCATION"
 }
 
 export class XMessage {
