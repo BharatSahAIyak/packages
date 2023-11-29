@@ -895,7 +895,7 @@ export const convertXMessageToMsg = async (xMsg: XMessage) => {
 
         builder.set('send_to', '91' + xMsg.to.userID);
         builder.set('phone_number', '91' + xMsg.to.userID);
-        builder.set('msg_type', MessageType.TEXT);
+        builder.set('msg_type', xMsg.messageType);
         builder.set('channel', 'WHATSAPP');
 
         if (
