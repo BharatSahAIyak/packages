@@ -137,7 +137,7 @@ describe('BotService', () => {
     expect(result).toEqual(mockBotsDb[0]);
   });
 
-  it('get bode node from name', async () => {
+  it('get bot node from name', async () => {
     const mock = new MockAdapter(axios);
     mock
       .onGet('testUrl2/admin/bot/search', {
@@ -158,7 +158,7 @@ describe('BotService', () => {
 
     configService.setConfig(appConfig);
     const result = await getBotNodeFromName('testName');
-    expect(result).toEqual(mockBotsDb[0]);
+    expect(result).toEqual(mockBotsDb);
   });
 
   it('get bode node from id', async () => {
