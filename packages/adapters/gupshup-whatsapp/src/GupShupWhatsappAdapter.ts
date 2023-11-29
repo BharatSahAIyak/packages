@@ -230,13 +230,16 @@ const uploadInboundMediaFile = async (
   return result;
 };
 
-const getInboundMediaMessage = (message: GSWhatsAppMessage): MessageMedia => {
-  const mediaInfo: Record<string, any> = getMediaInfo(message);
-  const mediaData: Record<string, any> = uploadInboundMediaFile(
+const getInboundMediaMessage = async (message: GSWhatsAppMessage): Promise<MessageMedia> => {
+  try{
+    const mediaInfo: Record<string, any> = getMediaInfo(message);
+  const mediaData: Record<string, any> = await uploadInboundMediaFile(
     message.messageId || '',
     mediaInfo.mediaUrl,
     mediaInfo.mime_type
   );
+
+  console.log("media data:", mediaData)
 
   const media: MessageMedia = {
     text: mediaData.name,
@@ -253,6 +256,10 @@ const getInboundMediaMessage = (message: GSWhatsAppMessage): MessageMedia => {
   }
 
   return media;
+  }catch(err){
+    console.log('Error in getInboundMediaMessage:', err);
+    return {} as MessageMedia;
+  }
 };
 
 const getInboundLocationParams = (
@@ -455,7 +462,7 @@ export const convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
 
     messageState[0] = MessageState.REPLIED;
     xmsgPayload.text = '';
-    xmsgPayload.media = getInboundMediaMessage(message);
+    xmsgPayload.media = await getInboundMediaMessage(message);
     messageIdentifier.channelMessageId = message.messageId || '';
 
     return processedXMessage(

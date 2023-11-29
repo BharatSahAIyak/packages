@@ -1,7 +1,7 @@
 import * as Minio from 'minio';
 import {FusionAuthClient} from '@fusionauth/typescript-client';
 import configService from './gupshupWhatsappAdapterServiceConfig';
-let fusionAuth = new FusionAuthClient(configService.getConfig('fusionAuthAppID') || 'bf69486b-4733-4470-a592-f1bfce7af580', configService.getConfig('fusionAuthUrl') || 'https://local.fusionauth.io');
+// let fusionAuth = new FusionAuthClient(configService.getConfig('fusionAuthAppID') || 'bf69486b-4733-4470-a592-f1bfce7af580', configService.getConfig('fusionAuthUrl') || 'https://local.fusionauth.io');
 
   const minioLoginId = configService.getConfig('CDN_MINIO_LOGIN_ID') || '';
   let minioPassword = configService.getConfig('CDN_MINIO_PASSWORD') || '';
@@ -20,9 +20,9 @@ const loadDefaultObjects = (): void => {
     appID = minioAppId;
   }
 
-  if (!fusionAuth) {
-    fusionAuth = new FusionAuthClient(minioFAKey, minioFAUrl);
-  }
+  // if (!fusionAuth) {
+  //   fusionAuth = new FusionAuthClient(minioFAKey, minioFAUrl);
+  // }
 };
 
 const getFileSignedUrl = (name: string): string => {
