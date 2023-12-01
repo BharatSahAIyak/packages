@@ -5,25 +5,25 @@ import configService from './gupshupWhatsappAdapterServiceConfig';
 
   // const minioLoginId = configService.getConfig('CDN_MINIO_LOGIN_ID') || '';
   // let minioPassword = configService.getConfig('CDN_MINIO_PASSWORD') || '';
-  let minioAppId = configService.getConfig('CDN_MINIO_APPLICATION_ID') || '';
+  // let minioAppId = configService.getConfig('CDN_MINIO_APPLICATION_ID') || '';
   let minioBucketId = configService.getConfig('CDN_MINIO_BUCKET_ID') || '';
   let minioUrl = configService.getConfig('CDN_MINIO_URL') || '';
   // let minioFAKey = configService.getConfig('CDN_MINIO_FA_KEY') || '';
   // let minioFAUrl = configService.getConfig('CDN_MINIO_FA_URL') || '';
 
-const loadDefaultObjects = (): void => {
+// const loadDefaultObjects = (): void => {
   // console.log(`Minio details, loginID: ${minioLoginId}, password: ${minioPassword}, appId: ${minioAppId}, bucketId: ${minioBucketId}, faKey: ${minioFAKey}, faUrl: ${minioFAUrl}, url: ${minioUrl}`);
   
-  let appID: string | null = null;
+  // let appID: string | null = null;
 
-  if (minioAppId !== null) {
-    appID = minioAppId;
-  }
+  // if (minioAppId !== null) {
+  //   appID = minioAppId;
+  // }
 
   // if (!fusionAuth) {
   //   fusionAuth = new FusionAuthClient(minioFAKey, minioFAUrl);
   // }
-};
+// };
 
 const getFileSignedUrl = (name: string): string => {
   if (minioUrl.length === 0 || minioBucketId.length === 0) {
@@ -51,7 +51,7 @@ const getFileSignedUrl = (name: string): string => {
 export async function uploadFileFromPath(filePath: string, name: string): Promise<string> {
   try {
     /* Load default objects */
-    loadDefaultObjects();
+    // loadDefaultObjects();
 
     const minioClient = new Minio.Client({
       endPoint: minioUrl,

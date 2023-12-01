@@ -234,7 +234,7 @@ const getInboundMediaMessage = async (
   message: GSWhatsAppMessage
 ): Promise<MessageMedia> => {
   try {
-    const mediaInfo: Record<string, any> = getMediaInfo(message);
+    const mediaInfo: Record<string, any> = await getMediaInfo(message);
     const mediaData: Record<string, any> = await uploadInboundMediaFile(
       message.messageId || '',
       mediaInfo.mediaUrl,

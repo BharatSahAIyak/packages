@@ -46,7 +46,7 @@ var import_axios = __toESM(require("axios"));
 var fs = __toESM(require("fs"));
 var path = __toESM(require("path"));
 var import_xmessage = require("@samagra-x/xmessage");
-var FileUtil = class _FileUtil {
+var FileUtil = class {
   static isFileTypeImage(mimeType) {
     if (!mimeType)
       return false;
@@ -87,15 +87,16 @@ var FileUtil = class _FileUtil {
       return "Input bytes are null.";
     }
     const fileSizeInBytes = inputBytes.length;
-    const maxSizeInBytes = maxSize * 1024 * 1024;
+    const maxSizeInBytes = maxSize;
     if (fileSizeInBytes > maxSizeInBytes) {
-      return `File size exceeds the maximum allowed size of ${maxSize} MB.`;
+      return `File size exceeds the maximum allowed size of ${maxSize} bytes.`;
     }
-    return "null";
+    return "";
   }
   static getUploadedFileName(mimeType, messageId) {
     const sanitizedMimeType = mimeType.replace("/", "_");
-    const fileName = `${sanitizedMimeType}_${messageId}`;
+    const parts = sanitizedMimeType.split("_");
+    const fileName = `${sanitizedMimeType}_${messageId}.${parts[1]}`;
     return fileName;
   }
   static async fileToLocalFromBytes(inputBytes, mimeType, name) {
@@ -103,8 +104,8 @@ var FileUtil = class _FileUtil {
       console.error("Input bytes are null.");
       return null;
     }
-    const directoryPath = "/";
-    const fileName = _FileUtil.getUploadedFileName(mimeType, name);
+    const directoryPath = "/tmp/";
+    const fileName = name;
     const filePath = path.join(directoryPath, fileName);
     try {
       await fs.promises.writeFile(filePath, inputBytes);
@@ -198,15 +199,8 @@ var GupShupWhatsappAdapterServiceConfig = class _GupShupWhatsappAdapterServiceCo
 var gupshupWhatsappAdapterServiceConfig_default = GupShupWhatsappAdapterServiceConfig.getInstance();
 
 // src/minioClient.ts
-var minioAppId = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_APPLICATION_ID") || "";
 var minioBucketId = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_BUCKET_ID") || "";
 var minioUrl = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_URL") || "";
-var loadDefaultObjects = () => {
-  let appID = null;
-  if (minioAppId !== null) {
-    appID = minioAppId;
-  }
-};
 var getFileSignedUrl = (name) => {
   if (minioUrl.length === 0 || minioBucketId.length === 0) {
     console.error(`Minio URL or Minio Bucket was null. Minio URL: ${minioUrl}, Minio Bucket: ${minioBucketId}`);
@@ -226,7 +220,6 @@ var getFileSignedUrl = (name) => {
 };
 async function uploadFileFromPath(filePath, name) {
   try {
-    loadDefaultObjects();
     const minioClient = new Minio.Client({
       endPoint: minioUrl,
       port: 9e3,
@@ -417,7 +410,7 @@ var uploadInboundMediaFile = async (messageId, mediaUrl, mime_type) => {
 };
 var getInboundMediaMessage = async (message) => {
   try {
-    const mediaInfo = getMediaInfo(message);
+    const mediaInfo = await getMediaInfo(message);
     const mediaData = await uploadInboundMediaFile(
       message.messageId || "",
       mediaInfo.mediaUrl,
