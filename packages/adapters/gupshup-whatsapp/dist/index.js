@@ -277,7 +277,6 @@ var import_url = require("url");
 
 // src/minioClient.ts
 var Minio = __toESM(require("minio"));
-var import_typescript_client = require("@fusionauth/typescript-client");
 
 // src/gupshupWhatsappAdapterServiceConfig.ts
 var GupShupWhatsappAdapterServiceConfig = class _GupShupWhatsappAdapterServiceConfig {
@@ -300,22 +299,13 @@ var GupShupWhatsappAdapterServiceConfig = class _GupShupWhatsappAdapterServiceCo
 var gupshupWhatsappAdapterServiceConfig_default = GupShupWhatsappAdapterServiceConfig.getInstance();
 
 // src/minioClient.ts
-var fusionAuth = new import_typescript_client.FusionAuthClient(gupshupWhatsappAdapterServiceConfig_default.getConfig("fusionAuthAppID") || "bf69486b-4733-4470-a592-f1bfce7af580", gupshupWhatsappAdapterServiceConfig_default.getConfig("fusionAuthUrl") || "https://local.fusionauth.io");
-var minioLoginId = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_LOGIN_ID") || "";
-var minioPassword = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_PASSWORD") || "";
 var minioAppId = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_APPLICATION_ID") || "";
 var minioBucketId = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_BUCKET_ID") || "";
 var minioUrl = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_URL") || "";
-var minioFAKey = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_FA_KEY") || "";
-var minioFAUrl = gupshupWhatsappAdapterServiceConfig_default.getConfig("CDN_MINIO_FA_URL") || "";
 var loadDefaultObjects = () => {
-  console.log(`Minio details, loginID: ${minioLoginId}, password: ${minioPassword}, appId: ${minioAppId}, bucketId: ${minioBucketId}, faKey: ${minioFAKey}, faUrl: ${minioFAUrl}, url: ${minioUrl}`);
   let appID = null;
   if (minioAppId !== null) {
     appID = minioAppId;
-  }
-  if (!fusionAuth) {
-    fusionAuth = new import_typescript_client.FusionAuthClient(minioFAKey, minioFAUrl);
   }
 };
 var getFileSignedUrl = (name) => {
@@ -526,25 +516,31 @@ var uploadInboundMediaFile = async (messageId, mediaUrl, mime_type) => {
   result.url = url;
   return result;
 };
-var getInboundMediaMessage = (message) => {
-  const mediaInfo = getMediaInfo(message);
-  const mediaData = uploadInboundMediaFile(
-    message.messageId || "",
-    mediaInfo.mediaUrl,
-    mediaInfo.mime_type
-  );
-  const media = {
-    text: mediaData.name,
-    url: mediaData.url,
-    category: mediaInfo.category
-  };
-  if (mediaData.error) {
-    media.messageMediaError = mediaData.error;
+var getInboundMediaMessage = async (message) => {
+  try {
+    const mediaInfo = getMediaInfo(message);
+    const mediaData = await uploadInboundMediaFile(
+      message.messageId || "",
+      mediaInfo.mediaUrl,
+      mediaInfo.mime_type
+    );
+    console.log("media data:", mediaData);
+    const media = {
+      text: mediaData.name,
+      url: mediaData.url,
+      category: mediaInfo.category
+    };
+    if (mediaData.error) {
+      media.messageMediaError = mediaData.error;
+    }
+    if (mediaData.size) {
+      media.size = mediaData.size;
+    }
+    return media;
+  } catch (err) {
+    console.log("Error in getInboundMediaMessage:", err);
+    return {};
   }
-  if (mediaData.size) {
-    media.size = mediaData.size;
-  }
-  return media;
 };
 var getInboundLocationParams = (message) => {
   let longitude = null;
@@ -694,7 +690,7 @@ var convertMessageToXMsg = async (msg) => {
     messageIdentifier.replyId = message.replyId;
     messageState[0] = "REPLIED" /* REPLIED */;
     xmsgPayload.text = "";
-    xmsgPayload.media = getInboundMediaMessage(message);
+    xmsgPayload.media = await getInboundMediaMessage(message);
     messageIdentifier.channelMessageId = message.messageId || "";
     return processedXMessage(
       message,
@@ -983,6 +979,7 @@ var convertXMessageToMsg = async (xMsg) => {
         builder.set("phone_number", "91" + xMsg.to.userID);
         builder.set("msg_type", xMsg.messageType);
         builder.set("channel", "WHATSAPP");
+        builder.set("msg_id", xMsg.messageId.channelMessageId);
         if (stylingTag !== void 0 && FileUtil.isStylingTagIntercativeType(stylingTag) && FileUtil.validateInteractiveStylingTag(xMsg.payload)) {
           if (stylingTag === "LIST" /* LIST */) {
             const content = getOutboundListActionContent(xMsg);

@@ -157,4 +157,4 @@ declare class XMessage {
     setProvider?(provider: string): void;
 }
 
-export { MessageState, MessageType, XMessage };
+export { Address, ButtonChoice, ContactCard, ConversationStage, DeviceType, LocationParams, MediaCategory, MessageId, MessageIdBuilder, MessageMedia, MessageMediaError, MessageState, MessageType, SenderReceiverInfo, State, StylingTag, Transformer, XMessage, type XMessagePayload, XMessageThread };
