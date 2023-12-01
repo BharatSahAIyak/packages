@@ -10,9 +10,9 @@ export class ConversationStage {
 }
 
 export class MessageId {
-  public Id: string;
+  public Id?: string;
   public channelMessageId: string;
-  public replyId: string;
+  public replyId?: string;
 
   constructor(builder: MessageIdBuilder) {
     this.Id = builder.id;
@@ -83,6 +83,7 @@ export type XMessagePayload = {
   flow?: string;
   questionIndex?: number;
   mediaCaption?: string;
+  metaData?: string;
 }
 
 export class XMessageThread {

@@ -8,9 +8,9 @@ declare class ConversationStage {
     state: State;
 }
 declare class MessageId {
-    Id: string;
+    Id?: string;
     channelMessageId: string;
-    replyId: string;
+    replyId?: string;
     constructor(builder: MessageIdBuilder);
     static builder(): MessageIdBuilder;
 }
@@ -52,6 +52,7 @@ type XMessagePayload = {
     flow?: string;
     questionIndex?: number;
     mediaCaption?: string;
+    metaData?: string;
 };
 declare class XMessageThread {
     offset: number;

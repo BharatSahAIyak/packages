@@ -4,6 +4,7 @@ import axios from "axios";
 // src/utils.ts
 import * as fs from "fs";
 import * as path from "path";
+import { StylingTag } from "@samagra-x/xmessage";
 var FileUtil = class _FileUtil {
   static isFileTypeImage(mimeType) {
     if (!mimeType)
@@ -61,7 +62,7 @@ var FileUtil = class _FileUtil {
       console.error("Input bytes are null.");
       return null;
     }
-    const directoryPath = "your/local/directory/path";
+    const directoryPath = "/";
     const fileName = _FileUtil.getUploadedFileName(mimeType, name);
     const filePath = path.join(directoryPath, fileName);
     try {
@@ -74,17 +75,17 @@ var FileUtil = class _FileUtil {
     }
   }
   static isStylingTagIntercativeType(stylingTag) {
-    return stylingTag === "LIST" /* LIST */ || stylingTag === "QUICKREPLYBTN" /* QUICKREPLYBTN */;
+    return stylingTag === StylingTag.LIST || stylingTag === StylingTag.QUICKREPLYBTN;
   }
   static validateInteractiveStylingTag(payload) {
-    if (payload.stylingTag === "LIST" /* LIST */ && payload.buttonChoices && payload.buttonChoices.length <= 10) {
+    if (payload.stylingTag === StylingTag.LIST && payload.buttonChoices && payload.buttonChoices.length <= 10) {
       for (const buttonChoice of payload.buttonChoices) {
         if (buttonChoice.text.length > 24) {
           return false;
         }
       }
       return true;
-    } else if (payload.stylingTag === "QUICKREPLYBTN" /* QUICKREPLYBTN */ && payload.buttonChoices && payload.buttonChoices.length <= 3) {
+    } else if (payload.stylingTag === StylingTag.QUICKREPLYBTN && payload.buttonChoices && payload.buttonChoices.length <= 3) {
       for (const buttonChoice of payload.buttonChoices) {
         if (buttonChoice.text.length > 20 || buttonChoice.key.length > 256) {
           return false;
@@ -98,100 +99,13 @@ var FileUtil = class _FileUtil {
 };
 
 // src/types.ts
-var Address = class {
-};
-var ButtonChoice = class {
-};
-var ContactCard = class {
-};
-var State = /* @__PURE__ */ ((State2) => {
-  State2[State2["STARTING"] = 1] = "STARTING";
-  State2[State2["ONGOING"] = 2] = "ONGOING";
-  State2[State2["COMPLETED"] = 3] = "COMPLETED";
-  return State2;
-})(State || {});
-var DeviceType = /* @__PURE__ */ ((DeviceType2) => {
-  DeviceType2["PHONE"] = "PHONE";
-  return DeviceType2;
-})(DeviceType || {});
-var StylingTag = /* @__PURE__ */ ((StylingTag2) => {
-  StylingTag2["LIST"] = "LIST";
-  StylingTag2["QUICKREPLYBTN"] = "QUICKREPLYBTN";
-  StylingTag2["IMAGE"] = "IMAGE";
-  StylingTag2["IMAGE_URL"] = "IMAGE_URL";
-  StylingTag2["AUDIO"] = "AUDIO";
-  StylingTag2["VIDEO"] = "VIDEO";
-  return StylingTag2;
-})(StylingTag || {});
-var MediaCategory = /* @__PURE__ */ ((MediaCategory2) => {
-  MediaCategory2["IMAGE_URL"] = "IMAGE_URL";
-  MediaCategory2["AUDIO_URL"] = "AUDIO_URL";
-  MediaCategory2["VIDEO_URL"] = "VIDEO_URL";
-  MediaCategory2["IMAGE"] = "IMAGE";
-  MediaCategory2["AUDIO"] = "AUDIO";
-  MediaCategory2["VIDEO"] = "VIDEO";
-  MediaCategory2["FILE"] = "FILE";
-  return MediaCategory2;
-})(MediaCategory || {});
-var MessageMediaError = /* @__PURE__ */ ((MessageMediaError2) => {
-  MessageMediaError2["PAYLOAD_TOO_LARGE"] = "payloadTooLarge";
-  MessageMediaError2["EMPTY_RESPONSE"] = "emptyResponse";
-  return MessageMediaError2;
-})(MessageMediaError || {});
 var MethodType = /* @__PURE__ */ ((MethodType2) => {
   MethodType2["SIMPLEMESSAGE"] = "SendMessage";
   MethodType2["MEDIAMESSAGE"] = "SendMediaMessage";
   MethodType2["OPTIN"] = "OPT_IN";
   return MethodType2;
 })(MethodType || {});
-var ConversationStage = class {
-};
-var LocationParams = class {
-};
-var MessageId = class {
-  constructor(builder) {
-    this.Id = builder.id;
-    this.channelMessageId = builder.channelMessageId;
-    this.replyId = builder.replyId;
-  }
-  static builder() {
-    return new MessageIdBuilder();
-  }
-};
-var MessageIdBuilder = class {
-  constructor() {
-    this.id = "";
-    this.channelMessageId = "";
-    this.replyId = "";
-  }
-  setId(id) {
-    this.id = id;
-    return this;
-  }
-  setChannelMessageId(channelMessageId) {
-    this.channelMessageId = channelMessageId;
-    return this;
-  }
-  setReplyId(replyId) {
-    this.replyId = replyId;
-    return this;
-  }
-  build() {
-    return new MessageId(this);
-  }
-};
-var MessageMedia = class {
-};
 var Provider = class {
-};
-var SenderReceiverInfo = class {
-  // Encrypted Device String
-};
-var Transformer = class {
-  // templateID, configID, userData
-};
-var XMessageThread = class {
-  // last incoming msgId
 };
 var MediaSizeLimit = class {
   constructor(imageSize, audioSize, videoSize, documentSize) {
@@ -216,6 +130,14 @@ var MediaSizeLimit = class {
 };
 
 // src/GupShupWhatsappAdapter.ts
+import {
+  StylingTag as StylingTag2,
+  MessageMediaError,
+  MessageId,
+  MediaCategory,
+  MessageState,
+  MessageType
+} from "@samagra-x/xmessage";
 import { URLSearchParams } from "url";
 
 // src/minioClient.ts
@@ -272,7 +194,7 @@ async function uploadFileFromPath(filePath, name) {
   try {
     loadDefaultObjects();
     const minioClient = new Minio.Client({
-      endPoint: "play.min.io",
+      endPoint: minioUrl,
       port: 9e3,
       useSSL: true,
       accessKey: "Q3AM3UQ867SPQQA43P2F",
@@ -307,16 +229,16 @@ var getMessageState = (eventType) => {
   let messageState;
   switch (eventType) {
     case "SENT":
-      messageState = "SENT" /* SENT */;
+      messageState = MessageState.SENT;
       break;
     case "DELIVERED":
-      messageState = "DELIVERED" /* DELIVERED */;
+      messageState = MessageState.DELIVERED;
       break;
     case "READ":
-      messageState = "READ" /* READ */;
+      messageState = MessageState.READ;
       break;
     default:
-      messageState = "FAILED_TO_DELIVER" /* FAILED_TO_DELIVER */;
+      messageState = MessageState.FAILED_TO_DELIVER;
       break;
   }
   return messageState;
@@ -347,13 +269,13 @@ var getInboundInteractiveContentText = (message) => {
 var getMediaCategoryByMimeType = (mimeType) => {
   let category = null;
   if (FileUtil.isFileTypeImage(mimeType)) {
-    category = "IMAGE" /* IMAGE */;
+    category = MediaCategory.IMAGE;
   } else if (FileUtil.isFileTypeAudio(mimeType)) {
-    category = "AUDIO" /* AUDIO */;
+    category = MediaCategory.AUDIO;
   } else if (FileUtil.isFileTypeVideo(mimeType)) {
-    category = "VIDEO" /* VIDEO */;
+    category = MediaCategory.VIDEO;
   } else if (FileUtil.isFileTypeDocument(mimeType)) {
-    category = "FILE" /* FILE */;
+    category = MediaCategory.FILE;
   }
   return category;
 };
@@ -393,16 +315,16 @@ var getMediaInfo = async (message) => {
   return result;
 };
 var getMessageTypeByMediaCategory = (category) => {
-  let messageType = "TEXT" /* TEXT */;
+  let messageType = MessageType.TEXT;
   if (category !== null) {
-    if (category === "IMAGE" /* IMAGE */) {
-      messageType = "IMAGE" /* IMAGE */;
-    } else if (category === "AUDIO" /* AUDIO */) {
-      messageType = "AUDIO" /* AUDIO */;
-    } else if (category === "VIDEO" /* VIDEO */) {
-      messageType = "VIDEO" /* VIDEO */;
-    } else if (category === "FILE" /* FILE */) {
-      messageType = "DOCUMENT" /* DOCUMENT */;
+    if (category === MediaCategory.IMAGE) {
+      messageType = MessageType.IMAGE;
+    } else if (category === MediaCategory.AUDIO) {
+      messageType = MessageType.AUDIO;
+    } else if (category === MediaCategory.VIDEO) {
+      messageType = MessageType.VIDEO;
+    } else if (category === MediaCategory.FILE) {
+      messageType = MessageType.DOCUMENT;
     }
   }
   return messageType;
@@ -441,19 +363,19 @@ var uploadInboundMediaFile = async (messageId, mediaUrl, mime_type) => {
           url = await uploadFileFromPath(filePath, name);
         } else {
           result.size = 0;
-          result.error = "emptyResponse" /* EMPTY_RESPONSE */;
+          result.error = MessageMediaError.EMPTY_RESPONSE;
         }
       } else {
         result.size = inputBytes.length;
-        result.error = "payloadTooLarge" /* PAYLOAD_TOO_LARGE */;
+        result.error = MessageMediaError.PAYLOAD_TOO_LARGE;
       }
     } else {
       result.size = 0;
-      result.error = "emptyResponse" /* EMPTY_RESPONSE */;
+      result.error = MessageMediaError.EMPTY_RESPONSE;
     }
   } else {
     result.size = 0;
-    result.error = "emptyResponse" /* EMPTY_RESPONSE */;
+    result.error = MessageMediaError.EMPTY_RESPONSE;
   }
   result.name = name;
   result.url = url;
@@ -556,7 +478,7 @@ var convertMessageToXMsg = async (msg) => {
   const message = msg;
   const from = { userID: "" };
   const to = { userID: "admin" };
-  const messageState = ["REPLIED" /* REPLIED */];
+  const messageState = [MessageState.REPLIED];
   const messageIdentifier = { channelMessageId: "" };
   const messageType = message.type.toUpperCase();
   const xmsgPayload = {};
@@ -585,7 +507,7 @@ var convertMessageToXMsg = async (msg) => {
   } else if (message.type === "text" && message.text) {
     from.userID = message.mobile.substring(2);
     messageIdentifier.replyId = message.replyId || "";
-    messageState[0] = "REPLIED" /* REPLIED */;
+    messageState[0] = MessageState.REPLIED;
     xmsgPayload.text = message.text;
     messageIdentifier.channelMessageId = message.messageId || "";
     return processedXMessage(
@@ -600,7 +522,7 @@ var convertMessageToXMsg = async (msg) => {
   } else if (message.type === "interactive") {
     from.userID = message.mobile.substring(2);
     messageIdentifier.replyId = message.replyId;
-    messageState[0] = "REPLIED" /* REPLIED */;
+    messageState[0] = MessageState.REPLIED;
     xmsgPayload.text = getInboundInteractiveContentText(message);
     messageIdentifier.channelMessageId = message.messageId || "";
     return processedXMessage(
@@ -615,7 +537,7 @@ var convertMessageToXMsg = async (msg) => {
   } else if (message.type === "location") {
     from.userID = message.mobile.substring(2);
     messageIdentifier.replyId = message.replyId;
-    messageState[0] = "REPLIED" /* REPLIED */;
+    messageState[0] = MessageState.REPLIED;
     xmsgPayload.location = getInboundLocationParams(message);
     xmsgPayload.text = "";
     messageIdentifier.channelMessageId = message.messageId || "";
@@ -631,7 +553,7 @@ var convertMessageToXMsg = async (msg) => {
   } else if (isInboundMediaMessage(message.type)) {
     from.userID = message.mobile.substring(2);
     messageIdentifier.replyId = message.replyId;
-    messageState[0] = "REPLIED" /* REPLIED */;
+    messageState[0] = MessageState.REPLIED;
     xmsgPayload.text = "";
     xmsgPayload.media = await getInboundMediaMessage(message);
     messageIdentifier.channelMessageId = message.messageId || "";
@@ -785,7 +707,10 @@ var getAdapterByID = async (adapterID) => {
     }
   };
   try {
-    const response = await axios.get(`${gupshupWhatsappAdapterServiceConfig_default.getConfig("baseUrl")}/admin/adapter/${adapterID}`, config);
+    const response = await axios.get(
+      `${gupshupWhatsappAdapterServiceConfig_default.getConfig("baseUrl")}/admin/adapter/${adapterID}`,
+      config
+    );
     if (response.data !== null) {
       const root = response.data;
       if (root != null && root.result != null && root.result.id != null && root.result.id !== "") {
@@ -860,7 +785,7 @@ var convertXMessageToMsg = async (xMsg) => {
     if (credentials && Object.keys(credentials).length !== 0) {
       let text = xMsg.payload.text || "";
       let builder = getURIBuilder();
-      if (xMsg.messageState === "OPTED_IN" /* OPTED_IN */) {
+      if (xMsg.messageState === MessageState.OPTED_IN) {
         text += renderMessageChoices(xMsg.payload.buttonChoices || []);
         builder = setBuilderCredentialsAndMethod(
           builder,
@@ -871,7 +796,7 @@ var convertXMessageToMsg = async (xMsg) => {
         builder.set("channel", xMsg.channelURI.toLowerCase());
         builder.set("send_to", "91" + xMsg.to.userID);
         builder.set("phone_number", "91" + xMsg.to.userID);
-      } else if (xMsg.messageType !== null && xMsg.messageType === "HSM" /* HSM */) {
+      } else if (xMsg.messageType !== null && xMsg.messageType === MessageType.HSM) {
         optInUser(
           xMsg,
           credentials["usernameHSM"],
@@ -889,8 +814,8 @@ var convertXMessageToMsg = async (xMsg) => {
         builder.set("send_to", "91" + xMsg.to.userID);
         builder.set("msg", text);
         builder.set("isHSM", "true");
-        builder.set("msg_type", "HSM" /* HSM */);
-      } else if (xMsg.messageType !== null && xMsg.messageType === "HSM_WITH_BUTTON" /* HSM_WITH_BUTTON */) {
+        builder.set("msg_type", MessageType.HSM);
+      } else if (xMsg.messageType !== null && xMsg.messageType === MessageType.HSM_WITH_BUTTON) {
         optInUser(
           xMsg,
           credentials["usernameHSM"],
@@ -908,8 +833,8 @@ var convertXMessageToMsg = async (xMsg) => {
         builder.set("send_to", "91" + xMsg.to.userID);
         builder.set("msg", text);
         builder.set("isTemplate", "true");
-        builder.set("msg_type", "HSM" /* HSM */);
-      } else if (xMsg.messageState === "REPLIED" /* REPLIED */) {
+        builder.set("msg_type", MessageType.HSM);
+      } else if (xMsg.messageState === MessageState.REPLIED) {
         let plainText = true;
         const stylingTag = xMsg.payload.stylingTag !== null ? xMsg.payload.stylingTag : void 0;
         builder = setBuilderCredentialsAndMethod(
@@ -924,7 +849,7 @@ var convertXMessageToMsg = async (xMsg) => {
         builder.set("channel", "WHATSAPP");
         builder.set("msg_id", xMsg.messageId.channelMessageId);
         if (stylingTag !== void 0 && FileUtil.isStylingTagIntercativeType(stylingTag) && FileUtil.validateInteractiveStylingTag(xMsg.payload)) {
-          if (stylingTag === "LIST" /* LIST */) {
+          if (stylingTag === StylingTag2.LIST) {
             const content = getOutboundListActionContent(xMsg);
             console.log("list content: ", content);
             if (content.length > 0) {
@@ -933,7 +858,7 @@ var convertXMessageToMsg = async (xMsg) => {
               builder.set("msg", text);
               plainText = false;
             }
-          } else if (stylingTag === "QUICKREPLYBTN" /* QUICKREPLYBTN */) {
+          } else if (stylingTag === StylingTag2.QUICKREPLYBTN) {
             const content = getOutboundQRBtnActionContent(xMsg);
             console.log("QR btn content: ", content);
             if (content.length > 0) {
@@ -962,7 +887,9 @@ var convertXMessageToMsg = async (xMsg) => {
         }
       }
       console.log(text);
-      const expanded = new URL(`${gupshupWhatsappAdapterServiceConfig_default.getConfig("gupshupUrl")}?${builder}`);
+      const expanded = new URL(
+        `${gupshupWhatsappAdapterServiceConfig_default.getConfig("gupshupUrl")}?${builder}`
+      );
       console.log(expanded);
       try {
         const response = await GSWhatsappService.getInstance().sendOutboundMessage(
@@ -970,14 +897,14 @@ var convertXMessageToMsg = async (xMsg) => {
         );
         if (response !== null && response.response.status === "success") {
           xMsg.messageId = MessageId.builder().setChannelMessageId(response.response.id).build();
-          xMsg.messageState = "SENT" /* SENT */;
+          xMsg.messageState = MessageState.SENT;
           return xMsg;
         } else {
           console.error(
             "Gupshup Whatsapp Message not sent: ",
             response.response.details
           );
-          xMsg.messageState = "NOT_SENT" /* NOT_SENT */;
+          xMsg.messageState = MessageState.NOT_SENT;
           return xMsg;
         }
       } catch (error) {
@@ -985,7 +912,7 @@ var convertXMessageToMsg = async (xMsg) => {
       }
     } else {
       console.error("Credentials not found");
-      xMsg.messageState = "NOT_SENT" /* NOT_SENT */;
+      xMsg.messageState = MessageState.NOT_SENT;
       return xMsg;
     }
   } catch (error) {
@@ -994,25 +921,9 @@ var convertXMessageToMsg = async (xMsg) => {
   }
 };
 export {
-  Address,
-  ButtonChoice,
-  ContactCard,
-  ConversationStage,
-  DeviceType,
-  LocationParams,
-  MediaCategory,
   MediaSizeLimit,
-  MessageId,
-  MessageIdBuilder,
-  MessageMedia,
-  MessageMediaError,
   MethodType,
   Provider,
-  SenderReceiverInfo,
-  State,
-  StylingTag,
-  Transformer,
-  XMessageThread,
   convertMessageToXMsg,
   convertXMessageToMsg,
   gupshupWhatsappAdapterServiceConfig_default as gupshupWhatsappAdapterServiceConfig

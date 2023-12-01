@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import {StylingTag, XMessagePayload} from './types';
+import {StylingTag, XMessagePayload} from '@samagra-x/xmessage';
 
 export class FileUtil {
   static isFileTypeImage(mimeType: string): boolean {
@@ -72,7 +72,7 @@ export class FileUtil {
     }
 
     // Example: Save the file to a local directory
-    const directoryPath = 'your/local/directory/path'; // Adjust the path accordingly
+    const directoryPath = '/'; // Adjust the path accordingly
     const fileName = FileUtil.getUploadedFileName(mimeType, name);
     const filePath = path.join(directoryPath, fileName);
 

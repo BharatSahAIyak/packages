@@ -54,7 +54,7 @@ export async function uploadFileFromPath(filePath: string, name: string): Promis
     loadDefaultObjects();
 
     const minioClient = new Minio.Client({
-      endPoint: 'play.min.io',
+      endPoint: minioUrl,
       port: 9000,
       useSSL: true,
       accessKey: 'Q3AM3UQ867SPQQA43P2F',
