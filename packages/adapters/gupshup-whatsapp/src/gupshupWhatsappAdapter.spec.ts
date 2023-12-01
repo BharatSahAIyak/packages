@@ -1,6 +1,6 @@
 import { GSWhatsAppMessage } from './types';
 import { convertMessageToXMsg, convertXMessageToMsg } from './GupShupWhatsappAdapter';
-import { MessageState, MessageType, XMessage } from './xMessage';
+import { MessageState, MessageType, XMessage } from '@samagra-x/xmessage';
 import gupshupWhatsappAdapterServiceConfig from './gupshupWhatsappAdapterServiceConfig';
 
 const mockGSWhatsappReport = {
