@@ -245,7 +245,6 @@ var getInboundInteractiveContentText = (message) => {
   if (interactiveContent && interactiveContent.length > 0) {
     try {
       const node = JSON.parse(interactiveContent);
-      console.log("interactive content node:", node);
       const type = node.type !== void 0 ? node.type : "";
       if (type.toLowerCase() === "list_reply") {
         text = node.list_reply !== void 0 && node.list_reply.title !== void 0 ? node.list_reply.title : "";
@@ -256,7 +255,6 @@ var getInboundInteractiveContentText = (message) => {
       console.error("Exception in getInboundInteractiveContentText:", error);
     }
   }
-  console.log("Inbound interactive text:", text);
   return text;
 };
 var getMediaCategoryByMimeType = (mimeType) => {
@@ -292,7 +290,6 @@ var getMediaInfo = async (message) => {
   if (mediaContent && mediaContent.length > 0) {
     try {
       const node = JSON.parse(mediaContent);
-      console.log("media content node:", node);
       const url = node.url || "";
       const signature = node.signature || "";
       mime_type = node.mime_type || "";
@@ -382,7 +379,6 @@ var getInboundMediaMessage = async (message) => {
       mediaInfo.mediaUrl,
       mediaInfo.mime_type
     );
-    console.log("media data:", mediaData);
     const media = {
       text: mediaData.name,
       url: mediaData.url,
@@ -410,7 +406,6 @@ var getInboundLocationParams = (message) => {
   if (locationContent && locationContent.length > 0) {
     try {
       const node = JSON.parse(locationContent);
-      console.log("locationcontent node:", node);
       longitude = node.longitude !== void 0 ? parseFloat(node.longitude) : null;
       latitude = node.latitude !== void 0 ? parseFloat(node.latitude) : null;
       address = node.address !== void 0 ? node.address : "";
@@ -586,10 +581,8 @@ async function optInUser(xMsg, usernameHSM, passwordHSM, username2Way, password2
   optInBuilder.searchParams.append("send_to", phoneNumber);
   optInBuilder.searchParams.append("messageId", "123456789");
   const expanded = optInBuilder;
-  console.log(expanded);
   try {
     const response = await axios.get(expanded.toString());
-    console.log(response.data);
   } catch (error) {
     console.error("Error:", error.response?.data || error.message || error);
   }
@@ -690,10 +683,6 @@ function setBuilderCredentialsAndMethod(queryParams, method, username, password)
   return queryParams;
 }
 var getAdapterByID = async (adapterID) => {
-  const cacheKey = `adapter-by-id: ${adapterID}`;
-  console.log(
-    `BotService:getAdapterByID::Calling get adapter by id from uci api: ${adapterID}`
-  );
   const config = {
     headers: {
       "admin-token": gupshupWhatsappAdapterServiceConfig_default.getConfig("adminToken")
@@ -721,7 +710,6 @@ var getAdapterByID = async (adapterID) => {
 var getAdapterCredentials = async (adapterID) => {
   const cacheKey = `adapter-credentials: ${adapterID}`;
   const adapter = await getAdapterByID(adapterID);
-  console.log(`getAdapterByID: ${JSON.stringify(adapter)}`);
   if (adapter !== null) {
     let vaultKey;
     try {
@@ -751,9 +739,6 @@ var getVaultCredentials = async (secretKey) => {
       "admin-token": adminToken
     }
   });
-  console.log(
-    `BotService:getVaultCredentials::Calling get vault credentials from uci api: ${secretKey}`
-  );
   const response = await webClient.get(`/admin/secret/${secretKey}`);
   if (response.data !== null) {
     try {
@@ -774,7 +759,6 @@ var convertXMessageToMsg = async (xMsg) => {
   const adapterIdFromXML = xMsg.adapterId;
   try {
     const credentials = await getAdapterCredentials(adapterIdFromXML);
-    console.log(credentials);
     if (credentials && Object.keys(credentials).length !== 0) {
       let text = xMsg.payload.text || "";
       let builder = getURIBuilder();
@@ -844,7 +828,6 @@ var convertXMessageToMsg = async (xMsg) => {
         if (stylingTag !== void 0 && FileUtil.isStylingTagIntercativeType(stylingTag) && FileUtil.validateInteractiveStylingTag(xMsg.payload)) {
           if (stylingTag === StylingTag2.LIST) {
             const content = getOutboundListActionContent(xMsg);
-            console.log("list content: ", content);
             if (content.length > 0) {
               builder.set("interactive_type", "list");
               builder.set("action", content);
@@ -853,7 +836,6 @@ var convertXMessageToMsg = async (xMsg) => {
             }
           } else if (stylingTag === StylingTag2.QUICKREPLYBTN) {
             const content = getOutboundQRBtnActionContent(xMsg);
-            console.log("QR btn content: ", content);
             if (content.length > 0) {
               builder.set("interactive_type", "dr_button");
               builder.set("action", content);
@@ -883,7 +865,6 @@ var convertXMessageToMsg = async (xMsg) => {
       const expanded = new URL(
         `${gupshupWhatsappAdapterServiceConfig_default.getConfig("gupshupUrl")}?${builder}`
       );
-      console.log(expanded);
       try {
         const response = await GSWhatsappService.getInstance().sendOutboundMessage(
           expanded.toString()
