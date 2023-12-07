@@ -43,11 +43,7 @@ const mockXMessage: XMessage = {
 
 describe('gupshup whatsapp adapter', () => {
   gupshupWhatsappAdapterServiceConfig.setConfig({
-    baseUrl: '',
-    adminToken: '',
-    vaultServiceToken: '',
-    vaultServiceUrl: '',
-    gupshupUrl: 'https://media.smsgupshup.com/GatewayAPI/rest'
+    credentials: ''
   })
   it("convert messages", async () => {
     const message = await convertXMessageToMsg(mockXMessage);

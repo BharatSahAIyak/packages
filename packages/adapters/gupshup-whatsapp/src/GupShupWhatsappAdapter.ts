@@ -681,139 +681,139 @@ function setBuilderCredentialsAndMethod(
   return queryParams;
 }
 
-export const getAdapterByID = async (
-  adapterID: string
-): Promise<JsonNode | null> => {
-  // console.log(
-  //   `BotService:getAdapterByID::Calling get adapter by id from uci api: ${adapterID}`
-  // );
+// export const getAdapterByID = async (
+//   adapterID: string
+// ): Promise<JsonNode | null> => {
+//   // console.log(
+//   //   `BotService:getAdapterByID::Calling get adapter by id from uci api: ${adapterID}`
+//   // );
 
-  // if (cache.has(cacheKey)) {
-  //   console.log(`getAdapterByID from cache: ${cache.get(cacheKey)}`);
-  //   return cache.get(cacheKey);
-  // } else {
-  //   console.log(`getAdapterByID from webclient: ${cache.get(cacheKey)}`);
-  const config = {
-    headers: {
-      'admin-token': configService.getConfig('adminToken'),
-    },
-  };
-  try {
-    const response = await axios.get(
-      `${configService.getConfig('baseUrl')}/admin/adapter/${adapterID}`,
-      config
-    );
-    // console.log(
-    //   `BotService:getAdapterByID::Got Data From UCI Api : cache key : ${cacheKey} cache data : ${cache.get(
-    //     cacheKey
-    //   )}`
-    // );
+//   // if (cache.has(cacheKey)) {
+//   //   console.log(`getAdapterByID from cache: ${cache.get(cacheKey)}`);
+//   //   return cache.get(cacheKey);
+//   // } else {
+//   //   console.log(`getAdapterByID from webclient: ${cache.get(cacheKey)}`);
+//   const config = {
+//     headers: {
+//       'admin-token': configService.getConfig('adminToken'),
+//     },
+//   };
+//   try {
+//     const response = await axios.get(
+//       `${configService.getConfig('baseUrl')}/admin/adapter/${adapterID}`,
+//       config
+//     );
+//     // console.log(
+//     //   `BotService:getAdapterByID::Got Data From UCI Api : cache key : ${cacheKey} cache data : ${cache.get(
+//     //     cacheKey
+//     //   )}`
+//     // );
 
-    if (response.data !== null) {
-      const root = response.data;
+//     if (response.data !== null) {
+//       const root = response.data;
 
-      if (
-        root != null &&
-        root.result != null &&
-        root.result.id != null &&
-        root.result.id !== ''
-      ) {
-        return root.result;
-      }
+//       if (
+//         root != null &&
+//         root.result != null &&
+//         root.result.id != null &&
+//         root.result.id !== ''
+//       ) {
+//         return root.result;
+//       }
 
-      return null;
-    } else {
-      return null;
-    }
-  } catch (error: any) {
-    console.error(`BotService:getAdapterByID::Exception: ${error}`);
-    return null;
-  }
-  // }
-};
+//       return null;
+//     } else {
+//       return null;
+//     }
+//   } catch (error: any) {
+//     console.error(`BotService:getAdapterByID::Exception: ${error}`);
+//     return null;
+//   }
+//   // }
+// };
 
-export const getAdapterCredentials = async (
-  adapterID: string
-): Promise<JsonNode | null> => {
-  const cacheKey = `adapter-credentials: ${adapterID}`;
-  const adapter = await getAdapterByID(adapterID);
-  // console.log(`getAdapterByID: ${JSON.stringify(adapter)}`);
+// export const getAdapterCredentials = async (
+//   adapterID: string
+// ): Promise<JsonNode | null> => {
+//   const cacheKey = `adapter-credentials: ${adapterID}`;
+//   const adapter = await getAdapterByID(adapterID);
+//   // console.log(`getAdapterByID: ${JSON.stringify(adapter)}`);
 
-  if (adapter !== null) {
-    let vaultKey: string | null;
-    try {
-      vaultKey = adapter.config.credentials.variable;
-    } catch (ex: any) {
-      console.error(
-        `Exception in fetching adapter variable from json node: ${ex}`
-      );
-      vaultKey = null;
-    }
+//   if (adapter !== null) {
+//     let vaultKey: string | null;
+//     try {
+//       vaultKey = adapter.config.credentials.variable;
+//     } catch (ex: any) {
+//       console.error(
+//         `Exception in fetching adapter variable from json node: ${ex}`
+//       );
+//       vaultKey = null;
+//     }
 
-    if (vaultKey !== null && vaultKey !== '') {
-      return await getVaultCredentials(vaultKey);
-    }
-  }
+//     if (vaultKey !== null && vaultKey !== '') {
+//       return await getVaultCredentials(vaultKey);
+//     }
+//   }
 
-  return null;
-};
+//   return null;
+// };
 
-type JsonNode = Record<string, any>;
+// type JsonNode = Record<string, any>;
 
-export const getVaultCredentials = async (
-  secretKey: string
-): Promise<JsonNode | null> => {
-  const adminToken = configService.getConfig('vaultServiceToken');
+// export const getVaultCredentials = async (
+//   secretKey: string
+// ): Promise<JsonNode | null> => {
+//   const adminToken = configService.getConfig('vaultServiceToken');
 
-  if (adminToken === null || adminToken === undefined || adminToken === '') {
-    return null;
-  }
+//   if (adminToken === null || adminToken === undefined || adminToken === '') {
+//     return null;
+//   }
 
-  const webClient = axios.create({
-    baseURL: configService.getConfig('vaultServiceUrl'),
-    headers: {
-      ownerId: '8f7ee860-0163-4229-9d2a-01cef53145ba',
-      ownerOrgId: 'org1',
-      'admin-token': adminToken,
-    },
-  });
+//   const webClient = axios.create({
+//     baseURL: configService.getConfig('vaultServiceUrl'),
+//     headers: {
+//       ownerId: '8f7ee860-0163-4229-9d2a-01cef53145ba',
+//       ownerOrgId: 'org1',
+//       'admin-token': adminToken,
+//     },
+//   });
 
-  // const cacheKey = `adapter-credentials-by-id: ${secretKey}`;
+//   // const cacheKey = `adapter-credentials-by-id: ${secretKey}`;
 
-  // console.log(
-  //   `BotService:getVaultCredentials::Calling get vault credentials from uci api: ${secretKey}`
-  // );
+//   // console.log(
+//   //   `BotService:getVaultCredentials::Calling get vault credentials from uci api: ${secretKey}`
+//   // );
 
-  // if (cache.has(cacheKey)) {
-  //   console.log(`getVaultCredentials from cache : ${cache.get(cacheKey)}`);
-  //   return cache.get(cacheKey);
-  // } else {
-  //   console.log(`getVaultCredentials from axios : ${cache.get(cacheKey)}`);
+//   // if (cache.has(cacheKey)) {
+//   //   console.log(`getVaultCredentials from cache : ${cache.get(cacheKey)}`);
+//   //   return cache.get(cacheKey);
+//   // } else {
+//   //   console.log(`getVaultCredentials from axios : ${cache.get(cacheKey)}`);
 
-  const response = await webClient.get(`/admin/secret/${secretKey}`);
+//   const response = await webClient.get(`/admin/secret/${secretKey}`);
 
-  // console.log(
-  //   `BotService:getVaultCredentials::Got Data From UCI Api : cache key : ${cacheKey} cache data : ${cache.get(
-  //     cacheKey
-  //   )}`
-  // );
-  if (response.data !== null) {
-    try {
-      const credentials: Record<string, string> = {};
-      const root = response.data;
-      if (root.result !== null && root.result !== null) {
-        return root.result[secretKey];
-      }
-      return null;
-    } catch (e: any) {
-      console.error(`BotService:getVaultCredentials::Exception: ${e}`);
-      return null;
-    }
-  }
+//   // console.log(
+//   //   `BotService:getVaultCredentials::Got Data From UCI Api : cache key : ${cacheKey} cache data : ${cache.get(
+//   //     cacheKey
+//   //   )}`
+//   // );
+//   if (response.data !== null) {
+//     try {
+//       const credentials: Record<string, string> = {};
+//       const root = response.data;
+//       if (root.result !== null && root.result !== null) {
+//         return root.result[secretKey];
+//       }
+//       return null;
+//     } catch (e: any) {
+//       console.error(`BotService:getVaultCredentials::Exception: ${e}`);
+//       return null;
+//     }
+//   }
 
-  return null;
-  // }
-};
+//   return null;
+//   // }
+// };
 
 // Convert XMessage to GupShupWhatsAppMessage
 export const convertXMessageToMsg = async (xMsg: XMessage) => {
@@ -822,7 +822,7 @@ export const convertXMessageToMsg = async (xMsg: XMessage) => {
   // const adapterId: string = '44a9df72-3d7a-4ece-94c5-98cf26307324';
 
   try {
-    const credentials = await getAdapterCredentials(adapterIdFromXML);
+    const credentials = configService.getConfig('adapterCredentials');
     // console.log(credentials);
     if (credentials && Object.keys(credentials).length !== 0) {
       let text: string = xMsg.payload.text || '';
@@ -962,7 +962,7 @@ export const convertXMessageToMsg = async (xMsg: XMessage) => {
 
       console.log(text);
       const expanded = new URL(
-        `${configService.getConfig('gupshupUrl')}?${builder}`
+        `https://media.smsgupshup.com/GatewayAPI/rest?${builder}`
       );
       // console.log(expanded);
 

@@ -682,83 +682,10 @@ function setBuilderCredentialsAndMethod(queryParams, method, username, password)
   queryParams.append("password", password);
   return queryParams;
 }
-var getAdapterByID = async (adapterID) => {
-  const config = {
-    headers: {
-      "admin-token": gupshupWhatsappAdapterServiceConfig_default.getConfig("adminToken")
-    }
-  };
-  try {
-    const response = await axios.get(
-      `${gupshupWhatsappAdapterServiceConfig_default.getConfig("baseUrl")}/admin/adapter/${adapterID}`,
-      config
-    );
-    if (response.data !== null) {
-      const root = response.data;
-      if (root != null && root.result != null && root.result.id != null && root.result.id !== "") {
-        return root.result;
-      }
-      return null;
-    } else {
-      return null;
-    }
-  } catch (error) {
-    console.error(`BotService:getAdapterByID::Exception: ${error}`);
-    return null;
-  }
-};
-var getAdapterCredentials = async (adapterID) => {
-  const cacheKey = `adapter-credentials: ${adapterID}`;
-  const adapter = await getAdapterByID(adapterID);
-  if (adapter !== null) {
-    let vaultKey;
-    try {
-      vaultKey = adapter.config.credentials.variable;
-    } catch (ex) {
-      console.error(
-        `Exception in fetching adapter variable from json node: ${ex}`
-      );
-      vaultKey = null;
-    }
-    if (vaultKey !== null && vaultKey !== "") {
-      return await getVaultCredentials(vaultKey);
-    }
-  }
-  return null;
-};
-var getVaultCredentials = async (secretKey) => {
-  const adminToken = gupshupWhatsappAdapterServiceConfig_default.getConfig("vaultServiceToken");
-  if (adminToken === null || adminToken === void 0 || adminToken === "") {
-    return null;
-  }
-  const webClient = axios.create({
-    baseURL: gupshupWhatsappAdapterServiceConfig_default.getConfig("vaultServiceUrl"),
-    headers: {
-      ownerId: "8f7ee860-0163-4229-9d2a-01cef53145ba",
-      ownerOrgId: "org1",
-      "admin-token": adminToken
-    }
-  });
-  const response = await webClient.get(`/admin/secret/${secretKey}`);
-  if (response.data !== null) {
-    try {
-      const credentials = {};
-      const root = response.data;
-      if (root.result !== null && root.result !== null) {
-        return root.result[secretKey];
-      }
-      return null;
-    } catch (e) {
-      console.error(`BotService:getVaultCredentials::Exception: ${e}`);
-      return null;
-    }
-  }
-  return null;
-};
 var convertXMessageToMsg = async (xMsg) => {
   const adapterIdFromXML = xMsg.adapterId;
   try {
-    const credentials = await getAdapterCredentials(adapterIdFromXML);
+    const credentials = gupshupWhatsappAdapterServiceConfig_default.getConfig("adapterCredentials");
     if (credentials && Object.keys(credentials).length !== 0) {
       let text = xMsg.payload.text || "";
       let builder = getURIBuilder();
@@ -863,7 +790,7 @@ var convertXMessageToMsg = async (xMsg) => {
       }
       console.log(text);
       const expanded = new URL(
-        `${gupshupWhatsappAdapterServiceConfig_default.getConfig("gupshupUrl")}?${builder}`
+        `https://media.smsgupshup.com/GatewayAPI/rest?${builder}`
       );
       try {
         const response = await GSWhatsappService.getInstance().sendOutboundMessage(
