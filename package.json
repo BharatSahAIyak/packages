@@ -11,7 +11,14 @@
     "eslint": "^8.48.0",
     "prettier": "^3.0.3",
     "tsconfig": "*",
-    "turbo": "latest"
+    "turbo": "latest",
+    "@types/jest": "latest",
+    "jest": "^29.7.0",
+    "ts-jest": "29.1.1",
+    "ts-node": "latest",
+    "ts-node-dev": "latest",
+    "typescript": "^4.3.5",
+    "jest-environment-jsdom": "^29.7.0"
   },
   "name": "adapter-js",
   "packageManager": "npm@9.6.7",

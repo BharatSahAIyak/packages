@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+          "name": "Jest file",
+          "type": "node",
+          "request": "launch",
+          "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/jest",
+          "args": [
+              "${fileBasenameNoExtension}",
+              "--runInBand",
+              "--watch",
+              "--coverage=false",
+              "--no-cache"
+          ],
+          "cwd": "${workspaceRoot}/packages/adapters/gupshup-whatsapp/src",
+          "console": "integratedTerminal",
+          "internalConsoleOptions": "neverOpen",
+          "sourceMaps": true,
+          "windows": {
+              "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+          }
+      },
+    ]
+  }

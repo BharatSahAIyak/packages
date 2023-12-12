@@ -16,7 +16,7 @@ const mockGSWhatsappReport = {
 };
 
 const mockGSWhatsAppMessage: GSWhatsAppMessage = { 
-  mobile: "917011854675", 
+  mobile: "9305097128", 
   type: "text",
   // location: '{"longitude":123.456,"latitude":78.91}',
   text: "Hello", 
