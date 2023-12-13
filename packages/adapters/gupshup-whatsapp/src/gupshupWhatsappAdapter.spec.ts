@@ -1,7 +1,8 @@
-import { GSWhatsAppMessage } from './types';
-import { convertMessageToXMsg, convertXMessageToMsg } from './GupShupWhatsappAdapter';
-import { MessageState, MessageType, XMessage } from '@samagra-x/xmessage';
+import { convertXMessageToMsg } from './GupShupWhatsappAdapter';
+import { MediaCategory, MessageState, MessageType, StylingTag, XMessage } from '@samagra-x/xmessage';
 import gupshupWhatsappAdapterServiceConfig from './gupshupWhatsappAdapterServiceConfig';
+import axios from 'axios';
+import MockAdapter from 'axios-mock-adapter';
 
 const mockGSWhatsappReport = {
   externalId: 'report-123',
@@ -15,40 +16,161 @@ const mockGSWhatsappReport = {
   extra: 'Some extra information for the report',
 };
 
-const mockGSWhatsAppMessage: GSWhatsAppMessage = { 
-  mobile: "9305097128", 
-  type: "text",
-  // location: '{"longitude":123.456,"latitude":78.91}',
-  text: "Hello", 
-  timestamp: "1700828617000", 
-  waNumber: "919311415687", 
-  name: "Kanav Dwevedi" 
+const baseMockXMessage: XMessage = {
+  messageType: MessageType.TEXT,
+  messageId: {
+    Id: "4305161194925220864-131632492725500592",
+    channelMessageId: "4305161194925220864-131632492725500592",
+  },
+  to: {
+    userID: "9999999999",
+  },
+  from: {
+    userID: "admin",
+    bot: true,
+    meta: new Map(Object.entries({
+      botMobileNumber: "919999999999",
+    })),
+  },
+  channelURI: "",
+  providerURI: "",
+  timestamp: 4825,
+  messageState: MessageState.REPLIED,
+  payload: {
+    text: "Testing bot",
+  },
 };
 
-const mockXMessage: XMessage = {
-  adapterId: '44a9df72-3d7a-4ece-94c5-98cf26307324',
-  to: { userID: '7011854675' },
-  from: { userID: 'admin' },
-  channelURI: 'WhatsApp',
-  providerURI: 'gupshup',
-  messageState: MessageState.OPTED_IN,
-  messageId: {
-    channelMessageId: '4464978828693922816-105308573296985680',
-    replyId: ''
-  },
-  messageType: MessageType.HSM,
-  timestamp: 1700828617000,
-  payload: { text: 'Hello' }
-}
-
 describe('gupshup whatsapp adapter', () => {
-  gupshupWhatsappAdapterServiceConfig.setConfig({
-    credentials: ''
+
+  let mock: MockAdapter;
+
+  beforeAll(() => {
+    mock = new MockAdapter(axios);
   })
-  it("convert messages", async () => {
-    const message = await convertXMessageToMsg(mockXMessage);
-    console.log("converted Message:", message);
-    // const xmessage = await convertMessageToXMsg(mockGSWhatsAppMessage);
-    // console.log("converted XMessage:", xmessage);
+
+  beforeEach(() => {
+    const mockCredentials = {
+      password2Way: "pass2Way",
+      passwordHSM: "passHSM",
+      username2Way: "9999999999",
+      usernamedHSM: "9999999999",
+    };
+    gupshupWhatsappAdapterServiceConfig.setConfig({
+      adapterCredentials: mockCredentials
+    });
   })
+
+  afterEach(() => {
+    mock.reset();
+  })
+
+  it("Send Simple Text Whatsapp message", async () => {
+    const mockSimpleMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
+    mockSimpleMessage.payload.text = 'Simple Message';
+    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=TEXT&channel=WHATSAPP&msg_id=4305161194925220864-131632492725500592&msg=Simple+Message'
+    const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
+    let actualParametersPassed: string | undefined = '';
+    mock.onGet(urlRegex).reply(config => {
+      actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
+      return [200, { response: { status: 'success' } }];
+    });
+    await convertXMessageToMsg(mockSimpleMessage);
+    expect(actualParametersPassed).toBe(expectedParameters);
+  })
+
+  it("Send List Options Whatsapp message", async () => {
+    const mockListXMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
+    mockListXMessage.payload.stylingTag = StylingTag.LIST;
+    mockListXMessage.payload.buttonChoices = [
+      {key: 'option1', text: 'Option 1', backmenu: false},
+      {key: 'option2', text: 'Option 2', backmenu: false},
+      {key: 'option3', text: 'Option 3', backmenu: false}
+    ];
+    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=TEXT&channel=WHATSAPP&msg_id=4305161194925220864-131632492725500592&interactive_type=list&action=%7B%22button%22%3A%22Options%22%2C%22sections%22%3A%5B%7B%22title%22%3A%22Choose+an+option%22%2C%22rows%22%3A%5B%7B%22id%22%3A%22option1%22%2C%22title%22%3A%22Option+1%22%7D%2C%7B%22id%22%3A%22option2%22%2C%22title%22%3A%22Option+2%22%7D%2C%7B%22id%22%3A%22option3%22%2C%22title%22%3A%22Option+3%22%7D%5D%7D%5D%7D&msg=Testing+bot'
+    const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
+    let actualParametersPassed: string | undefined = '';
+    mock.onGet(urlRegex).reply(config => {
+      actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
+      return [200, { response: { status: 'success' } }];
+    });
+    await convertXMessageToMsg(mockListXMessage);
+    expect(actualParametersPassed).toBe(expectedParameters);
+  })
+
+  it("Send Quick Button Options Whatsapp message", async () => {
+    const mockListXMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
+    mockListXMessage.payload.stylingTag = StylingTag.QUICKREPLYBTN;
+    mockListXMessage.payload.buttonChoices = [
+      {key: 'option1', text: 'Option 1', backmenu: false},
+      {key: 'option2', text: 'Option 2', backmenu: false},
+      {key: 'option3', text: 'Option 3', backmenu: false}
+    ];
+    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=TEXT&channel=WHATSAPP&msg_id=4305161194925220864-131632492725500592&interactive_type=dr_button&action=%7B%22buttons%22%3A%5B%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option1%22%2C%22title%22%3A%22Option+1%22%7D%7D%2C%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option2%22%2C%22title%22%3A%22Option+2%22%7D%7D%2C%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option3%22%2C%22title%22%3A%22Option+3%22%7D%7D%5D%7D&msg=Testing+bot'
+    const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
+    let actualParametersPassed: string | undefined = '';
+    mock.onGet(urlRegex).reply(config => {
+      actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
+      return [200, { response: { status: 'success' } }];
+    });
+    await convertXMessageToMsg(mockListXMessage);
+    expect(actualParametersPassed).toBe(expectedParameters);
+  })
+
+  it("Send Image Whatsapp message", async () => {
+    const mockListXMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
+    mockListXMessage.payload.media = {
+      category: MediaCategory.IMAGE,
+      url: 'http://fakeurl.jpg',
+      text: 'This is a caption'
+    }
+    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMediaMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=IMAGE&channel=WHATSAPP&msg_id=4305161194925220864-131632492725500592&media_url=http%3A%2F%2Ffakeurl.jpg&caption=This+is+a+caption&isHSM=false'
+    const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
+    let actualParametersPassed: string | undefined = '';
+    mock.onGet(urlRegex).reply(config => {
+      actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
+      return [200, { response: { status: 'success' } }];
+    });
+    await convertXMessageToMsg(mockListXMessage);
+    expect(actualParametersPassed).toBe(expectedParameters);
+  })
+
+  it("Send Document Whatsapp message", async () => {
+    const mockListXMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
+    mockListXMessage.payload.media = {
+      category: MediaCategory.FILE,
+      url: 'http://fakeurl.pdf',
+      text: 'This is a caption'
+    }
+    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMediaMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=DOCUMENT&channel=WHATSAPP&msg_id=4305161194925220864-131632492725500592&media_url=http%3A%2F%2Ffakeurl.pdf&caption=This+is+a+caption&isHSM=false'
+    const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
+    let actualParametersPassed: string | undefined = '';
+    mock.onGet(urlRegex).reply(config => {
+      actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
+      return [200, { response: { status: 'success' } }];
+    });
+    await convertXMessageToMsg(mockListXMessage);
+    expect(actualParametersPassed).toBe(expectedParameters);
+  })
+
+  // TODO: Not Working, fix this when HSM template is working.
+  // it("Send HSM Whatsapp message", async () => {
+  //   const mockListXMessage: XMessage = JSON.parse(JSON.stringify(originalMockXMessage));
+  //   // mockListXMessage.payload.media = {
+  //   //   category: MediaCategory.VIDEO,
+  //   //   url: '3sFftGeO3jT3HOoAvkbfO8Gkt_rQl3DrjwCO7jQF_0WwWCUC6PPpDo9JHBkObP7xBw7eIEcIF797AtW1jkM',
+  //   //   text: 'caption'
+  //   // }
+  //   mockListXMessage.messageType = MessageType.HSM;
+  //   const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=TEXT&channel=WHATSAPP&msg_id=4305161194925220864-131632492725500592&interactive_type=dr_button&action=%7B%22buttons%22%3A%5B%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option1%22%2C%22title%22%3A%22Option+1%22%7D%7D%2C%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option2%22%2C%22title%22%3A%22Option+2%22%7D%7D%2C%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option3%22%2C%22title%22%3A%22Option+3%22%7D%7D%5D%7D&msg=Testing+bot'
+  //   const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
+  //   let actualParametersPassed: string | undefined = '';
+  //   // mock.onGet(urlRegex).reply(config => {
+  //   //   actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
+  //   //   return [200, { response: { status: 'success' } }];
+  //   // });
+  //   await convertXMessageToMsg(mockListXMessage);
+  //   expect(actualParametersPassed).toBe(expectedParameters);
+  // })
+
 })
