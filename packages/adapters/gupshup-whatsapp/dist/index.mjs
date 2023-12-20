@@ -468,7 +468,7 @@ var convertMessageToXMsg = async (msg) => {
   const to = { userID: "admin" };
   const messageState = [MessageState.REPLIED];
   const messageIdentifier = { channelMessageId: "" };
-  const messageType = message.type.toUpperCase();
+  const messageType = message.type?.toUpperCase() ?? MessageType.REPORT;
   const xmsgPayload = {};
   if (message.response == null && (message.messageId == null || message.messageId === "")) {
     message.messageId = generateNewMessageId();

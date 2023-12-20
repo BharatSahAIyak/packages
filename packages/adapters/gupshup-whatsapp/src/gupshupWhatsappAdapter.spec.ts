@@ -1,4 +1,4 @@
-import { convertXMessageToMsg } from './GupShupWhatsappAdapter';
+import { convertXMessageToMsg, convertMessageToXMsg } from './GupShupWhatsappAdapter';
 import { MediaCategory, MessageState, MessageType, StylingTag, XMessage } from '@samagra-x/xmessage';
 import gupshupWhatsappAdapterServiceConfig from './gupshupWhatsappAdapterServiceConfig';
 import axios from 'axios';
@@ -173,4 +173,28 @@ describe('gupshup whatsapp adapter', () => {
   //   expect(actualParametersPassed).toBe(expectedParameters);
   // })
 
+  it ("Convert whatsapp report to XMessage", async () => {
+    const mockReport = {
+      response: "[{\"srcAddr\":\"TESTSM\",\"extra\":\"Samagra\",\"channel\":\"WHATSAPP\",\"externalId\":\"5057936233376494042-daf67a98-e3a3-4f02-8d0b-02bd41ba3aae\",\"cause\":\"SUCCESS\",\"errorCode\":\"000\",\"destAddr\":\"919999999999\",\"eventType\":\"DELIVERED\",\"eventTs\":\"1702464614000\"}]",
+    }
+    const expectedXMessage = {
+      to: { userID: 'admin' },
+      from: { userID: '9999999999' },
+      channelURI: 'WhatsApp',
+      providerURI: 'gupshup',
+      messageState: 'DELIVERED',
+      messageId: {
+        channelMessageId: '5057936233376494042-daf67a98-e3a3-4f02-8d0b-02bd41ba3aae'
+      },
+      messageType: 'REPORT',
+      timestamp: 0,
+      payload: { text: '' }
+    };
+    const xmsg = await convertMessageToXMsg(mockReport);
+    // Timestamp will be different every time, hence only
+    // check for existence of field.
+    expect("timestamp" in xmsg).toBeTruthy();
+    xmsg.timestamp = 0;
+    expect(xmsg).toStrictEqual(expectedXMessage);
+  });
 })

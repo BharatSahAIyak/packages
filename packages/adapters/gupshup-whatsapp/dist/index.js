@@ -502,7 +502,7 @@ var convertMessageToXMsg = async (msg) => {
   const to = { userID: "admin" };
   const messageState = [import_xmessage2.MessageState.REPLIED];
   const messageIdentifier = { channelMessageId: "" };
-  const messageType = message.type.toUpperCase();
+  const messageType = message.type?.toUpperCase() ?? import_xmessage2.MessageType.REPORT;
   const xmsgPayload = {};
   if (message.response == null && (message.messageId == null || message.messageId === "")) {
     message.messageId = generateNewMessageId();

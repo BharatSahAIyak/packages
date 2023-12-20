@@ -364,7 +364,7 @@ export const convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
 
   const messageState: MessageState[] = [MessageState.REPLIED];
   const messageIdentifier: MessageId = { channelMessageId: '' }; // Replace with actual initialization
-  const messageType: MessageType = message.type.toUpperCase() as MessageType;
+  const messageType: MessageType = message.type?.toUpperCase() as MessageType ?? MessageType.REPORT;
   // @ts-ignore
   const xmsgPayload: XMessagePayload = {}; // Replace with actual initialization
 

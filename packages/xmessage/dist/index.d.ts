@@ -129,7 +129,8 @@ declare enum MessageType {
     VIDEO = "VIDEO",
     AUDIO = "AUDIO",
     DOCUMENT = "DOCUMENT",
-    LOCATION = "LOCATION"
+    LOCATION = "LOCATION",
+    REPORT = "REPORT"
 }
 declare class XMessage {
     app?: string;
