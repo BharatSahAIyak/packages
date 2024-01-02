@@ -340,22 +340,6 @@ const renderMessageChoices = (buttonChoices: ButtonChoice[] | null): string => {
   return '';
 };
 
-function generateNewMessageId(): string {
-  const fMin = BigInt('4000000000000000000'); // 19 characters
-  const fMax = BigInt('4999999999999999999'); // 19 characters
-  const first = BigInt(
-    Math.floor(Number(fMin) + Math.random() * (Number(fMax) - Number(fMin) + 1))
-  );
-
-  const sMin = BigInt('100000000000000000'); // 18 characters
-  const sMax = BigInt('999999999999999999'); // 18 characters
-  const second = BigInt(
-    Math.floor(Number(sMin) + Math.random() * (Number(sMax) - Number(sMin) + 1))
-  );
-
-  return first + '-' + second;
-}
-
 // Convert GupShupWhatsAppMessage to XMessage
 export const convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
   const message = msg as GSWhatsAppMessage;
@@ -367,13 +351,6 @@ export const convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
   const messageType: MessageType = message.type?.toUpperCase() as MessageType ?? MessageType.REPORT;
   // @ts-ignore
   const xmsgPayload: XMessagePayload = {}; // Replace with actual initialization
-
-  if (
-    message.response == null &&
-    (message.messageId == null || message.messageId === '')
-  ) {
-    message.messageId = generateNewMessageId();
-  }
 
   if (message.response != null) {
     const reportResponse = message.response;

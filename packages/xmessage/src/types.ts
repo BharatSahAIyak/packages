@@ -84,6 +84,7 @@ export type XMessagePayload = {
   questionIndex?: number;
   mediaCaption?: string;
   metaData?: string;
+  subject?: string;
 }
 
 export class XMessageThread {

@@ -7,6 +7,12 @@ import {
   XMessageThread,
 } from "./types";
 
+import {
+  IEmailOptions,
+  IChatOptions,
+  ISmsOptions,
+} from '@novu/stateless';
+
 export enum MessageState {
   NOT_SENT = "NOT_SENT",
   FAILED_TO_DELIVER = "FAILED_TO_DELIVER",
@@ -93,5 +99,40 @@ export class XMessage {
 
   public setProvider?(provider: string) {
     this.providerURI = provider;
+  }
+}
+
+// TODO: enable attachments
+export function convertXMessageToIEmailOptions(
+  xmessage: XMessage
+): IEmailOptions {
+  return {
+    to: [ xmessage.to.userID ],
+    html: xmessage.payload.text || '',
+    subject: xmessage.payload.subject || '',
+  }
+}
+
+export function convertXMessageToIChatOptions(
+  xmessage: XMessage
+): IChatOptions {
+  return {
+    content: xmessage.payload.text || '',
+    // XMessage.channel and IChatOptions.channel
+    // represent two different types of data.
+    channel: xmessage.to.userID,
+    // TODO: find a way to integrate changing of
+    // webhook.
+    webhookUrl: '',
+  }
+}
+
+// TODO: enable attachments
+export function convertXMessageToISmsOptions(
+  xmessage: XMessage
+): ISmsOptions {
+  return {
+    content: xmessage.payload.text || '',
+    to: xmessage.to.userID,
   }
 }
