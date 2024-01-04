@@ -1,29 +1,8 @@
 import * as Minio from 'minio';
-// import {FusionAuthClient} from '@fusionauth/typescript-client';
-import configService from './gupshupWhatsappAdapterServiceConfig';
-// let fusionAuth = new FusionAuthClient(configService.getConfig('fusionAuthAppID') || 'bf69486b-4733-4470-a592-f1bfce7af580', configService.getConfig('fusionAuthUrl') || 'https://local.fusionauth.io');
 
-  // const minioLoginId = configService.getConfig('CDN_MINIO_LOGIN_ID') || '';
-  // let minioPassword = configService.getConfig('CDN_MINIO_PASSWORD') || '';
-  // let minioAppId = configService.getConfig('CDN_MINIO_APPLICATION_ID') || '';
-  let minioBucketId = configService.getConfig('CDN_MINIO_BUCKET_ID') || '';
-  let minioUrl = configService.getConfig('CDN_MINIO_URL') || '';
-  // let minioFAKey = configService.getConfig('CDN_MINIO_FA_KEY') || '';
-  // let minioFAUrl = configService.getConfig('CDN_MINIO_FA_URL') || '';
-
-// const loadDefaultObjects = (): void => {
-  // console.log(`Minio details, loginID: ${minioLoginId}, password: ${minioPassword}, appId: ${minioAppId}, bucketId: ${minioBucketId}, faKey: ${minioFAKey}, faUrl: ${minioFAUrl}, url: ${minioUrl}`);
-  
-  // let appID: string | null = null;
-
-  // if (minioAppId !== null) {
-  //   appID = minioAppId;
-  // }
-
-  // if (!fusionAuth) {
-  //   fusionAuth = new FusionAuthClient(minioFAKey, minioFAUrl);
-  // }
-// };
+// TODO: fix this
+let minioBucketId = '';
+let minioUrl = '';
 
 const getFileSignedUrl = (name: string): string => {
   if (minioUrl.length === 0 || minioBucketId.length === 0) {

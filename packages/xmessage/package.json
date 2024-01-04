@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/xmessage",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -14,10 +14,10 @@
   "author": "prtkjakhar",
   "license": "ISC",
   "dependencies": {
-    "tsup": "^8.0.1"
+    "tsup": "^8.0.1",
+    "@novu/stateless": "^0.22.0"
   },
   "devDependencies": {
-    "typescript": "^4.3.5",
-    "@novu/stateless": "^0.22.0"
+    "typescript": "^4.3.5"
   }
 }

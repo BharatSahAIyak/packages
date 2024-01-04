@@ -13,7 +13,7 @@
               "--coverage=false",
               "--no-cache"
           ],
-          "cwd": "${workspaceRoot}/packages/adapters/gupshup-whatsapp/src",
+          "cwd": "${workspaceRoot}/packages/adapters/factory",
           "console": "integratedTerminal",
           "internalConsoleOptions": "neverOpen",
           "sourceMaps": true,
