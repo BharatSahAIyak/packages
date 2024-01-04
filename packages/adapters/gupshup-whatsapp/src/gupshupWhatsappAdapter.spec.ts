@@ -1,6 +1,5 @@
-import { convertXMessageToMsg, convertMessageToXMsg } from './GupShupWhatsappAdapter';
+import { GupshupWhatsappProvider, IGSWhatsappConfig } from './GupShupWhatsappAdapter';
 import { MediaCategory, MessageState, MessageType, StylingTag, XMessage } from '@samagra-x/xmessage';
-import gupshupWhatsappAdapterServiceConfig from './gupshupWhatsappAdapterServiceConfig';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 
@@ -44,21 +43,21 @@ const baseMockXMessage: XMessage = {
 describe('gupshup whatsapp adapter', () => {
 
   let mock: MockAdapter;
+  let adapter: GupshupWhatsappProvider;
 
   beforeAll(() => {
     mock = new MockAdapter(axios);
   })
 
   beforeEach(() => {
-    const mockCredentials = {
+    const mockCredentials: IGSWhatsappConfig  = {
       password2Way: "pass2Way",
       passwordHSM: "passHSM",
       username2Way: "9999999999",
-      usernamedHSM: "9999999999",
+      usernameHSM: "9999999999",
     };
-    gupshupWhatsappAdapterServiceConfig.setConfig({
-      adapterCredentials: mockCredentials
-    });
+
+    adapter = new GupshupWhatsappProvider(mockCredentials);
   })
 
   afterEach(() => {
@@ -75,7 +74,7 @@ describe('gupshup whatsapp adapter', () => {
       actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
       return [200, { response: { status: 'success' } }];
     });
-    await convertXMessageToMsg(mockSimpleMessage);
+    await adapter.sendMessage(mockSimpleMessage);
     expect(actualParametersPassed).toBe(expectedParameters);
   })
 
@@ -94,7 +93,7 @@ describe('gupshup whatsapp adapter', () => {
       actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
       return [200, { response: { status: 'success' } }];
     });
-    await convertXMessageToMsg(mockListXMessage);
+    await adapter.sendMessage(mockListXMessage);
     expect(actualParametersPassed).toBe(expectedParameters);
   })
 
@@ -113,7 +112,7 @@ describe('gupshup whatsapp adapter', () => {
       actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
       return [200, { response: { status: 'success' } }];
     });
-    await convertXMessageToMsg(mockListXMessage);
+    await adapter.sendMessage(mockListXMessage);
     expect(actualParametersPassed).toBe(expectedParameters);
   })
 
@@ -131,7 +130,7 @@ describe('gupshup whatsapp adapter', () => {
       actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
       return [200, { response: { status: 'success' } }];
     });
-    await convertXMessageToMsg(mockListXMessage);
+    await adapter.sendMessage(mockListXMessage);
     expect(actualParametersPassed).toBe(expectedParameters);
   })
 
@@ -149,7 +148,7 @@ describe('gupshup whatsapp adapter', () => {
       actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
       return [200, { response: { status: 'success' } }];
     });
-    await convertXMessageToMsg(mockListXMessage);
+    await adapter.sendMessage(mockListXMessage);
     expect(actualParametersPassed).toBe(expectedParameters);
   })
 
@@ -180,8 +179,8 @@ describe('gupshup whatsapp adapter', () => {
     const expectedXMessage = {
       to: { userID: 'admin' },
       from: { userID: '9999999999' },
-      channelURI: 'WhatsApp',
-      providerURI: 'gupshup',
+      channelURI: 'Whatsapp',
+      providerURI: 'Gupshup',
       messageState: 'DELIVERED',
       messageId: {
         channelMessageId: '5057936233376494042-daf67a98-e3a3-4f02-8d0b-02bd41ba3aae'
@@ -190,7 +189,7 @@ describe('gupshup whatsapp adapter', () => {
       timestamp: 0,
       payload: { text: '' }
     };
-    const xmsg = await convertMessageToXMsg(mockReport);
+    const xmsg = await adapter.convertMessageToXMsg(mockReport);
     // Timestamp will be different every time, hence only
     // check for existence of field.
     expect("timestamp" in xmsg).toBeTruthy();

@@ -18,7 +18,7 @@ import { FileUtil } from './utils';
 import { URLSearchParams } from 'url';
 import { uploadFileFromPath } from './minioClient';
 
-type IGSWhatsappConfig = {
+export type IGSWhatsappConfig = {
   password2Way: string,
   passwordHSM: string,
   username2Way: string,
