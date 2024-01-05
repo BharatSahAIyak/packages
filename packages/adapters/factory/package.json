@@ -1,5 +1,5 @@
 {
-  "name": "@samagra-x/adapter-factory",
+  "name": "@samagra-x/uci-adapters-factory",
   "version": "1.0.0",
   "description": "",
   "main": "./dist/index.js",
