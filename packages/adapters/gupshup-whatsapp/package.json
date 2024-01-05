@@ -1,5 +1,5 @@
 {
-  "name": "@samagra-x/gupshup-whatsapp-adapter",
+  "name": "@samagra-x/uci-adapters-gupshup-whatsapp-adapter",
   "version": "1.0.4",
   "description": "",
   "main": "./dist/index.js",
