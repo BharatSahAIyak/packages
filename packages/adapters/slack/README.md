@@ -1,15 +1,20 @@
-# Novu Slack Provider
+# Nodejs Slack Bot Provider
 
-A Slack chat provider library for [@novu/node](https://github.com/novuhq/novu)
+A slack bot provider library for [@samagra-x/uci-adapters-factory](https://github.com/PraVriShti/packages/tree/main/packages/adapters/slack)
+
+Taken from: [@novu/stateless](https://github.com/novuhq/novu)
 
 ## Usage
 
-````javascript
-import { SlackProvider } from '@novu/slack';
+```javascript
+import { AdapterFactory } from '@samagra-x/uci-adapters-factory';
 
-const provider = new SlackProvider({
-  applicationId: process.env.APPLICATION_ID,
-  clientID: process.env.CLIENT_ID,
-  secretKey: process.env.SECRET_KEY,
+const adapter = AdapterFactory.getAdapter({
+    type: 'Slack',
 });
-````
+
+await adapter.sendMessage({
+    webhookUrl: 'WEBHOOK',
+    content: 'CONTENT',
+});
+```
