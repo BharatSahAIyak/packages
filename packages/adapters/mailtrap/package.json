@@ -1,12 +1,12 @@
 {
-  "name": "@novu/mailtrap",
-  "version": "0.22.0",
+  "name": "@samagra-x/uci-adapters-mailtrap",
+  "version": "1.0.0",
   "description": "A mailtrap wrapper for novu",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
   "module": "build/module/index.js",
   "private": false,
-  "repository": "https://github.com/novuhq/novu",
+  "repository": "https://github.com/PraVriShti/packages",
   "license": "MIT",
   "keywords": [],
   "scripts": {

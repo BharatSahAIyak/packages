@@ -1,13 +1,18 @@
-# Novu Mailtrap Provider
+# Nodejs Mailtrap Provider
 
-A Mailtrap email provider library for [@novu/node](https://github.com/novuhq/novu)
+A mailtrap email provider library for [@samagra-x/uci-adapters-factory](https://github.com/PraVriShti/packages/tree/main/packages/adapters/mailgun)
+
+Taken from: [@novu/stateless](https://github.com/novuhq/novu)
 
 ## Usage
 
 ```javascript
-import { MailtrapEmailProvider } from '@novu/mailtrap';
+import { AdapterFactory } from '@samagra-x/uci-adapters-factory';
 
-const provider = new MailtrapEmailProvider({
-  apiKey: process.env.MAILTRAP_API_KEY
+const adapter = AdapterFactory.getAdapter({
+    type: 'MailtrapEmail',
+    config: {
+      apiKey: process.env.MAILTRAP_API_KEY
+    }
 });
 ```
