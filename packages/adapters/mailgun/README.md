@@ -1,15 +1,20 @@
 # Nodejs Mailgun Provider
 
-A mailgun email provider library for [@novu/stateless](https://github.com/novuhq/novu).
+A mailgun email provider library for [@samagra-x/uci-adapters-factory](https://github.com/PraVriShti/packages/tree/main/packages/adapters/mailgun)
+
+Taken from: [@novu/stateless](https://github.com/novuhq/novu)
 
 ## Usage
 
 ```javascript
-import { MailgunEmailProvider } from '@novu/mailgun';
+import { AdapterFactory } from '@samagra-x/uci-adapters-factory';
 
-const provider = new MailgunEmailProvider({
-  apiKey: process.env.MAILGUN_API_KEY,
-  domain: process.env.MAILGUN_DOMAIN,
-  username: process.env.MAILGUN_USERNAME,
+const adapter = AdapterFactory.getAdapter({
+    type: 'MailgunEmail',
+    config: {
+      apiKey: process.env.MAILGUN_API_KEY,
+      domain: process.env.MAILGUN_DOMAIN,
+      username: process.env.MAILGUN_USERNAME,
+    }
 });
 ```
