@@ -1,12 +1,12 @@
 {
-  "name": "@novu/nodemailer",
-  "version": "0.22.0",
-  "description": "A nodemailer wrapper for novu",
+  "name": "@samagra-x/uci-adapters-nodemailer",
+  "version": "1.0.0",
+  "description": "A nodemailer wrapper for samagra-x/uci-adapters-factory",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
   "module": "build/module/index.js",
   "private": false,
-  "repository": "https://github.com/novuhq/nodemailer",
+  "repository": "https://github.com/PraVriShti/packages",
   "license": "MIT",
   "keywords": [],
   "scripts": {

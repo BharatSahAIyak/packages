@@ -1,13 +1,23 @@
-# Novu Sendinblue Provider
+# Nodejs Telegram Bot Provider
 
-A Telegram Bot provider library for [@novu/stateless](https://github.com/novuhq/novu)
+A telegram bot provider library for [@samagra-x/uci-adapters-factory](https://github.com/PraVriShti/packages/tree/main/packages/adapters/telegram)
+
+Taken from: [@novu/stateless](https://github.com/novuhq/novu)
 
 ## Usage
 
 ```javascript
-import { TelegramBotProvider } from './telegram.provider';
+import { AdapterFactory } from '@samagra-x/uci-adapters-factory';
 
-const provider = new TelegramBotProvider({
-  botToken: `BOT_TOKEN` 
+const adapter = AdapterFactory.getAdapter({
+    type: 'TelegramBot',
+    config: {
+      botToken: 'TEST_BOT_TOKEN'
+    }
+});
+
+await adapter.sendMessage({
+  channel: '9999999',
+  content: 'TEST_CONTENT',
 });
 ```

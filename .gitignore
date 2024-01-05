@@ -2,6 +2,7 @@
 
 # Compiled output
 **/dist
+**/yarn.lock
 
 # dependencies
 node_modules

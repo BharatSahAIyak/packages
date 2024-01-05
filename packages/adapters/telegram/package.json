@@ -1,7 +1,7 @@
 {
-  "name": "@samagra-x/telegram-adapter",
-  "version": "0.22.0",
-  "description": "A telegram message wrapper",
+  "name": "@samagra-x/uci-adapters-telegram-bot",
+  "version": "1.0.0",
+  "description": "A telegram message wrapper for @samagra-x/uci-adapters-factory",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
   "module": "build/module/index.js",

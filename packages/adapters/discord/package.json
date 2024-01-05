@@ -1,12 +1,12 @@
 {
-  "name": "@novu/discord",
-  "version": "0.22.0",
-  "description": "A discord wrapper for novu",
+  "name": "@samagra-x/uci-adapters-discord",
+  "version": "1.0.0",
+  "description": "A discord wrapper for @samagra-x/uci-adapters-factory",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
   "module": "build/module/index.js",
   "private": false,
-  "repository": "https://github.com/novuhq/novu",
+  "repository": "https://github.com/PraVriShti/packages",
   "license": "MIT",
   "keywords": [],
   "scripts": {

@@ -1,11 +1,20 @@
-# Novu Discord Provider
+# Nodejs Discord Bot Provider
 
-A Discord chat provider library for [@novu/node](https://github.com/novuhq/novu)
+A discord bot provider library for [@samagra-x/uci-adapters-factory](https://github.com/PraVriShti/packages/tree/main/packages/adapters/discord)
+
+Taken from: [@novu/stateless](https://github.com/novuhq/novu)
 
 ## Usage
 
 ```javascript
-import { DiscordProvider } from '@novu/discord';
+import { AdapterFactory } from '@samagra-x/uci-adapters-factory';
 
-const provider = new DiscordProvider({});
+const adapter = AdapterFactory.getAdapter({
+    type: 'Discord',
+});
+
+await adapter.sendMessage({
+    webhookUrl: 'WEBHOOK',
+    content: 'CONTENT',
+});
 ```
