@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-adapters-telegram-bot",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A telegram message wrapper for @samagra-x/uci-adapters-factory",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -14,8 +14,10 @@
   "license": "MIT",
   "dependencies": {
     "@novu/stateless": "^0.22.0",
+    "@samagra-x/xmessage": "^1.0.9",
     "axios": "^1.6.2",
-    "tsup": "^8.0.0"
+    "tsup": "^8.0.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
@@ -32,6 +34,7 @@
     "ts-jest": "^27.0.5",
     "ts-node": "~10.9.1",
     "typedoc": "^0.24.0",
-    "typescript": "4.9.5"
+    "typescript": "4.9.5",
+    "@types/uuid": "^9.0.7"
   }
 }

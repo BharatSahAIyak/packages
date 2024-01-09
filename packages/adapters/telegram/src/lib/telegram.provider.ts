@@ -4,8 +4,11 @@ import {
   IChatProvider,
   ISendMessageSuccessResponse,
 } from '@novu/stateless';
+import { MessageState, MessageType, XMessage } from '@samagra-x/xmessage';
 import axios from 'axios';
+import { v4 as uuid4 } from 'uuid';
 import { TelegramBotProviderConfig } from './telegram.bot.config';
+import { TelegramUpdateMessage } from './types';
 
 export class TelegramBotProvider implements IChatProvider {
   channelType = ChannelTypeEnum.CHAT as ChannelTypeEnum.CHAT;
@@ -13,6 +16,33 @@ export class TelegramBotProvider implements IChatProvider {
   private axiosInstance = axios.create();
   
   constructor(private config: TelegramBotProviderConfig) {}
+
+  static async convertMessageToXMsg(msg: TelegramUpdateMessage): Promise<XMessage> {
+    const xmessage: XMessage = {
+      to: {
+        userID: "admin",
+        bot: true,
+      },
+      from: {
+        userID: `${msg.message.from.id}`,
+        bot: false,
+      },
+      channelURI: "Bot",
+      providerURI: "Telegram",
+      messageState: MessageState.REPLIED,
+      messageId: {
+        channelMessageId: `${msg.update_id}`,
+        Id: uuid4(),
+      },
+      messageType: MessageType.TEXT,
+      timestamp: msg.message.date,
+      payload: {
+        text: msg.message.text,
+      },
+    };
+
+    return xmessage;
+  }
 
   // Use @ts-ignore if webhookUrl is not passed.
   // `channel` is a required attribute and is equal to chat_id of bot and user.
