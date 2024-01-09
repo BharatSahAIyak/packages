@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-transformers",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Library of services, actions and gaurds used to create any custom bot using Xstate configuration.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -15,6 +15,8 @@
   "dependencies": {
     "moment": "^2.29.4",
     "openai": "^4.21.0",
-    "xstate": "^4.37.2"
+    "xstate": "^4.37.2",
+    "tsup": "^8.0.0",
+    "typescript": "^4.3.5"
   }
 }

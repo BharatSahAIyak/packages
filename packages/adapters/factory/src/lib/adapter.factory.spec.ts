@@ -1,11 +1,11 @@
-import { DiscordProvider } from '../discord/src';
-import { MailgunEmailProvider } from '../mailgun/src';
-import { MailjetEmailProvider } from '../mailjet/src';
-import { MailtrapEmailProvider } from '../mailtrap/src';
-import { NodemailerProvider } from '../nodemailer/src';
-import { SlackProvider } from '../slack/src';
-import { TelegramBotProvider } from '../telegram/src';
-import { TwilioSmsProvider } from '../twilio/src';
+import { DiscordProvider } from '@samagra-x/uci-adapters-discord';
+import { MailgunEmailProvider } from '@samagra-x/uci-adapters-mailgun';
+import { MailjetEmailProvider } from '@samagra-x/uci-adapters-mailjet';
+import { MailtrapEmailProvider } from '@samagra-x/uci-adapters-mailtrap';
+import { NodemailerProvider } from '@samagra-x/uci-adapters-nodemailer';
+import { SlackProvider } from '@samagra-x/uci-adapters-slack';
+import { TelegramBotProvider } from '@samagra-x/uci-adapters-telegram-bot';
+import { TwilioSmsProvider } from '@samagra-x/uci-adapters-twilio-sms';
 import { AdapterFactory } from './adapter.factory';
 
 describe('Adaptor Factory Test', () => {

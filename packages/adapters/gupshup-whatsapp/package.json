@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-adapters-gupshup-whatsapp-adapter",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -11,11 +11,10 @@
     "test": "jest"
   },
   "keywords": [],
-  "author": "prtkjakhar",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@fusionauth/typescript-client": "^1.48.0",
-    "@samagra-x/xmessage": "^1.0.3",
+    "@samagra-x/xmessage": "^1.0.9",
     "@types/axios": "^0.14.0",
     "axios": "^1.6.2",
     "jest": "^29.7.0",

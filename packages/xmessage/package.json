@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/xmessage",
-  "version": "1.0.3",
+  "version": "1.0.9",
   "description": "",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
