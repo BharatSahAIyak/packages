@@ -1,6 +1,9 @@
 // config.js
 let config = {
-    openAIKey: ''
+    openAIKey: '',
+    aiToolsAuthHeader: '',
+    aiToolsBaseUrl: '',
+    BFFBaseUrl: ''
 };
   
 const setConfig = (newConfig: any) => {
