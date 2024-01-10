@@ -1,0 +1,39 @@
+{
+  "name": "@samagra-x/uci-adapters-pwa",
+  "version": "1.0.1",
+  "description": "A pwa bot message wrapper for @samagra-x/uci-adapters-factory",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "npm run build -- --watch",
+    "test": "jest"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "dependencies": {
+    "@samagra-x/xmessage": "^1.0.10",
+    "axios": "^1.6.2",
+    "tsup": "^8.0.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@types/jest": "29.5.2",
+    "codecov": "^3.5.0",
+    "cspell": "^4.1.0",
+    "gh-pages": "^3.1.0",
+    "jest": "^27.1.0",
+    "npm-run-all": "^4.1.5",
+    "nyc": "^15.1.0",
+    "open-cli": "^6.0.1",
+    "prettier": "~2.8.0",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^27.0.5",
+    "ts-node": "~10.9.1",
+    "typedoc": "^0.24.0",
+    "typescript": "4.9.5",
+    "@types/uuid": "^9.0.7"
+  }
+}
