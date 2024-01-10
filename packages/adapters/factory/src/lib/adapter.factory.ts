@@ -13,15 +13,17 @@ import { DiscordProvider } from '@samagra-x/uci-adapters-discord';
 import { SlackProvider } from '@samagra-x/uci-adapters-slack';
 import { TelegramBotProvider } from '@samagra-x/uci-adapters-telegram-bot';
 import { GupshupWhatsappProvider } from '@samagra-x/uci-adapters-gupshup-whatsapp-adapter';
+import { PwaBotProvider } from '@samagra-x/uci-adapters-pwa';
 
 import { GenericAdapterConfig } from './adapter.factory.config';
+import { XMessageProvider } from '@samagra-x/xmessage';
 
 
 export enum AdapterType {
     EMAIL,
     SMS,
     CHAT,
-    GUPSHUP_WHATSAPP
+    XMESSAGE
 }
 
 const emailTypes: string[] = [
@@ -38,16 +40,15 @@ const chatTypes: string[] = [
     'Slack',
     'TelegramBot'
 ];
-const gupshupWhatsappType: string[] = [
-    'GupshupWhatsapp'
+const xmessageType: string[] = [
+    'GupshupWhatsapp',
+    'PwaBot'
 ];
 
-// TODO: Extract GupshupWhatsappProvider into a more generic
-// type of providers, that directly work on XMessage.
 export class AdapterFactory {
     static getAdapter(
         consumerData: GenericAdapterConfig
-    ): IEmailProvider | ISmsProvider | IChatProvider | IPushProvider | GupshupWhatsappProvider | undefined {
+    ): IEmailProvider | ISmsProvider | IChatProvider | IPushProvider | XMessageProvider | undefined {
         switch (consumerData.type) {
             case 'NodeMailer':
                 return new NodemailerProvider(consumerData.config);
@@ -67,6 +68,8 @@ export class AdapterFactory {
                 return new TelegramBotProvider(consumerData.config);
             case 'GupshupWhatsapp':
                 return new GupshupWhatsappProvider(consumerData.config);
+            case 'PwaBot':
+                return new PwaBotProvider(consumerData.config);
             default:
                 return undefined;
         }
@@ -84,8 +87,8 @@ export class AdapterFactory {
         else if (chatTypes.includes(type)) {
             return AdapterType.CHAT;
         }
-        else if (gupshupWhatsappType.includes(type)) {
-            return AdapterType.GUPSHUP_WHATSAPP;
+        else if (xmessageType.includes(type)) {
+            return AdapterType.XMESSAGE;
         }
         else {
             return undefined;

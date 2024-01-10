@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-adapters-factory",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "A factory module which provides specific adapter instance based on request data.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -14,8 +14,8 @@
   "license": "MIT",
   "dependencies": {
     "@fusionauth/typescript-client": "^1.48.0",
-    "@samagra-x/xmessage": "^1.0.9",
-    "@samagra-x/uci-adapters-gupshup-whatsapp-adapter": "^1.0.6",
+    "@samagra-x/xmessage": "^1.0.10",
+    "@samagra-x/uci-adapters-gupshup-whatsapp-adapter": "^1.0.7",
     "@samagra-x/uci-adapters-nodemailer": "^1.0.2",
     "@samagra-x/uci-adapters-mailgun": "^1.0.1",
     "@samagra-x/uci-adapters-mailjet": "^1.0.1",
@@ -24,6 +24,7 @@
     "@samagra-x/uci-adapters-slack": "^1.0.1",
     "@samagra-x/uci-adapters-twilio-sms": "^1.0.0",
     "@samagra-x/uci-adapters-telegram-bot": "^1.0.1",
+    "@samagra-x/uci-adapters-pwa": "^1.0.1",
     "jest": "^29.7.0",
     "tsup": "^8.0.0"
   },
