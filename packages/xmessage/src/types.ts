@@ -1,3 +1,5 @@
+import { XMessage } from "./xMessage";
+
 export enum State {
   STARTING = 1,
   ONGOING,
@@ -148,4 +150,11 @@ export class Address {
   city!: string;
   country!: string;
   countryCode!: number;
+}
+
+export interface XMessageProvider {
+  sendMessage(xmsg: XMessage): Promise<any>;
+  // TODO: fix this to make satic method possible or have default
+  // constructors and make this injectable.
+  // convertMessageToXMsg?(msg: any): Promise<XMessage>;
 }
