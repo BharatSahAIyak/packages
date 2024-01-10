@@ -13,6 +13,7 @@ import {
   XMessage,
   MessageState,
   MessageType,
+  XMessageProvider,
 } from '@samagra-x/xmessage';
 import { FileUtil } from './utils';
 import { URLSearchParams } from 'url';
@@ -74,7 +75,7 @@ type SectionRow = {
   title: string;
 }
 
-export class GupshupWhatsappProvider {
+export class GupshupWhatsappProvider implements XMessageProvider {
 
   private readonly providerConfig?: IGSWhatsappConfig;
 
