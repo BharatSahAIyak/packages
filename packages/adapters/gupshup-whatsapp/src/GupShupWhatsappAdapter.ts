@@ -537,7 +537,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     optInBuilder.searchParams.append('method', 'OPT_IN');
     optInBuilder.searchParams.append('userid', usernameHSM);
     optInBuilder.searchParams.append('password', passwordHSM);
-    optInBuilder.searchParams.append('channel', 'WHATSAPP');
+    optInBuilder.searchParams.append('channel', 'Whatsapp');
     optInBuilder.searchParams.append('send_to', phoneNumber);
     optInBuilder.searchParams.append('messageId', '123456789');
   
@@ -751,7 +751,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
           builder.set('send_to', '91' + xMsg.to.userID);
           builder.set('phone_number', '91' + xMsg.to.userID);
           builder.set('msg_type', xMsg.messageType);
-          builder.set('channel', 'WHATSAPP');
+          builder.set('channel', 'Whatsapp');
           builder.set('msg_id', xMsg.messageId.channelMessageId);
   
           if (

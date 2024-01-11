@@ -22,8 +22,8 @@ export class PwaBotProvider implements XMessageProvider {
             providerURI: "Pwa",
             messageState: MessageState.REPLIED,
             messageId: {
-                channelMessageId: `${msg.messageId}`,
-                Id: uuid4(),
+                channelMessageId: `${msg.conversationId}`,
+                Id: `${msg.messageId}`,
             },
             messageType: MessageType.TEXT,
             timestamp: new Date().getTime(),

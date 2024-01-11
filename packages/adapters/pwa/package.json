@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-adapters-pwa",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A pwa bot message wrapper for @samagra-x/uci-adapters-factory",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
