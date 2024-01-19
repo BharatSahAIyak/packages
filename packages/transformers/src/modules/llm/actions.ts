@@ -7,6 +7,13 @@ const llmUseGPT4 = assign<any,any>((context,_)=>{
     }
 })
 
+const llmUseLlamaIndexGPT4 = assign<any,any>((context,_)=>{
+    return {
+        ...context,
+        llmModel: 'llamaIndex-gpt-4'
+    }
+})
+
 const llmRecordError = assign<any,any>((context, event)=>{
     return {
         ...context,
@@ -24,5 +31,6 @@ const llmRecordResponse = assign<any,any>((context, event)=>{
 export default {
     llmUseGPT4,
     llmRecordError,
-    llmRecordResponse
+    llmRecordResponse,
+    llmUseLlamaIndexGPT4
 }
