@@ -29,6 +29,7 @@ export class PwaBotProvider implements XMessageProvider {
             timestamp: new Date().getTime(),
             payload: {
                 text: msg.body,
+                metaData: JSON.stringify({pdfId: msg?.pdfId || ""})
             },
         };
 
