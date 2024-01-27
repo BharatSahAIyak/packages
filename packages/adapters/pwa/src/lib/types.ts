@@ -10,5 +10,6 @@ export type PwaBotMessage = {
     to: string,
     messageId: string,
     identifier: string,
-    asrId: string
+    asrId: string,
+    pdfId?: string
 }

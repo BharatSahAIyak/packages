@@ -3,7 +3,8 @@ let config = {
     openAIKey: '',
     aiToolsAuthHeader: '',
     aiToolsBaseUrl: '',
-    BFFBaseUrl: ''
+    BFFBaseUrl: '',
+    llamaIndexDBURL: ''
 };
   
 const setConfig = (newConfig: any) => {

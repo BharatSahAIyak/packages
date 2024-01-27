@@ -1,8 +1,9 @@
 import moment from "moment";
 import OpenAI from 'openai';
 import config from "../common/config";
+import { PGVectorStore, OpenAI as LlamaIndexOpenAI, serviceContextFromDefaults, VectorStoreIndex } from 'llamaindex';
 
-const llm = async (context: any) => {
+const aiToolsLLM = async (context: any) => {
     try {
         const userQuestion = context?.nuralCoreference || context?.messageReceived.payload.text
         if(!userQuestion) throw new Error('User question is empty')
@@ -82,6 +83,63 @@ Answer:
         }
     }
 }
+
+const llamaIndexLLM = async (context: any) => {
+    try {
+        let pdfId;
+        try {
+            pdfId = JSON.parse(context?.messageReceived?.payload?.metaData)['pdfId']
+        } catch (error) {
+            console.log(error)
+        }
+        const userQuestion = context?.nuralCoreference || context?.messageReceived.payload.text
+        if(!userQuestion) throw new Error('User question is empty')
+        let vectorStore = new PGVectorStore({
+            schemaName: "public",
+            tableName: "vectorstore",
+            connectionString: config.getConfig().llamaIndexDBURL
+        })
+        const openaiLLM = new LlamaIndexOpenAI({ model: "gpt-4", temperature: 0 });
+        const serviceContext = serviceContextFromDefaults({ llm: openaiLLM });
+        vectorStore.setCollection(pdfId || "")
+        let vectorStoreIndex = await VectorStoreIndex.init({
+            vectorStore,
+            serviceContext,
+            nodes:[]
+        })
+        const queryEngine = vectorStoreIndex.asQueryEngine()
+        let res = await queryEngine.query(userQuestion);
+        let ret =  {
+            response: res.response,
+            allContent: res.sourceNodes,
+            error: null
+        };
+        return ret
+    } catch(error) {
+        return {
+            error
+        }
+    }
+}
+
+
+const llm = async (context: any) => {
+    let res;
+    switch(context.llmModel){
+        case 'llamaIndex-gpt-4':
+            res = await llamaIndexLLM(context);
+            return res
+        case 'gpt-4':
+            res = await aiToolsLLM(context);
+            return res
+        default:
+            res = await llamaIndexLLM(context);
+            return res
+    }
+}
+
+
+
 
 export default {
     llm

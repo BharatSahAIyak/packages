@@ -6,8 +6,7 @@ const neuralCoreference = async (context: any) => {
     let userHistory: [XMessage] = context?.userHistory;
     if(!userHistory) return context?.messageReceived?.payload?.text;
     let userHistoryString: any = userHistory.map((message: XMessage): String => {
-        const convMap = JSON.parse(JSON.stringify(message.from.meta));
-        if(convMap['phoneNumber']) return `User: ${message.payload.text}`
+        if(!message.from.bot) return `User: ${message.payload.text}`
         return `AI: ${message.payload.text}`
     })
     userHistoryString.push(`User: ${context?.messageReceived?.payload?.text}`);
@@ -39,3 +38,4 @@ const neuralCoreference = async (context: any) => {
 export default {
     neuralCoreference
 }
+
