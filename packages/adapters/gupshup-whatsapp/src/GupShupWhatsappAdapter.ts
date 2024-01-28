@@ -15,6 +15,7 @@ import {
   MessageType,
   XMessageProvider,
 } from '@samagra-x/xmessage';
+import { v4 as uuid4 } from 'uuid';
 import { FileUtil } from './utils';
 import { URLSearchParams } from 'url';
 import { uploadFileFromPath } from './minioClient';
@@ -399,11 +400,14 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     const to: SenderReceiverInfo = { userID: 'admin' }; // Replace with actual initialization
   
     const messageState: MessageState[] = [MessageState.REPLIED];
-    const messageIdentifier: MessageId = { channelMessageId: '' }; // Replace with actual initialization
+    const messageIdentifier: MessageId = { Id: uuid4() }; // Replace with actual initialization
     const messageType: MessageType = message.type?.toUpperCase() as MessageType ?? MessageType.REPORT;
     // @ts-ignore
     const xmsgPayload: XMessagePayload = {}; // Replace with actual initialization
-  
+
+    const thumbsUpEmojis = ['👍', '👍🏻', '👍🏼', '👍🏽', '👍🏾', '👍🏿'];
+    const thumbsDownEmojis = ['👎', '👎🏻', '👎🏼', '👎🏽', '👎🏾', '👎🏿'];
+
     if (message.response != null) {
       const reportResponse = message.response;
       const participantJsonList: GSWhatsappReport[] = JSON.parse(reportResponse);
@@ -424,24 +428,48 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         messageIdentifier,
         messageType
       );
-    } else if (message.type === 'text' && message.text) {
+    }
+    else if (thumbsUpEmojis.includes(msg.text)) {
       from.userID = message.mobile.substring(2);
-      messageIdentifier.replyId = message.replyId || '';
-  
-      // if (message.type === 'OPT_IN') {
-      //   messageState[0] = MessageState.OPTED_IN;
-      // } else if (message.type === 'OPT_OUT') {
-      //   xmsgPayload.text = 'stop-wa';
-      //   messageState[0] = MessageState.OPTED_OUT;
-      // } else {
-      //   messageState[0] = MessageState.REPLIED;
-      //   xmsgPayload.text = message.text;
-      //   messageIdentifier.channelMessageId = message.messageId;
-      // }
-  
+      if (message.messageId) {
+        messageIdentifier.channelMessageId = message.messageId;
+      }
+      return this.processedXMessage(
+        msg,
+        xmsgPayload,
+        from,
+        to,
+        MessageState.REPLIED,
+        messageIdentifier,
+        MessageType.FEEDBACK_POSITIVE,
+      );
+    }
+    else if (thumbsDownEmojis.includes(msg.text)) {
+      from.userID = message.mobile.substring(2);
+      if (message.messageId) {
+        messageIdentifier.channelMessageId = message.messageId;
+      }
+      return this.processedXMessage(
+        msg,
+        xmsgPayload,
+        from,
+        to,
+        MessageState.REPLIED,
+        messageIdentifier,
+        MessageType.FEEDBACK_POSITIVE,
+      );
+    }
+    else if (message.type === 'text' && message.text) {
+      from.userID = message.mobile.substring(2);
+      if (message.replyId) {
+        messageIdentifier.replyId = message.replyId || '';
+      }
+      if (message.messageId) {
+          messageIdentifier.channelMessageId = message.messageId;
+      }
+
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.text = message.text;
-      messageIdentifier.channelMessageId = message.messageId || '';
   
       return this.processedXMessage(
         message,
@@ -752,7 +780,9 @@ export class GupshupWhatsappProvider implements XMessageProvider {
           builder.set('phone_number', '91' + xMsg.to.userID);
           builder.set('msg_type', xMsg.messageType);
           builder.set('channel', 'Whatsapp');
-          builder.set('msg_id', xMsg.messageId.channelMessageId);
+          if (xMsg.messageId.channelMessageId) {
+            builder.set('msg_id', xMsg.messageId.channelMessageId);
+          }
   
           if (
             stylingTag !== undefined &&

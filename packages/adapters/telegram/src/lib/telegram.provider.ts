@@ -17,7 +17,7 @@ export class TelegramBotProvider implements IChatProvider {
   
   constructor(private config: TelegramBotProviderConfig) {}
 
-  static async convertMessageToXMsg(msg: TelegramUpdateMessage): Promise<XMessage> {
+  async convertMessageToXMsg(msg: TelegramUpdateMessage): Promise<XMessage> {
     const xmessage: XMessage = {
       to: {
         userID: "admin",

@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-adapters-telegram-bot",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "A telegram message wrapper for @samagra-x/uci-adapters-factory",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -14,7 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "@novu/stateless": "^0.22.0",
-    "@samagra-x/xmessage": "^1.0.9",
+    "@samagra-x/xmessage": "^1.0.11",
     "axios": "^1.6.2",
     "tsup": "^8.0.0",
     "uuid": "^9.0.1"

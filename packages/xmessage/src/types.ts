@@ -12,8 +12,8 @@ export class ConversationStage {
 }
 
 export class MessageId {
-  public Id?: string;
-  public channelMessageId: string;
+  public Id: string;
+  public channelMessageId?: string;
   public replyId?: string;
 
   constructor(builder: MessageIdBuilder) {

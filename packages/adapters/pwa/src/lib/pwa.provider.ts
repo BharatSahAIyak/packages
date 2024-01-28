@@ -8,7 +8,7 @@ export class PwaBotProvider implements XMessageProvider {
 
     constructor(private config: PwaBotConfig) {}
 
-    static async convertMessageToXMsg(msg: PwaBotMessage): Promise<XMessage> {
+    async convertMessageToXMsg(msg: PwaBotMessage): Promise<XMessage> {
         const xmessage: XMessage = {
             to: {
                 userID: "admin",
@@ -36,10 +36,10 @@ export class PwaBotProvider implements XMessageProvider {
         return xmessage;
     }
 
-    async sendMessage(xMsg: XMessage) {
+    async sendMessage(xmsg: XMessage) {
         await axios.post(
             this.config.socketEndpoint,
-            xMsg
+            xmsg
         );
     }
 }
