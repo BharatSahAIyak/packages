@@ -46,6 +46,8 @@ export class XMessage {
   app?: string;
   messageType!: MessageType;
   adapterId?: string;
+  orgId?: string;
+  ownerId?: string;
 
   //Persist
   messageId!: MessageId;
