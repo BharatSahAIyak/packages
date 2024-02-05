@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-adapters-pwa",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A pwa bot message wrapper for @samagra-x/uci-adapters-factory",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -13,7 +13,7 @@
   "keywords": [],
   "license": "MIT",
   "dependencies": {
-    "@samagra-x/xmessage": "^1.0.11",
+    "@samagra-x/xmessage": "^1.0.13",
     "axios": "^1.6.2",
     "tsup": "^8.0.0",
     "uuid": "^9.0.1"

@@ -18,6 +18,12 @@ export class TelegramBotProvider implements IChatProvider {
   constructor(private config: TelegramBotProviderConfig) {}
 
   async convertMessageToXMsg(msg: TelegramUpdateMessage): Promise<XMessage> {
+    let messageType = MessageType.TEXT;
+    let text = msg.message.text;
+    if (text.startsWith('\\register')) {
+      text = text.replace('\\register ', '').trim();
+      messageType = MessageType.REGISTRATION;
+    }
     const xmessage: XMessage = {
       to: {
         userID: "admin",
@@ -34,10 +40,10 @@ export class TelegramBotProvider implements IChatProvider {
         channelMessageId: `${msg.update_id}`,
         Id: uuid4(),
       },
-      messageType: MessageType.TEXT,
+      messageType: messageType,
       timestamp: msg.message.date,
       payload: {
-        text: msg.message.text,
+        text: text,
       },
     };
 

@@ -9,6 +9,12 @@ export class PwaBotProvider implements XMessageProvider {
     constructor(private config: PwaBotConfig) {}
 
     async convertMessageToXMsg(msg: PwaBotMessage): Promise<XMessage> {
+        let messageType = MessageType.TEXT;
+        let text = msg.body;
+        if (text.startsWith('\\register')) {
+            text = text.replace('\\register ', '').trim();
+            messageType = MessageType.REGISTRATION;
+        }
         const xmessage: XMessage = {
             to: {
                 userID: "admin",
@@ -25,10 +31,10 @@ export class PwaBotProvider implements XMessageProvider {
                 channelMessageId: `${msg.conversationId}`,
                 Id: `${msg.messageId}`,
             },
-            messageType: MessageType.TEXT,
+            messageType: messageType,
             timestamp: new Date().getTime(),
             payload: {
-                text: msg.body,
+                text: text,
                 metaData: JSON.stringify({pdfId: msg?.pdfId || ""})
             },
         };

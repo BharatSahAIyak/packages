@@ -467,19 +467,31 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       if (message.messageId) {
           messageIdentifier.channelMessageId = message.messageId;
       }
-
       messageState[0] = MessageState.REPLIED;
-      xmsgPayload.text = message.text;
-  
-      return this.processedXMessage(
-        message,
-        xmsgPayload,
-        to,
-        from,
-        messageState[0],
-        messageIdentifier,
-        messageType
-      );
+      if (message.text.startsWith('\\register')) {
+        xmsgPayload.text = message.text.replace('\\register ', '').trim();
+        return this.processedXMessage(
+          message,
+          xmsgPayload,
+          to,
+          from,
+          messageState[0],
+          messageIdentifier,
+          MessageType.REGISTRATION,
+        );
+      }
+      else {
+        xmsgPayload.text = message.text;
+        return this.processedXMessage(
+          message,
+          xmsgPayload,
+          to,
+          from,
+          messageState[0],
+          messageIdentifier,
+          messageType
+        );
+      }
     } else if (message.type === 'interactive') {
       from.userID = message.mobile.substring(2);
       messageIdentifier.replyId = message.replyId;
