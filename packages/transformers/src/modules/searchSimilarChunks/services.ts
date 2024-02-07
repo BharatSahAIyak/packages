@@ -16,19 +16,7 @@ const searchSimilarChunks = async (context: any) => {
             'Content-Type': 'application/json'
           }
         };
-    
-        const response = await axios.post(
-          `${appConfig.getConfig().BFFBaseUrl}/document/searchSimilar`,
-          {
-            "query": userQuestion,
-            "similarityThreshold": 0,
-            "matchCount": 5,
-            "searchVia": "content",
-            pdfId
-          },
-          config
-        );
-    
+        const response = await axios.get(`${appConfig.getConfig().BFFBaseUrl}/chunk/retrieve?text=${userQuestion}${pdfId?`&pdfId=${pdfId}`:''}`, config);
         const responseData = response.data;
         return responseData;
     } catch (error) {
