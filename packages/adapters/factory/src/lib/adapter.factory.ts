@@ -26,8 +26,9 @@ export enum AdapterType {
     XMESSAGE
 }
 
+// Naming format is provider + channel
 const emailTypes: string[] = [
-    'NodeMailer',
+    'NodemailerEmail',
     'MailgunEmail',
     'MailtrapEmail',
     'MailjetEmail',
@@ -36,13 +37,13 @@ const smsTypes: string[] = [
     'TwilioSms'
 ];
 const chatTypes: string[] = [
-    'Discord',
-    'Slack',
-    'TelegramBot'
+    'DiscordDiscord',
+    'SlackSlack',
+    'TelegramTelegram'
 ];
 const xmessageType: string[] = [
     'GupshupWhatsapp',
-    'PwaBot'
+    'PwaPwa'
 ];
 
 export class AdapterFactory {
@@ -50,7 +51,7 @@ export class AdapterFactory {
         consumerData: GenericAdapterConfig
     ): IEmailProvider | ISmsProvider | IChatProvider | IPushProvider | XMessageProvider | undefined {
         switch (consumerData.type) {
-            case 'NodeMailer':
+            case 'NodemailerEmail':
                 return new NodemailerProvider(consumerData.config);
             case 'MailgunEmail':
                 return new MailgunEmailProvider(consumerData.config);
@@ -60,15 +61,15 @@ export class AdapterFactory {
                 return new MailtrapEmailProvider(consumerData.config);
             case 'TwilioSms':
                 return new TwilioSmsProvider(consumerData.config);
-            case 'Discord':
+            case 'DiscordDiscord':
                 return new DiscordProvider();
-            case 'Slack':
+            case 'SlackSlack':
                 return new SlackProvider();
-            case 'TelegramBot':
+            case 'TelegramTelegram':
                 return new TelegramBotProvider(consumerData.config);
             case 'GupshupWhatsapp':
                 return new GupshupWhatsappProvider(consumerData.config);
-            case 'PwaBot':
+            case 'PwaPwa':
                 return new PwaBotProvider(consumerData.config);
             default:
                 return undefined;
