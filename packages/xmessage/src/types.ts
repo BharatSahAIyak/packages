@@ -71,8 +71,8 @@ export enum DeviceType {
 }
 
 export class Transformer {
-  id!: string;
-  metaData!: Map<string, string>; // templateID, configID, userData
+  id?: string;
+  metaData?: Record<string, any>;
 }
 
 export type XMessagePayload = {
