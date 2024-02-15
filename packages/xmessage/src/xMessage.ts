@@ -43,20 +43,18 @@ export enum MessageType {
 }
 
 export class XMessage {
-  //Persist
   app?: string;
   messageType!: MessageType;
   adapterId?: string;
   orgId?: string;
   ownerId?: string;
 
-  //Persist
   messageId!: MessageId;
   to!: SenderReceiverInfo;
 
   from!: SenderReceiverInfo;
-  channelURI!: string; // whatsapp
-  providerURI!: string; // gupshup
+  channelURI!: string;
+  providerURI!: string;
   timestamp!: number;
 
   userState?: string;
@@ -69,7 +67,7 @@ export class XMessage {
 
   conversationLevel?: Array<number>;
 
-  transformers?: Transformer; // -1 no transfer like ms3 transforms msg to next msg
+  transformer?: Transformer;
 
   thread?: XMessageThread;
   payload!: XMessagePayload;
@@ -77,10 +75,6 @@ export class XMessage {
   public toXML?(): string {
     return "";
   }
-
-  // public completeTransform() {
-  //   this.transformers.pop();
-  // }
 
   public getChannel?(): string {
     return this.channelURI;
