@@ -1,1 +1,1 @@
-export * from './switch_case.transformer';
+export * from './label_classifier.transformer';

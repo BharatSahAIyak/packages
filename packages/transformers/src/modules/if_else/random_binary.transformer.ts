@@ -3,9 +3,7 @@ import { ITransformer } from "../common";
 
 export class RandomBinaryTransformer implements ITransformer {
 
-    constructor(
-        private readonly config: Record<string, any>
-    ) { }
+    constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log("RANDOM_BINARY transformer used with: " + JSON.stringify(xmsg));
