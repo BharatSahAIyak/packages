@@ -4,12 +4,17 @@ import { ITransformer } from "../common/transformer.interface";
 export class HttpPostTransformer implements ITransformer {
 
     /// Accepted config properties:
+    ///     url: Url of the endpoint
     ///     headers: Headers for request (optional)
     ///     body: Body for the HTTP POST request (optional)
-    ///     url: Url of the endpoint
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
+        if (!xmsg.transformer) {
+            xmsg.transformer = {
+                metaData: {}
+            };
+        }
         console.log("HTTP POST transformer used with: " + JSON.stringify(xmsg));
         if (!this.config.url) {
             throw new Error('`url` not defined in HTTP_POST transformer');

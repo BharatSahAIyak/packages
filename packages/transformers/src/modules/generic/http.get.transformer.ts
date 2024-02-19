@@ -10,6 +10,11 @@ export class HttpGetTransformer implements ITransformer {
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
+        if (!xmsg.transformer) {
+            xmsg.transformer = {
+                metaData: {}
+            };
+        }
         console.log("HTTP GET transformer used with: " + JSON.stringify(xmsg));
         if (!this.config.url) {
             throw new Error('`url` not defined in HTTP_GET transformer');
