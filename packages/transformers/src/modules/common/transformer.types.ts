@@ -4,6 +4,7 @@ export enum TransformerType {
     LABEL_CLASSIFIER = 'LABEL_CLASSIFIER',
     RANDOM_BINARY = 'RANDOM_BINARY',
     SIMPLE_RETRY = 'SIMPLE_RETRY',
+    USER_FEEDBACK_LOOP = 'USER_FEEDBACK_LOOP',
 }
 
 export enum TransformerClass {
@@ -11,6 +12,7 @@ export enum TransformerClass {
     IfElseTransformer,
     SwitchCaseTransformer,
     RetryTransformer,
+    StateRestoreTransformer,
 }
 
 export const TransformerMapping: Record<TransformerType, TransformerClass> = {
@@ -19,4 +21,5 @@ export const TransformerMapping: Record<TransformerType, TransformerClass> = {
     [TransformerType.LABEL_CLASSIFIER]: TransformerClass.SwitchCaseTransformer,
     [TransformerType.RANDOM_BINARY]: TransformerClass.IfElseTransformer,
     [TransformerType.SIMPLE_RETRY]: TransformerClass.RetryTransformer,
+    [TransformerType.USER_FEEDBACK_LOOP]: TransformerClass.StateRestoreTransformer,
 };
