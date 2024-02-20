@@ -7,8 +7,8 @@ export class LabelClassifierTransformer implements ITransformer{
     readonly config: Record<string, any>;
 
     /// Accepted config properties:
-    ///     prompt: string: The prompt to classify
     ///     url: string:  Url of the endpoint
+    ///     prompt: string: The prompt to classify. Required if `XMessage.payload.text` is undefined. The `XMessage.payload.text` takes precedence over `prompt` if provided.
     ///     headers: JSON: Headers for request (optional)
     ///     suppressedLabels: string[]: The labels that should be suppressed unless they pass a threshold value (optional).
     ///     existingLabel: If provided, this label would always be returned regardless of highest score, unless another label passes supersedeThreshold. (optional)
@@ -32,7 +32,7 @@ export class LabelClassifierTransformer implements ITransformer{
             url: this.config.url,
             headers: this.config.headers,
             body: {
-                inputs: this.config.prompt,
+                inputs: xmsg.payload?.text ?? this.config.prompt,
             }
         });
         await httpTransformer.transform(xmsg)
