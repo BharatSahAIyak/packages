@@ -17,15 +17,25 @@ export class LLMTransformer implements ITransformer {
         console.log("LLM transformer used with: " + JSON.stringify(xmsg));
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length){
             xmsg.transformer = {
+                ...xmsg.transformer,
                 metaData: {
                     ...xmsg.transformer?.metaData,
                     userHistory: []
                 }
             };
         }
-        if (!this.config.openAIAPIKey) throw new Error('`openAIAPIKey` not defined in LLM transformer');
-        if (!this.config.temperature) this.config.temperature = 0;
-        if (!xmsg.payload.text) throw new Error('`xmsg.payload.text` not defined in LLM transformer')
+        if (!this.config.model) {
+            throw new Error('`model` not defined in LLM transformer');
+        }
+        if (!this.config.openAIAPIKey) {
+            throw new Error('`openAIAPIKey` not defined in LLM transformer');
+        }
+        if (!this.config.temperature) {
+            this.config.temperature = 0;
+        }
+        if (!xmsg.payload.text) {
+            throw new Error('`xmsg.payload.text` not defined in LLM transformer');
+        }
         let expertContext = '';
         let searchResults: Array<{
             index: number;
@@ -73,7 +83,7 @@ export class LLMTransformer implements ITransformer {
         console.log(`LLM transformer prompt(${xmsg.messageId.Id}): ${prompt}`);
         const openai = new OpenAI({apiKey: this.config.openAIAPIKey});
         const response: any = await openai.chat.completions.create({
-            model: this.config.model || 'gpt-3.5-turbo',
+            model: this.config.model,
             messages: prompt,
             temperature: this.config.temperature || 0,
         }).catch((ex) => {
@@ -106,12 +116,12 @@ export class LLMTransformer implements ITransformer {
             newSearch.index = i+1
             updatedSearchResults.push(newSearch)
         })
-        let metaData = {
+        xmsg.payload.text = answer;
+        xmsg.payload.metaData = JSON.stringify({
+            ...JSON.parse(xmsg.payload.metaData || '{}'),
             searchResults: updatedSearchResults,
             followUpQuestions
-        }
-        xmsg.payload.text = answer;
-        xmsg.payload.metaData = JSON.stringify(metaData);
+        });
         return xmsg;
     }
 }

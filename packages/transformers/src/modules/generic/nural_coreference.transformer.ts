@@ -11,9 +11,16 @@ export class NeuralCoreferenceTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log("NEURAL_COREFERENCE transformer used with: " + JSON.stringify(xmsg));
-        if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length) return xmsg;
-        if (!this.config.prompt) throw new Error('`prompt` not defined in NEURAL_COREFERENCE transformer');
-        if (!this.config.openAIAPIKey) throw new Error('`openAIAPIKey` not defined in NEURAL_COREFERENCE transformer');
+        if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length) {
+            console.log("UserHistory not found! Returning original XMessag in NEURAL_COREFERENCE transformer")
+            return xmsg
+        };
+        if (!this.config.prompt) {
+            throw new Error('`prompt` not defined in NEURAL_COREFERENCE transformer');
+        }
+        if (!this.config.openAIAPIKey) {
+            throw new Error('`openAIAPIKey` not defined in NEURAL_COREFERENCE transformer');
+        }
         this.config.prompt = [{
             role: "user",
             content: this.config.prompt
