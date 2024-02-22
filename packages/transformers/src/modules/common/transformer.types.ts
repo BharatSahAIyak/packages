@@ -6,7 +6,9 @@ export enum TransformerType {
     SIMPLE_RETRY = 'SIMPLE_RETRY',
     NEURAL_COREFERENCE = 'NEURAL_COREFERENCE',
     DOC_RETRIEVER = 'DOC_RETRIEVER',
-    LLM = 'LLM'
+    LLM = 'LLM',
+    USER_FEEDBACK_LOOP = 'USER_FEEDBACK_LOOP',
+    TRANSLATE = 'TRANSLATE'
 }
 
 export enum TransformerClass {
@@ -14,6 +16,7 @@ export enum TransformerClass {
     IfElseTransformer,
     SwitchCaseTransformer,
     RetryTransformer,
+    StateRestoreTransformer,
 }
 
 export const TransformerMapping: Record<TransformerType, TransformerClass> = {
@@ -25,4 +28,6 @@ export const TransformerMapping: Record<TransformerType, TransformerClass> = {
     [TransformerType.NEURAL_COREFERENCE]: TransformerClass.GenericTransformer,
     [TransformerType.DOC_RETRIEVER]: TransformerClass.IfElseTransformer,
     [TransformerType.LLM]: TransformerClass.GenericTransformer,
+    [TransformerType.USER_FEEDBACK_LOOP]: TransformerClass.StateRestoreTransformer,
+    [TransformerType.TRANSLATE]: TransformerClass.GenericTransformer
 };
