@@ -10,6 +10,7 @@ export enum TransformerType {
     USER_FEEDBACK_LOOP = 'USER_FEEDBACK_LOOP',
     TRANSLATE = 'TRANSLATE',
     SQLLLM = 'SQLLLM'
+    CODE_RUNNER = 'CODE_RUNNER',
 }
 
 export enum TransformerClass {
@@ -32,4 +33,5 @@ export const TransformerMapping: Record<TransformerType, TransformerClass> = {
     [TransformerType.USER_FEEDBACK_LOOP]: TransformerClass.StateRestoreTransformer,
     [TransformerType.TRANSLATE]: TransformerClass.GenericTransformer,
     [TransformerType.SQLLLM]: TransformerClass.GenericTransformer,
+    [TransformerType.CODE_RUNNER]: TransformerClass.GenericTransformer,
 };
