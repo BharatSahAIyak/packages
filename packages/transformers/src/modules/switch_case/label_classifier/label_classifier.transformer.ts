@@ -1,6 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
-import { ITransformer } from "../common/transformer.interface";
-import { HttpPostTransformer } from "../generic";
+import { ITransformer } from "../../common/transformer.interface";
+import { HttpPostTransformer } from "../../generic";
 
 export class LabelClassifierTransformer implements ITransformer{
 

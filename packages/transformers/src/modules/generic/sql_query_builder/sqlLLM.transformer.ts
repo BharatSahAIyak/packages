@@ -1,9 +1,9 @@
 //temporary transformer will be replaces with HTTP and LLM transfomers.
 import { XMessage } from "@samagra-x/xmessage";
-import { ITransformer } from "../common/transformer.interface";
+import { ITransformer } from "../../common/transformer.interface";
 import OpenAI from 'openai';
-import getBhashiniConfig from "../common/utils/bhashini/bhashini.getConfig";
-import computeBhashini from "../common/utils/bhashini/bhashini.compute";
+import getBhashiniConfig from "../translate/bhashini/bhashini.getConfig";
+import computeBhashini from "../translate/bhashini/bhashini.compute";
 
 export class SQLLLMTransformer implements ITransformer {
 

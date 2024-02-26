@@ -1,5 +1,5 @@
 import { XMessage } from "@samagra-x/xmessage";
-import { ITransformer } from "../common/transformer.interface";
+import { ITransformer } from "../../common/transformer.interface";
 import axios, { AxiosRequestConfig } from 'axios';
 
 export class DocRetrieverTransformer implements ITransformer {

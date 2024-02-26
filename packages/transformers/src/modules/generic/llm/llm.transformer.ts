@@ -1,10 +1,10 @@
 import { XMessage } from "@samagra-x/xmessage";
-import { ITransformer } from "../common/transformer.interface";
+import { ITransformer } from "../../common/transformer.interface";
 import OpenAI from 'openai';
 import moment from "moment";
-import { generateSentences } from "../common/utils/stream/tokenizer";
-import getBhashiniConfig from "../common/utils/bhashini/bhashini.getConfig";
-import computeBhashini from "../common/utils/bhashini/bhashini.compute";
+import { generateSentences } from "./stream/tokenizer";
+import getBhashiniConfig from "../translate/bhashini/bhashini.getConfig";
+import computeBhashini from "../translate/bhashini/bhashini.compute";
 
 export class LLMTransformer implements ITransformer {
 
@@ -22,6 +22,7 @@ export class LLMTransformer implements ITransformer {
     ///     bhashiniURL: Base url for bhashini (required if provider is set to bhashini)
     constructor(readonly config: Record<string, any>) { }
 
+    // TODO: use TRANSLATE transformer directly instead of repeating code
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log("LLM transformer used with: " + JSON.stringify(xmsg));
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length){

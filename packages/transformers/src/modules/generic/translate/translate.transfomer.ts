@@ -1,7 +1,7 @@
 import { XMessage } from "@samagra-x/xmessage";
-import { ITransformer } from "../common/transformer.interface";
-import getBhashiniConfig from "../common/utils/bhashini/bhashini.getConfig";
-import computeBhashini from "../common/utils/bhashini/bhashini.compute";
+import { ITransformer } from "../../common/transformer.interface";
+import getBhashiniConfig from "./bhashini/bhashini.getConfig";
+import computeBhashini from "./bhashini/bhashini.compute";
 
 export class TranslateTransformer implements ITransformer {
 

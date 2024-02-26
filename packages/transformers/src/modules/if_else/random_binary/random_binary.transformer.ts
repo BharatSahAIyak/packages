@@ -1,5 +1,5 @@
 import { XMessage } from "@samagra-x/xmessage";
-import { ITransformer } from "../common";
+import { ITransformer } from "../../common";
 
 export class RandomBinaryTransformer implements ITransformer {
 
