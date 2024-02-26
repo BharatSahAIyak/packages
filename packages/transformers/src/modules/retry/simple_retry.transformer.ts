@@ -1,5 +1,5 @@
 import { XMessage } from "@samagra-x/xmessage";
-import { ITransformer } from "../../../dist";
+import { ITransformer } from "../common";
 
 export class SimpleRetryTransformer implements ITransformer {
 
