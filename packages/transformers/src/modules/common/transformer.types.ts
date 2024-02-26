@@ -9,7 +9,7 @@ export enum TransformerType {
     LLM = 'LLM',
     USER_FEEDBACK_LOOP = 'USER_FEEDBACK_LOOP',
     TRANSLATE = 'TRANSLATE',
-    SQLLLM = 'SQLLLM'
+    SQLLLM = 'SQLLLM',
     CODE_RUNNER = 'CODE_RUNNER',
 }
 
