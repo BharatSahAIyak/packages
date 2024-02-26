@@ -15,6 +15,7 @@
   "dependencies": {
     "@samagra-x/xmessage": "^1.0.14",
     "axios": "^1.6.5",
+    "isolated-vm": "^4.7.2",
     "llamaindex": "^0.0.46",
     "moment": "^2.29.4",
     "openai": "^4.21.0",

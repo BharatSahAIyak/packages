@@ -5,6 +5,7 @@ export enum TransformerType {
     RANDOM_BINARY = 'RANDOM_BINARY',
     SIMPLE_RETRY = 'SIMPLE_RETRY',
     USER_FEEDBACK_LOOP = 'USER_FEEDBACK_LOOP',
+    CODE_RUNNER = 'CODE_RUNNER',
 }
 
 export enum TransformerClass {
@@ -22,4 +23,5 @@ export const TransformerMapping: Record<TransformerType, TransformerClass> = {
     [TransformerType.RANDOM_BINARY]: TransformerClass.IfElseTransformer,
     [TransformerType.SIMPLE_RETRY]: TransformerClass.RetryTransformer,
     [TransformerType.USER_FEEDBACK_LOOP]: TransformerClass.StateRestoreTransformer,
+    [TransformerType.CODE_RUNNER]: TransformerClass.GenericTransformer,
 };
