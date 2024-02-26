@@ -132,7 +132,6 @@ export class LLMTransformer implements ITransformer {
                 ))['translated']
             }
             console.log("xmsg",xmsg)
-            await this.sendMessage(xmsg)
         } else {
             let sentences: any, allSentences = [], output = "" ,counter = 0;
             for await (const chunk of response) {
