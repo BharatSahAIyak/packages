@@ -24,7 +24,7 @@ export class DocRetrieverTransformer implements ITransformer {
         if (!this.config.topK) {
             this.config.topK = 6;
         }
-        let pdfIds = this.config.documentIds && this.config.documentIds.length && this.config.documentIds
+        let pdfIds = this.config.documentIds && this.config.documentIds.length ? `[${this.config.documentIds.filter((id: string)=>id).map((id:string)=>`"${id}"`).join(',')}]` : null
         try {
             const config: AxiosRequestConfig = {
               headers: {
