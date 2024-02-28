@@ -77,7 +77,7 @@ export class Transformer {
 
 export type XMessagePayload = {
   text?: string;
-  media?: MessageMedia;
+  media?: MessageMedia[];
   location?: LocationParams;
   contactCard?: ContactCard;
   buttonChoices?: Array<ButtonChoice>;
@@ -97,8 +97,8 @@ export class XMessageThread {
 
 export class MessageMedia {
   category!: MediaCategory; // category list {image, audio, document, video}
-  text!: string; // caption, if applicable
-  url!: string;
+  text?: string; // caption, if applicable
+  url?: string;
   size?: number;
   messageMediaError?: MessageMediaError;
 }
