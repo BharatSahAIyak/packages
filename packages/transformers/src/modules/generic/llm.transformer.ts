@@ -79,7 +79,7 @@ export class LLMTransformer implements ITransformer {
                 snippets: doc.content,
                 page: doc.metaData
             })
-            if(mediaUrls.indexOf(doc.video)==-1){
+            if(doc.video && mediaUrls.indexOf(doc.video)==-1){
                 xmsg.messageType = MessageType.HSM
                 mediaUrls.push(doc.video)
                 media.push({

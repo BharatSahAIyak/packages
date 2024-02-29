@@ -88,7 +88,7 @@ export class SQLLLMTransformer implements ITransformer {
                 role: 'system',
                 content: `Given the following SQL schema only dump\n${sql}
                 give an sql that answers below user question
-                provide SQL query only. NO EXPLAIN.`
+                provide SQL query only. NO EXPLAIN. ONLY GIVE VAILD SQL AS RESPONSE.`
             },
             {
                 role: 'user',
@@ -106,6 +106,7 @@ export class SQLLLMTransformer implements ITransformer {
             throw ex;
         });
         sql = response["choices"][0].message.content.replace(/\*\*/g, '*') || "";
+        sql = sql?.replace('sql','').trim();
         console.log("SQLLLM - sql", sql)
 
         formdata = new FormData();
@@ -118,7 +119,7 @@ export class SQLLLMTransformer implements ITransformer {
             redirect: "follow"
         };
 
-        let sqlResult: any = await fetch(`${this.config.excelParserURL}/excelapp/execute-sql/`, requestOptions)
+        let sqlResult: any = await fetch(`${this.config.excelParserURL}/execute-sql/`, requestOptions)
         sqlResult = await sqlResult.json()
         if(!sqlResult.error) {
             sqlResult = sqlResult.data
