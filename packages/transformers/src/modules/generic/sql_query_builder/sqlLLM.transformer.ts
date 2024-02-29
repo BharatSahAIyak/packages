@@ -1,8 +1,8 @@
 //temporary transformer will be replaces with HTTP and LLM transfomers.
 import { XMessage } from "@samagra-x/xmessage";
-import { ITransformer } from "../../common/transformer.interface";
 import OpenAI from 'openai';
-import getBhashiniConfig from "../translate/bhashini/bhashini.getConfig";
+import { ITransformer } from "../../common";
+import getBhashiniConfig from '../translate/bhashini/bhashini.getConfig';
 import computeBhashini from "../translate/bhashini/bhashini.compute";
 
 export class SQLLLMTransformer implements ITransformer {
@@ -66,15 +66,19 @@ export class SQLLLMTransformer implements ITransformer {
         }
         console.log(this.config.xlsxIds)
         let excelId =  this.config.xlsxIds[0];
+        let formdata = new FormData();
+        formdata.append("format", "sql");
+        formdata.append("excel_id", excelId);
         let requestOptions: RequestInit = {
-            method: "GET",
-            redirect: "follow"
+            method: "POST",
+            redirect: "follow",
+            body: formdata,
         };
-        let sqlResponse: any = await fetch(`${this.config.excelParserURL}/excelapp/download/?excel_id=${excelId}&format=sql`, requestOptions)
+        let sqlResponse: any = await fetch(`${this.config.excelParserURL}/download/`, requestOptions)
         sqlResponse = await sqlResponse.json()
         let sql: any;
         if(!sqlResponse.error) {
-            sql = await fetch(sqlResponse.url)
+            sql = await fetch(sqlResponse.data.url)
             sql = await sql.text()
         } else {
             throw new Error(`${sqlResponse.error} in SQLLLM transformer`);
@@ -84,7 +88,7 @@ export class SQLLLMTransformer implements ITransformer {
                 role: 'system',
                 content: `Given the following SQL schema only dump\n${sql}
                 give an sql that answers below user question
-                provide SQL query only. NO EXPLAIN.`
+                provide SQL query only. NO EXPLAIN. ONLY GIVE VAILD SQL AS RESPONSE.`
             },
             {
                 role: 'user',
@@ -102,9 +106,10 @@ export class SQLLLMTransformer implements ITransformer {
             throw ex;
         });
         sql = response["choices"][0].message.content.replace(/\*\*/g, '*') || "";
+        sql = sql?.replace('sql','').trim();
         console.log("SQLLLM - sql", sql)
 
-        const formdata = new FormData();
+        formdata = new FormData();
         formdata.append("query", sql);
         formdata.append("excel_id", excelId);
 
@@ -114,7 +119,7 @@ export class SQLLLMTransformer implements ITransformer {
             redirect: "follow"
         };
 
-        let sqlResult: any = await fetch(`${this.config.excelParserURL}/excelapp/execute-sql/`, requestOptions)
+        let sqlResult: any = await fetch(`${this.config.excelParserURL}/execute-sql/`, requestOptions)
         sqlResult = await sqlResult.json()
         if(!sqlResult.error) {
             sqlResult = sqlResult.data

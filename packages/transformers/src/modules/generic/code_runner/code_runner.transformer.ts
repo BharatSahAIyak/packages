@@ -1,5 +1,5 @@
 import { XMessage } from "@samagra-x/xmessage";
-import { ITransformer } from "../../../../dist";
+import { ITransformer } from "../../common/transformer.interface";
 const ivm = require('isolated-vm');
 
 export class CodeRunnerTransformer implements ITransformer {

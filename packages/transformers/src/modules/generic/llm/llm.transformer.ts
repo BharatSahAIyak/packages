@@ -1,4 +1,4 @@
-import { XMessage } from "@samagra-x/xmessage";
+import { MediaCategory, MessageMedia, MessageType, XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
 import OpenAI from 'openai';
 import moment from "moment";
@@ -70,6 +70,8 @@ export class LLMTransformer implements ITransformer {
             snippets: string;
             page: any
         }> = [];
+        let media: Array<MessageMedia> = []
+        let mediaUrls:Array<string> = []
         xmsg.transformer.metaData!.retrievedChunks?.forEach((doc: any, index: number)=> {
             expertContext+=`${index+1}: ${doc.content}\n`
             searchResults.push({
@@ -78,6 +80,14 @@ export class LLMTransformer implements ITransformer {
                 snippets: doc.content,
                 page: doc.metaData
             })
+            if(doc.video && mediaUrls.indexOf(doc.video)==-1){
+                xmsg.messageType = MessageType.HSM
+                mediaUrls.push(doc.video)
+                media.push({
+                    category: MediaCategory.VIDEO_URL,
+                    url: doc.video
+                })
+            }
         }) || '';
         let systemInstructions = this.config.prompt || 'You are am assistant who helps with answering questions for users based on the search results. If question is not relevant to search reults/corpus, refuse to answer';
         systemInstructions = systemInstructions.replace('{{date}}', moment().format('MMM DD, YYYY (dddd)'))
@@ -132,7 +142,9 @@ export class LLMTransformer implements ITransformer {
                     xmsg.payload.text!
                 ))['translated']
             }
+            xmsg.payload.media = media;
             console.log("xmsg",xmsg)
+            await this.sendMessage(xmsg)
         } else {
             let sentences: any, allSentences = [], output = "" ,counter = 0;
             for await (const chunk of response) {
@@ -159,6 +171,7 @@ export class LLMTransformer implements ITransformer {
                                 xmsg.payload.text!
                             ))['translated']
                         }
+                        xmsg.payload.media = media;
                         await this.sendMessage(xmsg)
                     }
                 }
@@ -174,6 +187,7 @@ export class LLMTransformer implements ITransformer {
                 ))['translated']
             }
             xmsg.payload.text = `${xmsg.payload.text}<end/>`
+            xmsg.payload.media = media;
             await this.sendMessage(xmsg)
             xmsg.payload.text = allSentences.join(' ').replace("<end/>",'')
         }
