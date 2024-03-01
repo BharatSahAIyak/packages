@@ -68,7 +68,7 @@ export class SQLLLMTransformer implements ITransformer {
         let excelId =  this.config.xlsxIds[0];
         let formdata = new FormData();
         formdata.append("format", "sql");
-        formdata.append("excel_id", excelId);
+        formdata.append("taskId", excelId);
         let requestOptions: RequestInit = {
             method: "POST",
             redirect: "follow",
@@ -111,7 +111,7 @@ export class SQLLLMTransformer implements ITransformer {
 
         formdata = new FormData();
         formdata.append("query", sql);
-        formdata.append("excel_id", excelId);
+        formdata.append("taskId", excelId);
 
         requestOptions = {
             method: "POST",
@@ -119,7 +119,7 @@ export class SQLLLMTransformer implements ITransformer {
             redirect: "follow"
         };
 
-        let sqlResult: any = await fetch(`${this.config.excelParserURL}/execute-sql/`, requestOptions)
+        let sqlResult: any = await fetch(`${this.config.excelParserURL}/query/`, requestOptions)
         sqlResult = await sqlResult.json()
         if(!sqlResult.error) {
             sqlResult = sqlResult.data
