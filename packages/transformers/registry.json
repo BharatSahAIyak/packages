@@ -32,6 +32,20 @@
     "version": "0.0.1"
   },
   {
+    "name": "Field Setter Transformer",
+    "class": "GenericTransformer",
+    "type": "FIELD_SETTER",
+    "description": "A field setter that can set XMessage fields from user history or current XMessage.",
+    "config": {
+      "required": {
+        "setters": "json"
+      },
+      "optional": {},
+      "conditional": {}
+    },
+    "version": "0.0.1"
+  },
+  {
     "name": "HTTP GET Transformer",
     "class": "GenericTransformer",
     "type": "HTTP_GET",
