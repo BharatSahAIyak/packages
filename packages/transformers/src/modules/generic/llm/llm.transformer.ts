@@ -9,17 +9,17 @@ import computeBhashini from "../translate/bhashini/bhashini.compute";
 export class LLMTransformer implements ITransformer {
 
     /// Accepted config properties:
-    ///     prompt: LLM prompt. (optional)
-    ///     corpusPrompt: Specific instructions on corpus. (optional)
     ///     openAIAPIKey: openAI API key.
-    ///     temperature: The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. (default: `0`)
     ///     model: LLM model.
-    ///     enableStream: boolean which allowes user to get streaming responses if enabled.
-    ///     outboundURL: Endpoint of service which sends message to end user.
-    ///     outputLanguage: stream output language.
+    ///     outboundURL: Endpoint of service which sends message to end user. Required if `enableStream` is set to `true`.
     ///     bhashiniUserId: user id for bhashini (required if provider is set to bhashini)
     ///     bhashiniAPIKey: API key for bhashini (required if provider is set to bhashini)
     ///     bhashiniURL: Base url for bhashini (required if provider is set to bhashini)
+    ///     prompt: LLM prompt. (optional)
+    ///     corpusPrompt: Specific instructions on corpus. (optional)
+    ///     temperature: The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. (default: `0`) (optional)
+    ///     enableStream: boolean which allowes user to get streaming responses if enabled. By default this is set to `false`. (optional)
+    ///     outputLanguage: Stream output language. Defaults to 'en'. (optional)
     constructor(readonly config: Record<string, any>) { }
 
     // TODO: use TRANSLATE transformer directly instead of repeating code
@@ -39,9 +39,6 @@ export class LLMTransformer implements ITransformer {
         }
         if (!this.config.openAIAPIKey) {
             throw new Error('`openAIAPIKey` not defined in LLM transformer');
-        }
-        if (!this.config.outboundURL){
-            throw new Error('`outboundURL` not defined in LLM transformer');
         }
         if (!this.config.temperature) {
             this.config.temperature = 0;
@@ -123,7 +120,7 @@ export class LLMTransformer implements ITransformer {
             model: this.config.model,
             messages: prompt,
             temperature: this.config.temperature || 0,
-            stream: this.config.enableStream
+            stream: this.config.enableStream ?? false,
         }).catch((ex) => {
             console.error(`LLM failed. Reason: ${ex}`);
             throw ex;
@@ -146,6 +143,9 @@ export class LLMTransformer implements ITransformer {
             console.log("xmsg",xmsg)
             await this.sendMessage(xmsg)
         } else {
+            if (!this.config.outboundURL){
+                throw new Error('`outboundURL` not defined in LLM transformer');
+            }
             let sentences: any, allSentences = [], output = "" ,counter = 0;
             for await (const chunk of response) {
                 let currentChunk = chunk.choices[0]?.delta?.content || "";
@@ -253,11 +253,12 @@ export class LLMTransformer implements ITransformer {
         }
     }
 
+    // TODO: extract out this functionality
     async translateBhashini(
         source: string,
         target: string,
         text: string
-      ) {
+    ) {
         try {
           let config = {
             "language": {

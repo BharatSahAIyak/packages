@@ -6,9 +6,9 @@ export class DocRetrieverTransformer implements ITransformer {
 
     /// Accepted config properties:
     ///     url: BFF endpoint used to retrieve docs.
-    ///     topK: Int describing number of top matched chunks to retrieve. default: 6
-    ///     staticNoContentResponse: Bot response message incase no related docs are found, If provided, it'll be attached to the XMessage.payload.text in case no related docs are found. (optional)
     ///     documentIds: list of documents to search from
+    ///     staticNoContentResponse: Bot response message incase no related docs are found, If provided, it'll be attached to the XMessage.payload.text in case no related docs are found. (optional)
+    ///     topK: Int describing number of top matched chunks to retrieve. Defaults to 6. (optional)
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
@@ -34,11 +34,6 @@ export class DocRetrieverTransformer implements ITransformer {
             console.log(`retrieving chunks via '${`${this.config.url}/chunk/retrieve?text=${xmsg.payload.text}${pdfIds?`&pdfId=${pdfIds}`:''}${this.config.topK ? `&topK=${this.config.topK}`:''}`}'`)
             const response = await axios.get(`${this.config.url}/chunk/retrieve?text=${xmsg.payload.text}${pdfIds?`&pdfId=${pdfIds}`:''}${this.config.topK ? `&topK=${this.config.topK}`:''}`, config);
             const responseData = response.data;
-            if (!xmsg.transformer) {
-                xmsg.transformer = {
-                    metaData: {}
-                };
-            }
             xmsg.transformer.metaData!.retrievedChunks = responseData;
             xmsg.transformer.metaData!.state = (responseData && responseData.length) ? 'if' : 'else';
             if(xmsg.transformer.metaData!.state=='else' && this.config.staticNoContentResponse) {
@@ -46,7 +41,7 @@ export class DocRetrieverTransformer implements ITransformer {
                 xmsg.payload.metaData = JSON.stringify({
                     ...JSON.parse(xmsg.payload.metaData!),
                     staticResponse: true
-                })
+                });
             }
             return xmsg;
         } catch (ex) {

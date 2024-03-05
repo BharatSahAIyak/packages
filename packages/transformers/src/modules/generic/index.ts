@@ -1,5 +1,5 @@
-export * from './http/http.post.transformer';
-export * from './http/http.get.transformer';
+export * from './http_post/http.post.transformer';
+export * from './http_get/http.get.transformer';
 export * from './neural_coreference/nural_coreference.transformer';
 export * from './llm/llm.transformer';
 export * from './translate/translate.transfomer';

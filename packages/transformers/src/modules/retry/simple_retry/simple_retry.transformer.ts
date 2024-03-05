@@ -4,7 +4,7 @@ import { ITransformer } from "../../common";
 export class SimpleRetryTransformer implements ITransformer {
 
     /// Accepted config properties:
-    ///     retries: string: Number of reties before failure
+    ///     retries: string: Number of reties before failure. Default is 1. (optional)
     ///     delay: number: Delay in milliseconds before next retry. Default is 0. (optional)
     constructor(readonly config: Record<string, any>) { }
 
@@ -15,7 +15,7 @@ export class SimpleRetryTransformer implements ITransformer {
             }
         }
         this.config.delay = this.config.delay ?? 0;
-        if (!xmsg.transformer.metaData!.retryCount || xmsg.transformer.metaData!.retryCount < (this.config.retries ?? 0)) {
+        if (!xmsg.transformer.metaData!.retryCount || xmsg.transformer.metaData!.retryCount < (this.config.retries ?? 1)) {
             xmsg.transformer.metaData!.retryCount = (xmsg.transformer.metaData!.retryCount || 0) + 1;
             xmsg.transformer.metaData!.state = 'retry';
             await this.delay(this.config.delay);

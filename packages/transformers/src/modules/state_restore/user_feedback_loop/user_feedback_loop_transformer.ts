@@ -4,8 +4,8 @@ import { ITransformer } from "../../common/transformer.interface";
 export class UserFeedbackLoopTransformer implements ITransformer {
 
     /// Accepted config properties:
-    ///     prompt: string: A prompt to send the user to reply to. If not provided, `XMessage.payload.text` is required.
     ///     restoreState: string: The target state id to restore the state to.
+    ///     prompt: string: A prompt to send the user to reply to. If not provided, `XMessage.payload.text` is required.
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {

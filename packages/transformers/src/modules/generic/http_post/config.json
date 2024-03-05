@@ -1,0 +1,17 @@
+{
+    "name": "HTTP POST Transformer",
+    "class": "GenericTransformer",
+    "type": "HTTP_POST",
+    "description": "A transformer capable of making HTTP POST request.",
+    "config": {
+        "required": {
+            "url": "string"
+        },
+        "optional": {
+            "headers": "json",
+            "body": "json"
+        },
+        "conditional": { }
+    },
+    "version": "0.0.1"
+}

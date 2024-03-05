@@ -1,0 +1,17 @@
+{
+    "name": "HTTP GET Transformer",
+    "class": "GenericTransformer",
+    "type": "HTTP_GET",
+    "description": "A transformer capable of making HTTP GET request.",
+    "config": {
+        "required": {
+            "url": "string"
+        },
+        "optional": {
+            "headers": "json",
+            "query": "string"
+        },
+        "conditional": { }
+    },
+    "version": "0.0.1"
+}

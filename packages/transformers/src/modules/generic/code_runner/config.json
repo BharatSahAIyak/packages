@@ -1,0 +1,14 @@
+{
+    "name": "Code Runner Transformer",
+    "class": "GenericTransformer",
+    "type": "CODE_RUNNER",
+    "description": "A code runner capable of running custom JS code.",
+    "config": {
+        "required": {
+            "code": "string"
+        },
+        "optional": { },
+        "conditional": { }
+    },
+    "version": "0.0.1"
+}

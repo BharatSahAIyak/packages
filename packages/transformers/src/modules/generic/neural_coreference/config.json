@@ -1,0 +1,15 @@
+{
+    "name": "Neural Coreference",
+    "class": "GenericTransformer",
+    "type": "NEURAL_COREFERENCE",
+    "description": "A transformer to add coreferenced context.",
+    "config": {
+        "required": {
+            "prompt": "string",
+            "openAIAPIKey": "string"
+        },
+        "optional": { },
+        "conditional": { }
+    },
+    "version": "0.0.1"
+}

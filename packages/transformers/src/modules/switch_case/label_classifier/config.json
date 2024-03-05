@@ -1,0 +1,27 @@
+{
+    "name": "Label Classifier",
+    "class": "SwitchCaseTransformer",
+    "type": "LABEL_CLASSIFIER",
+    "description": "A transformer which classifies an input into a label using an external API.",
+    "config": {
+        "required": {
+            "url": "string"
+        },
+        "optional": {
+            "headers": "json",
+            "suppressedLabels": "string[]",
+            "existingLabel": "string",
+            "suppressionThreshold": "number",
+            "supersedeThreshold": "number",
+            "minimumThreshold": "number",
+            "persistLabel": "boolean"
+        },
+        "conditional": {
+            "prompt": {
+                "type": "string",
+                "ifAbsent": [ "XMessage.payload.text" ]
+            }
+        }
+    },
+    "version": "0.0.1"
+}

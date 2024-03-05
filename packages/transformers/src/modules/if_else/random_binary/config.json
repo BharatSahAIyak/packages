@@ -1,0 +1,12 @@
+{
+    "name": "Random Binary",
+    "class": "IfElseTransformer",
+    "type": "RANDOM_BINARY",
+    "description": "A transformer that randomly outputs a binary state.",
+    "config": {
+        "required": { },
+        "optional": { },
+        "conditional": { }
+    },
+    "version": "0.0.1"
+}

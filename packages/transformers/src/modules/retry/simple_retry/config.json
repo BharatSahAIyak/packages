@@ -1,0 +1,15 @@
+{
+    "name": "Simple Retry",
+    "class": "RetryTransformer",
+    "type": "SIMPLE_RETRY",
+    "description": "A transformer which can be used to add retry mechanism.",
+    "config": {
+        "required": { },
+        "optional": {
+            "retries": "number",
+            "delay": "number"
+        },
+        "conditional": { }
+    },
+    "version": "0.0.1"
+}
