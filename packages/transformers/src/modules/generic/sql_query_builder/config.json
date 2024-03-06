@@ -1,0 +1,25 @@
+{
+    "name": "SQL LLM Transformer",
+    "class": "GenericTransformer",
+    "type": "SQLLLM",
+    "description": "A code runner capable of running custom JS code.",
+    "config": {
+        "required": {
+            "openAIAPIKey": "string",
+            "model": "string",
+            "xlsxIds": "string[]",
+            "outboundURL": "string",
+            "outputLanguage": "string",
+            "excelParserURL": "string",
+            "bhashiniUserId": "string",
+            "bhashiniAPIKey": "string",
+            "bhashiniURL": "string"
+        },
+        "optional": {
+            "prompt": "string",
+            "temperature": "number"
+        },
+        "conditional": { }
+    },
+    "version": "0.0.1"
+}

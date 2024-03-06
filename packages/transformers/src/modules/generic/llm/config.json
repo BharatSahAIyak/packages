@@ -1,0 +1,38 @@
+{
+    "name": "LLM Transformer",
+    "class": "GenericTransformer",
+    "type": "LLM",
+    "description": "A general LLM model based transformer.",
+    "config": {
+        "required": {
+            "openAIAPIKey": "string",
+            "model": "string"
+        },
+        "optional": {
+            "prompt": "string",
+            "corpusPrompt": "string",
+            "temperature": "number",
+            "enableStream": "boolean",
+            "outputLanguage": "string"
+        },
+        "conditional": {
+            "outboundURL": {
+                "type": "string",
+                "ifPresent": [ "enableStream" ]
+            },
+            "bhashiniUserId": {
+                "type": "string",
+                "ifPresent": [  ]
+            },
+            "bhashiniAPIKey": {
+                "type": "string",
+                "ifPresent": [  ]
+            },
+            "bhashiniURL": {
+                "type": "string",
+                "ifPresent": [  ]
+            }
+        }
+    },
+    "version": "0.0.1"
+}

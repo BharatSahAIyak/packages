@@ -1,0 +1,19 @@
+{
+    "name": "Translate Transformer",
+    "class": "GenericTransformer",
+    "type": "TRANSLATE",
+    "description": "A code runner capable of running custom JS code.",
+    "config": {
+        "required": {
+            "provider": "string",
+            "inputLanguage": "string",
+            "outputLanguage": "string",
+            "bhashiniUserId": "string",
+            "bhashiniAPIKey": "string",
+            "bhashiniURL": "string"
+        },
+        "optional": { },
+        "conditional": { }
+    },
+    "version": "0.0.1"
+}

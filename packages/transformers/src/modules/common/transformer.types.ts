@@ -14,11 +14,11 @@ export enum TransformerType {
 }
 
 export enum TransformerClass {
-    GenericTransformer,
-    IfElseTransformer,
-    SwitchCaseTransformer,
-    RetryTransformer,
-    StateRestoreTransformer,
+    GenericTransformer = 'GenericTransformer',
+    IfElseTransformer = 'IfElseTransformer',
+    SwitchCaseTransformer = 'SwitchCaseTransformer',
+    RetryTransformer = 'RetryTransformer',
+    StateRestoreTransformer = 'StateRestoreTransformer',
 }
 
 export const TransformerMapping: Record<TransformerType, TransformerClass> = {

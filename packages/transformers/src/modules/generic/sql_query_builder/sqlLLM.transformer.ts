@@ -8,17 +8,17 @@ import computeBhashini from "../translate/bhashini/bhashini.compute";
 export class SQLLLMTransformer implements ITransformer {
 
     /// Accepted config properties:
-    ///     prompt: LLM prompt. (optional)
     ///     openAIAPIKey: openAI API key.
-    ///     temperature: The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. (default: `0`)
     ///     model: LLM model.
     ///     xlsxIds: list of excel ids to search from.
     ///     outboundURL: Endpoint of service which sends message to end user.
     ///     outputLanguage: stream output language.
+    ///     excelParserURL: Base url for excel parser.
     ///     bhashiniUserId: user id for bhashini (required if provider is set to bhashini)
     ///     bhashiniAPIKey: API key for bhashini (required if provider is set to bhashini)
     ///     bhashiniURL: Base url for bhashini (required if provider is set to bhashini)
-    ///     excelParserURL: Base url for excel parser.
+    ///     prompt: LLM prompt. (optional)
+    ///     temperature: The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. (default: `0`)
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
