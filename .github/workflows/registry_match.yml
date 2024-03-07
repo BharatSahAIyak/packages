@@ -1,0 +1,44 @@
+name: Compare Generator Result
+
+on:
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - main
+  pull_request_target:
+    types: [opened, synchronize]
+
+jobs:
+  execute_and_compare:
+
+    strategy:
+      matrix:
+        node-version: [18, 20]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        working-directory: ./packages/transformers
+        run: yarn install
+
+      - name: Execute TypeScript script
+        working-directory: ./packages/transformers
+        run: |
+          npx tsx registry_generator.ts
+
+      - name: Compare file content
+        working-directory: ./packages/transformers
+        run: |
+          diff -u <(cat registry.json) <(git show HEAD:packages/transformers/registry.json) || exit 1
