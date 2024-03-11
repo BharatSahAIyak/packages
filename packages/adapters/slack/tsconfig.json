@@ -23,8 +23,9 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "**/*.d.ts", "jest.config.js",
-],
+    "**/*.d.ts",
+    "jest.config.js",
+  ],
   "exclude": [
     "node_modules"
   ],

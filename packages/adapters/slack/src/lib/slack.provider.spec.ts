@@ -1,7 +1,7 @@
 import { SlackProvider } from './slack.provider';
 
 test('should trigger Slack correctly', async () => {
-  const provider = new SlackProvider();
+  const provider = new SlackProvider({botToken: 'TEST_TOKEN'});
   const spy = jest
     .spyOn(provider, 'sendMessage')
     .mockImplementation(async () => {
