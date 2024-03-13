@@ -13,12 +13,17 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[tj]s?(x)"],
-    "testPathIgnorePatterns": ["/node_modules/"],
+    "testMatch": [
+      "**/__tests__/**/*.[jt]s?(x)",
+      "**/?(*.)+(spec|test).[tj]s?(x)"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/"
+    ],
     "transform": {
       "^.+\\.ts?$": "ts-jest"
     }
-  },  
+  },
   "author": "Amruth-Vamshi",
   "license": "MIT",
   "dependencies": {
@@ -36,6 +41,8 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
+    "jest-fetch-mock": "^3.0.3",
+    "node-fetch": "^2.6.13",
     "ts-jest": "^29.1.2",
     "tsx": "^4.7.1"
   }

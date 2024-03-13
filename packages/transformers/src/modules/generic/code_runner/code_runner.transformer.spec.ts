@@ -1,7 +1,6 @@
 import { XMessage, MessageType, MessageState } from "@samagra-x/xmessage";
 import { CodeRunnerTransformer } from "./code_runner.transformer";
 
-        // Mocking a sample XMessage
         const mockXMessage: XMessage = {
           messageType: MessageType.TEXT,
           messageId: {
