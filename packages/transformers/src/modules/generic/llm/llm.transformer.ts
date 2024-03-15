@@ -15,7 +15,7 @@ export class LLMTransformer implements ITransformer {
     ///     bhashiniUserId: user id for bhashini (required if provider is set to bhashini)
     ///     bhashiniAPIKey: API key for bhashini (required if provider is set to bhashini)
     ///     bhashiniURL: Base url for bhashini (required if provider is set to bhashini)
-    ///     prompt: LLM prompt. (optional)
+    ///     prompt: LLM prompt, if not provided `xmsg.transformer.metaData.prompt` will be used. (optional)
     ///     corpusPrompt: Specific instructions on corpus. (optional)
     ///     temperature: The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. (default: `0`) (optional)
     ///     enableStream: boolean which allowes user to get streaming responses if enabled. By default this is set to `false`. (optional)
@@ -86,7 +86,7 @@ export class LLMTransformer implements ITransformer {
                 })
             }
         }) || '';
-        let systemInstructions = this.config.prompt || 'You are am assistant who helps with answering questions for users based on the search results. If question is not relevant to search reults/corpus, refuse to answer';
+        let systemInstructions = this.config.prompt || xmsg.transformer?.metaData?.prompt || 'You are am assistant who helps with answering questions for users based on the search results. If question is not relevant to search reults/corpus, refuse to answer';
         systemInstructions = systemInstructions.replace('{{date}}', moment().format('MMM DD, YYYY (dddd)'))
         let contentString = this.config.corpusPrompt || 'Relevant Corpus:\n{{corpus}}'
         contentString = contentString.replace('{{corpus}}',expertContext)
