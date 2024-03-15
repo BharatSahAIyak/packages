@@ -24,7 +24,7 @@ export class NeuralCoreferenceTransformer implements ITransformer {
         this.config.prompt = [{
             role: "user",
             content: this.config.prompt
-            .replace('{{user_history}}',`${xmsg.transformer?.metaData?.userHistory.map((message:XMessage)=>message.from.bot ? `AI:${message.payload.text}`: `USER:${message.payload.text}`).join("\n")}`)
+            .replace('{{user_history}}',`${xmsg.transformer?.metaData?.userHistory.map((message: any)=>message.from == 'admin' ? `AI:${message.payload.text}`: `USER:${message.payload.text}`).join("\n")}`)
             .replace('{{user_question}}',xmsg.payload.text)
         }];
         const openai = new OpenAI({apiKey: this.config.openAIAPIKey});
