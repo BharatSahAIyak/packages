@@ -4,9 +4,10 @@ import { ITransformer } from "../../common";
 export class HttpGetTransformer implements ITransformer {
 
     /// Accepted config properties:
-    ///     headers: Headers for request (optional)
-    ///     query: Query string starting with '?' for HTTP request (optional)
-    ///     url: Url of the endpoint
+    ///     url: Url of the endpoint. If not provided, `XMessage.transformer.metaData.httpUrl` will be used.
+    ///     headers: Headers for request. If not provided, `XMessage.transformer.metaData.httpHeaders` will be used. (optional).
+    ///     query: Query string starting with '?' for HTTP request. If not provided, `XMessage.transformer.metaData.httpQuery` will be used. (optional)
+    ///     queryJson: Query parameters in JSON format. If not provided, `XMessage.transformer.metaData.httpQueryJson` will be used. Will be ignored if `query` is passed. (optional)
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
@@ -16,6 +17,12 @@ export class HttpGetTransformer implements ITransformer {
             };
         }
         console.log("HTTP GET transformer used with: " + JSON.stringify(xmsg));
+
+        this.config.url = this.config.url ?? xmsg.transformer?.metaData?.httpUrl;
+        this.config.queryJson = this.config.queryJson ?? xmsg.transformer?.metaData?.httpQueryJson ?? {};
+        this.config.headers = this.config.headers ?? xmsg.transformer?.metaData?.httpHeaders;
+        this.config.query = this.config.query ?? xmsg.transformer?.metaData?.httpQuery ?? this.createQueryString(this.config.queryJson);
+
         if (!this.config.url) {
             throw new Error('`url` not defined in HTTP_GET transformer');
         }
@@ -44,5 +51,16 @@ export class HttpGetTransformer implements ITransformer {
             throw ex;
         });
         return xmsg;
+    }
+
+    private createQueryString(queryJson: Record<string, string>): string {
+        if (Object.keys(queryJson).length === 0) {
+            return '';
+        }
+        const queryString = Object.entries(queryJson)
+            .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+            .join('&');
+
+        return `?${queryString}`;
     }
 }
