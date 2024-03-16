@@ -37,7 +37,7 @@ export class FieldSetterTransformer implements ITransformer {
                 return get(xmsg, value.match(xmsgPlaceholder)![1]);
             }
             else if (value.match(historyPlaceholder)) {
-                return get(xmsg.transformer?.metaData?.userHistory.pop() ?? {}, value.match(historyPlaceholder)![1]);
+                return get(xmsg.transformer?.metaData?.userHistory[xmsg.transformer?.metaData?.userHistory - 1] ?? {}, value.match(historyPlaceholder)![1]);
             }
         }
         return value;
