@@ -2,6 +2,9 @@ import { Recipe, GraphNode, LogicDef } from "./types";
 import { v4 as uuid4 } from "uuid";
 
 export class RecipeCompiler {
+
+    constructor() { }
+
     private createNodeMapping(flowLogic: Recipe): {
         indexNodeMap: Record<number, GraphNode>
         nodeIndexMap: Record<string, number>,
