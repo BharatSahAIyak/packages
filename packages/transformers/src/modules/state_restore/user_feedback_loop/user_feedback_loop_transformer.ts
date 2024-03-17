@@ -8,7 +8,7 @@ export class UserFeedbackLoopTransformer implements ITransformer {
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        console.log(`USER_FEEDBACK_LOOP called with: ${JSON.stringify(xmsg)}`);
+        console.log(`USER_FEEDBACK_LOOP called.`);
         if (!this.config.restoreState) {
             throw new Error('restoreState is required!');
         }

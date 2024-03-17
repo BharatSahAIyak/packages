@@ -10,7 +10,7 @@ export class NeuralCoreferenceTransformer implements ITransformer {
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        console.log("NEURAL_COREFERENCE transformer used with: " + JSON.stringify(xmsg));
+        console.log("NEURAL_COREFERENCE transformer called.");
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length) {
             console.log("UserHistory not found! Returning original XMessag in NEURAL_COREFERENCE transformer")
             return xmsg

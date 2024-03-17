@@ -16,7 +16,7 @@ export class HttpGetTransformer implements ITransformer {
                 metaData: {}
             };
         }
-        console.log("HTTP GET transformer used with: " + JSON.stringify(xmsg));
+        console.log("HTTP GET transformer called.");
 
         this.config.url = this.config.url ?? xmsg.transformer?.metaData?.httpUrl;
         this.config.queryJson = this.config.queryJson ?? xmsg.transformer?.metaData?.httpQueryJson ?? {};

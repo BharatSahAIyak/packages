@@ -17,6 +17,7 @@ export class FieldSetterTransformer implements ITransformer {
     ) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
+        console.log("Field Setter called.");
         if (!this.config.setters) {
             throw new Error('`config.setters` is a required parameter!');
         }
@@ -37,7 +38,7 @@ export class FieldSetterTransformer implements ITransformer {
                 return get(xmsg, value.match(xmsgPlaceholder)![1]);
             }
             else if (value.match(historyPlaceholder)) {
-                return get(xmsg.transformer?.metaData?.userHistory[xmsg.transformer?.metaData?.userHistory - 1] ?? {}, value.match(historyPlaceholder)![1]);
+                return get(xmsg.transformer?.metaData?.userHistory[0] ?? {}, value.match(historyPlaceholder)![1]);
             }
         }
         return value;

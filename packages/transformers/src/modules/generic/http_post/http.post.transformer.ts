@@ -10,7 +10,7 @@ export class HttpPostTransformer implements ITransformer {
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        console.log("HTTP POST transformer used with: " + JSON.stringify(xmsg));
+        console.log("HTTP POST transformer called.");
 
         this.config.url = this.config.url ?? xmsg.transformer?.metaData?.httpUrl;
         this.config.headers = this.config.headers ?? xmsg.transformer?.metaData?.httpHeaders;
