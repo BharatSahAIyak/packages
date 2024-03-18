@@ -7,8 +7,8 @@ export class TranslateTransformer implements ITransformer {
 
     /// Accepted config properties:
     ///     provider: translate service provider (Bhashini | Azure)
-    ///     inputLanguage: input text language
-    ///     outputLanguage: output text language
+    ///     inputLanguage: input text language, defaults to `xmsg.transformer.metaData.inputLanguage` if null, if `xmsg.transformer.metaData.inputLanguage` is null then defaults to en
+    ///     outputLanguage: output text language, defaults to `xmsg.transformer.metaData.outputLanguage` if null, if `xmsg.transformer.metaData.outputLanguage` is null then defaults to en
     ///     bhashiniUserId: user id for bhashini (required if provider is set to bhashini)
     ///     bhashiniAPIKey: API key for bhashini (required if provider is set to bhashini)
     ///     bhashiniURL: Base url for bhashini (required if provider is set to bhashini)
@@ -25,10 +25,10 @@ export class TranslateTransformer implements ITransformer {
         throw new Error('`provider` not defined in TRANSLATE transformer');
       }
       if (!this.config.inputLanguage) {
-        throw new Error('`inputLanguage` not defined in TRANSLATE transformer');
+        this.config.inputLanguage = xmsg?.transformer?.metaData?.inputLanguage || 'en';
       }
       if (!this.config.outputLanguage) {
-        throw new Error('`outputLanguage` not defined in TRANSLATE transformer');
+        this.config.inputLanguage = xmsg?.transformer?.metaData?.outputLanguage || 'en';
       }
       if(!xmsg?.payload?.text){
         throw new Error('`input payload` not defined in TRANSLATE transformer');
