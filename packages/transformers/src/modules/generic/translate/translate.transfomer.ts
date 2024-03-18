@@ -7,8 +7,8 @@ export class TranslateTransformer implements ITransformer {
 
     /// Accepted config properties:
     ///     provider: translate service provider (Bhashini | Azure)
-    ///     inputLanguage: input text language
-    ///     outputLanguage: output text language
+    ///     inputLanguage: input text language, defaults to `xmsg.transformer.metaData.inputLanguage` if null, if `xmsg.transformer.metaData.inputLanguage` is null then defaults to en
+    ///     outputLanguage: output text language, defaults to `xmsg.transformer.metaData.outputLanguage` if null, if `xmsg.transformer.metaData.outputLanguage` is null then defaults to en
     ///     bhashiniUserId: user id for bhashini (required if provider is set to bhashini)
     ///     bhashiniAPIKey: API key for bhashini (required if provider is set to bhashini)
     ///     bhashiniURL: Base url for bhashini (required if provider is set to bhashini)
