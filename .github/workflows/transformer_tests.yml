@@ -21,8 +21,6 @@ jobs:
         run: cd packages/transformers && npm install --legacy-peer-deps
 
       - name: Run Tests
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: cd packages/transformers && npm run test 2>&1 | tee test-report.txt
         continue-on-error: true
 
