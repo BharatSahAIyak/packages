@@ -1,6 +1,44 @@
 import { LLMTransformer } from "./llm.transformer";
-import { MessageType, MessageState, XMessage } from "@samagra-x/xmessage";
+import { MessageType, MessageState } from "@samagra-x/xmessage";
 import fetch from "jest-fetch-mock";
+
+const openai200normal = {
+    "id": "cmpl-8Y1uU3RVsY9kkGnQrSE7rmWcdHNvk",
+    "object": "text_completion",
+    "created": 1703121186,
+    "model": "gpt-3.5-turbo-instruct",
+    "choices": [
+        {
+            "message": {
+                content:"The capital of France is Paris.",
+            },
+            "index": 0,
+            "logprobs": null,
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "prompt_tokens": 142,
+        "completion_tokens": 42,
+        "total_tokens": 184
+    }
+};
+
+let mockOpenAIresponses = {
+    create: openai200normal,
+};
+
+jest.mock('openai', () => {
+    return jest.fn().mockImplementation(() => {
+        return {
+            chat:{
+                completions: {
+                    create: jest.fn().mockImplementation(async () => { return mockOpenAIresponses.create; })
+                }
+            }
+        }
+    })
+});
 
 jest.mock("node-fetch", () => fetch);
 let transformer: LLMTransformer;
@@ -50,18 +88,6 @@ describe("LLMTransformer Tests", () => {
     });
 
     it("should transform XMessage correctly", async () => {
-        
-        const mockCreate = jest.fn().mockResolvedValueOnce({
-            choices: [{ message: { content: "The capital of Spain is Madrid." } }]
-        });
-        jest.mock("openai", () => ({
-            chat: {
-                completions: {
-                    create: mockCreate,
-                },
-            },
-        }));        
-
         const transformerConfig = {
             model: "gpt-3.5-turbo",
             openAIAPIKey: "mockkey",
@@ -93,17 +119,6 @@ describe("LLMTransformer Tests", () => {
     });
 
     it('should transform XMessage correctly when the input message is a non-English text', async () => {
-        const mockCreate = jest.fn().mockResolvedValueOnce({
-            choices: [{ message: { content: "The capital of Spain is Madrid." } }]
-        });
-        jest.mock("openai", () => ({
-            chat: {
-                completions: {
-                    create: mockCreate,
-                },
-            },
-        }));
-
         const xmsgNonEnglish = {
             messageType: MessageType.TEXT,
             messageId: {
@@ -135,7 +150,7 @@ describe("LLMTransformer Tests", () => {
         };
         
         const transformedXMessage = await transformer.transform(xmsgNonEnglish);
-        expect(transformedXMessage.payload.text).toContain("Madrid");
+        expect(transformedXMessage.payload.text).toContain("France");
     });
 
     it('should throw error if model is not defined', async () => {
