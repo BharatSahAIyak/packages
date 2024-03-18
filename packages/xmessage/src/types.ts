@@ -85,7 +85,7 @@ export type XMessagePayload = {
   flow?: string;
   questionIndex?: number;
   mediaCaption?: string;
-  metaData?: string;
+  metaData?: Record<string, any>;
   subject?: string;
 }
 
