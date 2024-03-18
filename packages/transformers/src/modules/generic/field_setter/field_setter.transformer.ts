@@ -30,8 +30,8 @@ export class FieldSetterTransformer implements ITransformer {
     }
 
     private getResolvedValue(value: string, xmsg: XMessage): string | JSON {
-        const xmsgPlaceholder = /\{msg:([^}]*)\}/g;
-        const historyPlaceholder = /\{history:([^}]*)\}/g;
+        const xmsgPlaceholder = /\{\{msg:([^}]*)\}\}/g;
+        const historyPlaceholder = /\{\{history:([^}]*)\}\}/g;
         const replacements: Record<string, any> = {};
         let matched;
         if (typeof value === 'string') {
@@ -42,7 +42,8 @@ export class FieldSetterTransformer implements ITransformer {
                 replacements[matched[0]] = get(xmsg.transformer?.metaData?.userHistory[0] ?? {}, matched[1]);
             }
             Object.entries(replacements).forEach((replacement) => {
-                value = value.replaceAll(replacement[0], replacement[1]);
+                const replacedValue = typeof replacement[1] === 'string' ? replacement[1] : JSON.stringify(replacement[1]);
+                value = value.replaceAll(replacement[0], replacedValue ?? '');
             });
         }
         return value;

@@ -13,16 +13,17 @@ export class HttpPostTransformer implements ITransformer {
         console.log("HTTP POST transformer called.");
 
         this.config.url = this.config.url ?? xmsg.transformer?.metaData?.httpUrl;
-        this.config.headers = this.config.headers ?? xmsg.transformer?.metaData?.httpHeaders;
-        this.config.body = this.config.body ?? xmsg.transformer?.metaData?.httpBody;
+        this.config.headers = this.config.headers ?? xmsg.transformer?.metaData?.httpHeaders ?? {};
+        this.config.headers['Content-Type'] = 'application/json';
+        this.config.body = this.config.body ?? xmsg.transformer?.metaData?.httpBody ?? {};
 
         if (!this.config.url) {
             throw new Error('`url` not defined in HTTP_POST transformer');
         }
         await fetch(this.config.url, {
             method: 'POST',
-            body: JSON.stringify(this.config.body ?? {}),
-            headers: new Headers(JSON.parse(JSON.stringify(this.config.headers ?? {}))),
+            body: typeof this.config.body === 'string' ? this.config.body : JSON.stringify(this.config.body ?? {}),
+            headers: new Headers(JSON.parse(JSON.stringify(this.config.headers))),
         })
         .then((resp => {
             if (!resp.ok) {

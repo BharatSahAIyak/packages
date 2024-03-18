@@ -32,7 +32,7 @@ export class LabelClassifierTransformer implements ITransformer{
             url: this.config.url,
             headers: this.config.headers,
             body: {
-                inputs: xmsg.payload?.text ?? this.config.prompt,
+                text: xmsg.payload?.text ?? this.config.prompt,
             }
         });
         await httpTransformer.transform(xmsg)
@@ -53,7 +53,7 @@ export class LabelClassifierTransformer implements ITransformer{
                 val.score < this.config.minimumThreshold)
             );
             if (result.length != 0) {
-                if (this.config.existingLabel != undefined || xmsg.transformer!.metaData!.existingLabel != undefined) {
+                if (this.config.existingLabel || xmsg.transformer!.metaData!.existingLabel) {
                     if (result[0].score >= this.config.supersedeThreshold) {
                         outputState = result[0].label;
                     }

@@ -226,11 +226,8 @@ export class LLMTransformer implements ITransformer {
             updatedSearchResults.push(newSearch)
         })
         xmsg.payload.text = answer;
-        xmsg.payload.metaData = JSON.stringify({
-            ...JSON.parse(xmsg.payload.metaData || '{}'),
-            searchResults: updatedSearchResults,
-            followUpQuestions
-        });
+        xmsg.payload.metaData!['searchResults'] = updatedSearchResults;
+        xmsg.payload.metaData!['followUpQuestions'] = followUpQuestions;
         return xmsg;
     }
     //triggering inboud here itself for now to enable streaming feature

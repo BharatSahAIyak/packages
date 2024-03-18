@@ -39,10 +39,7 @@ export class DocRetrieverTransformer implements ITransformer {
             xmsg.transformer.metaData!.state = (responseData && responseData.length) ? 'if' : 'else';
             if(xmsg.transformer.metaData!.state=='else' && this.config.staticNoContentResponse) {
                 xmsg.payload.text = this.config.staticNoContentResponse;
-                xmsg.payload.metaData = JSON.stringify({
-                    ...JSON.parse(xmsg.payload.metaData!),
-                    staticResponse: true
-                });
+                xmsg.payload.metaData!['staticResponse'] = true;
             }
             return xmsg;
         } catch (ex) {
