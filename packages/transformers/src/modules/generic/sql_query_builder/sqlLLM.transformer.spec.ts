@@ -1,6 +1,43 @@
 import { XMessage, MessageType, MessageState } from "@samagra-x/xmessage";
 import { SQLLLMTransformer } from "./sqlLLM.transformer";
 
+const openai200normal = {
+  "id": "cmpl-8Y1uU3RVsY9kkGnQrSE7rmWcdHNvk",
+  "object": "text_completion",
+  "created": 1703121186,
+  "model": "gpt-3.5-turbo-instruct",
+  "choices": [
+      {
+          "message": {
+              content:"The capital of France is Paris.",
+          },
+          "index": 0,
+          "logprobs": null,
+          "finish_reason": "stop"
+      }
+  ],
+  "usage": {
+      "prompt_tokens": 142,
+      "completion_tokens": 42,
+      "total_tokens": 184
+  }
+};
+
+let mockOpenAIresponses = {
+  create: openai200normal,
+};
+
+jest.mock('openai', () => {
+  return jest.fn().mockImplementation(() => {
+      return {
+          chat:{
+              completions: {
+                  create: jest.fn().mockImplementation(async () => { return mockOpenAIresponses.create; })
+              }
+          }
+      }
+  })
+});
 class FormDataMock {
   append(key: string, value: string) {
   }
@@ -104,11 +141,10 @@ describe("SQLLLMTransformer", () => {
         text: jest.fn().mockResolvedValue("Mock SQL response"),
       });
       jest.spyOn(transformer, "sendMessage").mockResolvedValueOnce(undefined);
-      jest.spyOn(transformer, "transform").mockResolvedValue(mockXMessage);
       const transformedMessage = await transformer.transform(mockXMessage);
       expect(transformedMessage).toBeDefined();
       expect(transformedMessage.payload.text).toBeDefined();
-      expect(transformedMessage.payload.text).toEqual(mockXMessage.payload.text);
+      expect(transformedMessage.payload.text).toEqual("The capital of France is Paris.");
     });
   });
 });
