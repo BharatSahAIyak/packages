@@ -25,10 +25,10 @@ export class TranslateTransformer implements ITransformer {
         throw new Error('`provider` not defined in TRANSLATE transformer');
       }
       if (!this.config.inputLanguage) {
-        throw new Error('`inputLanguage` not defined in TRANSLATE transformer');
+        this.config.inputLanguage = xmsg?.transformer?.metaData?.inputLanguage || 'en';
       }
       if (!this.config.outputLanguage) {
-        throw new Error('`outputLanguage` not defined in TRANSLATE transformer');
+        this.config.inputLanguage = xmsg?.transformer?.metaData?.outputLanguage || 'en';
       }
       if(!xmsg?.payload?.text){
         throw new Error('`input payload` not defined in TRANSLATE transformer');
