@@ -11,6 +11,7 @@ export enum TransformerType {
     TRANSLATE = 'TRANSLATE',
     SQLLLM = 'SQLLLM',
     CODE_RUNNER = 'CODE_RUNNER',
+    FIELD_SETTER = 'FIELD_SETTER',
 }
 
 export enum TransformerClass {
@@ -34,4 +35,5 @@ export const TransformerMapping: Record<TransformerType, TransformerClass> = {
     [TransformerType.TRANSLATE]: TransformerClass.GenericTransformer,
     [TransformerType.SQLLLM]: TransformerClass.GenericTransformer,
     [TransformerType.CODE_RUNNER]: TransformerClass.GenericTransformer,
+    [TransformerType.FIELD_SETTER]: TransformerClass.GenericTransformer,
 };

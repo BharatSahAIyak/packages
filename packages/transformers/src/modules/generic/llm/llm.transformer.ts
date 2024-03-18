@@ -24,7 +24,7 @@ export class LLMTransformer implements ITransformer {
 
     // TODO: use TRANSLATE transformer directly instead of repeating code
     async transform(xmsg: XMessage): Promise<XMessage> {
-        console.log("LLM transformer used with: " + JSON.stringify(xmsg));
+        console.log("LLM transformer called.");
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length){
             xmsg.transformer = {
                 ...xmsg.transformer,

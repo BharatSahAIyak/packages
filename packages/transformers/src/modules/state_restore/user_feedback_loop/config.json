@@ -4,16 +4,11 @@
     "type": "USER_FEEDBACK_LOOP",
     "description": "A transformer which restores state to a specific node after sending a message to user.",
     "config": {
-        "required": {
-            "restoreState": "string"
+        "required": { },
+        "optional": {
+            "prompt": "string"
         },
-        "optional": { },
-        "conditional": {
-            "prompt": {
-                "type": "string",
-                "ifAbsent": [ "XMessage.payload.text" ]
-            }
-        }
+        "conditional": { }
     },
     "version": "0.0.1"
 }

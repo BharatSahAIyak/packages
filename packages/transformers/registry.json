@@ -32,6 +32,20 @@
     "version": "0.0.1"
   },
   {
+    "name": "Field Setter Transformer",
+    "class": "GenericTransformer",
+    "type": "FIELD_SETTER",
+    "description": "A field setter that can set XMessage fields from user history or current XMessage.",
+    "config": {
+      "required": {
+        "setters": "json"
+      },
+      "optional": {},
+      "conditional": {}
+    },
+    "version": "0.0.1"
+  },
+  {
     "name": "HTTP GET Transformer",
     "class": "GenericTransformer",
     "type": "HTTP_GET",
@@ -226,18 +240,11 @@
     "type": "USER_FEEDBACK_LOOP",
     "description": "A transformer which restores state to a specific node after sending a message to user.",
     "config": {
-      "required": {
-        "restoreState": "string"
+      "required": {},
+      "optional": {
+        "prompt": "string"
       },
-      "optional": {},
-      "conditional": {
-        "prompt": {
-          "type": "string",
-          "ifAbsent": [
-            "XMessage.payload.text"
-          ]
-        }
-      }
+      "conditional": {}
     },
     "version": "0.0.1"
   }
