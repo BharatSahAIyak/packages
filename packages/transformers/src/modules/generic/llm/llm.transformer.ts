@@ -44,7 +44,7 @@ export class LLMTransformer implements ITransformer {
             this.config.temperature = 0;
         }
         if (!this.config.outputLanguage) {
-            this.config.outputLanguage = 'en';
+            this.config.outputLanguage = xmsg?.transformer?.metaData?.language || 'en';
         }
         if(this.config.outputLanguage!='en') {
             if (!this.config.bhashiniUserId) {

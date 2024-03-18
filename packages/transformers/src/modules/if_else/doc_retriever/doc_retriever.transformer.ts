@@ -9,6 +9,7 @@ export class DocRetrieverTransformer implements ITransformer {
     ///     documentIds: list of documents to search from
     ///     staticNoContentResponse: Bot response message incase no related docs are found, If provided, it'll be attached to the XMessage.payload.text in case no related docs are found. (optional)
     ///     topK: Int describing number of top matched chunks to retrieve. Defaults to 6. (optional)
+    ///     searchAll: Boolean Set this to true in order to seach through all docs uploaded via an organization.
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
@@ -31,8 +32,8 @@ export class DocRetrieverTransformer implements ITransformer {
                 'Content-Type': 'application/json'
               }
             };
-            console.log(`retrieving chunks via '${`${this.config.url}/chunk/retrieve?text=${xmsg.payload.text}${pdfIds?`&pdfId=${pdfIds}`:''}${this.config.topK ? `&topK=${this.config.topK}`:''}`}'`)
-            const response = await axios.get(`${this.config.url}/chunk/retrieve?text=${xmsg.payload.text}${pdfIds?`&pdfId=${pdfIds}`:''}${this.config.topK ? `&topK=${this.config.topK}`:''}`, config);
+            console.log(`retrieving chunks via '${`${this.config.url}/chunk/retrieve?text=${xmsg.payload.text}${pdfIds?`&pdfId=${pdfIds}&searchAll=${this.config.searchAll}`:''}${this.config.topK ? `&topK=${this.config.topK}`:''}`}'`)
+            const response = await axios.get(`${this.config.url}/chunk/retrieve?text=${xmsg.payload.text}${pdfIds?`&pdfId=${pdfIds}&searchAll=${this.config.searchAll}`:''}${this.config.topK ? `&topK=${this.config.topK}`:''}`, config);
             const responseData = response.data;
             xmsg.transformer.metaData!.retrievedChunks = responseData;
             xmsg.transformer.metaData!.state = (responseData && responseData.length) ? 'if' : 'else';
