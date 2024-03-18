@@ -26,9 +26,15 @@ jobs:
 
       - name: Check Test Results
         run: |
+          if [ -f "test-report.txt" ]; then
           if grep -qi "Test Suites: .* failed" test-report.txt; then
-            echo "Tests have failed."
-            exit 1
+              echo "Tests have failed."
+              exit 1
           else
-            echo "Tests have passed."
-          fi 
+              echo "Tests have passed."
+          fi
+          else
+              echo "Error: test-report.txt not found."
+              exit 1
+          fi
+    
