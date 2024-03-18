@@ -1,8 +1,46 @@
 import { XMessage, MessageType, MessageState } from "@samagra-x/xmessage";
 import { NeuralCoreferenceTransformer } from "./nural_coreference.transformer";
 
+const openai200normal = {
+  id: "cmpl-8Y1uU3RVsY9kkGnQrSE7rmWcdHNvk",
+  object: "text_completion",
+  created: 1703121186,
+  model: "gpt-3.5-turbo-instruct",
+  choices: [
+    {
+      message: {
+        content: "The capital of France is Paris.",
+      },
+      index: 0,
+      logprobs: null,
+      finish_reason: "stop",
+    },
+  ],
+  usage: {
+    prompt_tokens: 142,
+    completion_tokens: 42,
+    total_tokens: 184,
+  },
+};
+
+const mockOpenAIresponses = {
+  create: openai200normal,
+};
+
+jest.mock("openai", () => {
+  return jest.fn().mockImplementation(() => {
+    return {
+      chat: {
+        completions: {
+          create: jest.fn().mockResolvedValue(mockOpenAIresponses.create),
+        },
+      },
+    };
+  });
+});
+
 class FormDataMock {
-  append(key: string, value: string) { }
+  append(key: string, value: string) {}
 }
 (global as any).FormData = FormDataMock;
 
@@ -61,19 +99,13 @@ describe("NeuralCoreferenceTransformer", () => {
     });
 
     it("should transform XMessage with UserHistory", async () => {
-
-      const openAIAPIKey = process.env.OPENAI_API_KEY;
-
-      if (!openAIAPIKey) {
-        throw new Error('OpenAI API key is not provided.');
-      }
-
-      const openAIConfig = { prompt: 'What is the capital of France?', openAIAPIKey };
-
+      const openAIAPIKey = "apikey";
+      const openAIConfig = {
+        prompt: "What is the capital of France?",
+        openAIAPIKey,
+      };
       const transformer = new NeuralCoreferenceTransformer(openAIConfig);
-
       const transformedXmsg = await transformer.transform(mockXMessage);
-
       expect(transformedXmsg.payload.text).toEqual(
         "The capital of France is Paris."
       );
