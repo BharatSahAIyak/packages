@@ -9,7 +9,7 @@ export class DocRetrieverTransformer implements ITransformer {
     ///     documentIds: list of documents to search from
     ///     staticNoContentResponse: Bot response message incase no related docs are found, If provided, it'll be attached to the XMessage.payload.text in case no related docs are found. (optional)
     ///     topK: Int describing number of top matched chunks to retrieve. Defaults to 6. (optional)
-    ///     searchAll: true
+    ///     searchAll: Boolean Set this to true in order to seach through all docs uploaded via an organization.
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
