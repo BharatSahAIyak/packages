@@ -6,7 +6,7 @@ export class RandomBinaryTransformer implements ITransformer {
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        console.log("RANDOM_BINARY transformer used with: " + JSON.stringify(xmsg));
+        console.log("RANDOM_BINARY transformer called.");
         if (!xmsg.transformer) {
             xmsg.transformer = {
                 metaData: {}

@@ -13,7 +13,7 @@ export class DocRetrieverTransformer implements ITransformer {
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        console.log("DOC_RETRIEVER transformer used with: " + JSON.stringify(xmsg));
+        console.log("DOC_RETRIEVER transformer called.");
         if (!xmsg.transformer) {
             xmsg.transformer = {
                 metaData: {}

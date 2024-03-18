@@ -20,7 +20,7 @@ export class TranslateTransformer implements ITransformer {
               metaData: {}
           };
       }
-      console.log("TRANSLATE transformer used with: " + JSON.stringify(xmsg));
+      console.log("TRANSLATE transformer called.");
       if (!this.config.provider) {
         throw new Error('`provider` not defined in TRANSLATE transformer');
       }

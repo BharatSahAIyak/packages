@@ -22,7 +22,7 @@ export class SQLLLMTransformer implements ITransformer {
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        console.log("SQLLLMTransformer transformer used with: " + JSON.stringify(xmsg));
+        console.log("SQLLLMTransformer transformer called.");
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length){
             xmsg.transformer = {
                 ...xmsg.transformer,
