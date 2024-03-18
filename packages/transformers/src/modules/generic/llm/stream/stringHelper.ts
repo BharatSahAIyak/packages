@@ -10,3 +10,5 @@ exports.endsWithChar = function ends_with_char(word: any, c: any) {
 exports.endsWith = function ends_with(word: any, end: any) {
     return word.slice(word.length - end.length) === end;
 };
+
+export {}
