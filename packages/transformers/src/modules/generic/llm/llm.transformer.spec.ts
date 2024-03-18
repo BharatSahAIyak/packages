@@ -1,6 +1,8 @@
+import fetch from "jest-fetch-mock";
+jest.mock("node-fetch", () => require("jest-fetch-mock"));
+
 import { LLMTransformer } from "./llm.transformer";
 import { MessageType, MessageState } from "@samagra-x/xmessage";
-import fetch from "jest-fetch-mock";
 
 const openai200normal = {
     "id": "cmpl-8Y1uU3RVsY9kkGnQrSE7rmWcdHNvk",
@@ -40,7 +42,6 @@ jest.mock('openai', () => {
     })
 });
 
-jest.mock("node-fetch", () => fetch);
 let transformer: LLMTransformer;
 
 const xmsg = {
