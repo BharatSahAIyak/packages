@@ -30,16 +30,20 @@ export class FieldSetterTransformer implements ITransformer {
     }
 
     private getResolvedValue(value: string, xmsg: XMessage): string | JSON {
-        const xmsgPlaceholder = /\{xmsg:(.*)\}/;
-        const historyPlaceholder = /\{history:(.*)\}/;
-
+        const xmsgPlaceholder = /\{msg:([^}]*)\}/g;
+        const historyPlaceholder = /\{history:([^}]*)\}/g;
+        const replacements: Record<string, any> = {};
+        let matched;
         if (typeof value === 'string') {
-            if (value.match(xmsgPlaceholder)) {
-                return get(xmsg, value.match(xmsgPlaceholder)![1]);
+            while ((matched = xmsgPlaceholder.exec(value)) !== null) {
+                replacements[matched[0]] = get(xmsg, matched[1]);
             }
-            else if (value.match(historyPlaceholder)) {
-                return get(xmsg.transformer?.metaData?.userHistory[0] ?? {}, value.match(historyPlaceholder)![1]);
+            while ((matched = historyPlaceholder.exec(value)) !== null) {
+                replacements[matched[0]] = get(xmsg.transformer?.metaData?.userHistory[0] ?? {}, matched[1]);
             }
+            Object.entries(replacements).forEach((replacement) => {
+                value = value.replaceAll(replacement[0], replacement[1]);
+            });
         }
         return value;
     }
