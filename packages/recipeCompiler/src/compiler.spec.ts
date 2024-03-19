@@ -153,7 +153,7 @@ const mockLogicFlow = {
     "edges": [
         {
             "source": "STT_0",
-            "sourceHandle": "onSuccess",
+            "sourceHandle": "STT_0-output-onSuccess-xMessage",
             "target": "Translation_0",
             "targetHandle": "Translation-input-text-input",
             "type": "buttonedge",
@@ -164,7 +164,7 @@ const mockLogicFlow = {
         },
         {
             "source": "STT_0",
-            "sourceHandle": "onError",
+            "sourceHandle": "STT_0-output-onError-xMessage",
             "target": "TTS_0",
             "targetHandle": "Translation-input-text-input",
             "type": "buttonedge",
@@ -175,7 +175,7 @@ const mockLogicFlow = {
         },
         {
             "source": "Translation_0",
-            "sourceHandle": "onSuccess",
+            "sourceHandle": "STT_0-output-onSuccess-xMessage",
             "target": "STT_1",
             "targetHandle": "Translation-input-text-input",
             "type": "buttonedge",
@@ -186,7 +186,7 @@ const mockLogicFlow = {
         },
         {
             "source": "TTS_0",
-            "sourceHandle": "onSuccess",
+            "sourceHandle": "STT_0-output-onSuccess-xMessage",
             "target": "Translation_0",
             "targetHandle": "Translation-input-text-input",
             "type": "buttonedge",
@@ -197,7 +197,7 @@ const mockLogicFlow = {
         },
         {
             "source": "TTS_0",
-            "sourceHandle": "onError",
+            "sourceHandle": "STT_0-output-onError-xMessage",
             "target": "RETRY_0",
             "targetHandle": "Translation-input-text-input",
             "type": "buttonedge",
@@ -208,7 +208,7 @@ const mockLogicFlow = {
         },
         {
             "source": "RETRY_0",
-            "sourceHandle": "retry",
+            "sourceHandle": "STT_0-output-retry-xMessage",
             "target": "TTS_0",
             "targetHandle": "Translation-input-text-input",
             "type": "buttonedge",
@@ -219,7 +219,7 @@ const mockLogicFlow = {
         },
         {
             "source": "STT_1",
-            "sourceHandle": "onSuccess",
+            "sourceHandle": "STT_0-output-onSuccess-xMessage",
             "target": "CLASSIFIER_0",
             "targetHandle": "Translation-input-text-input",
             "type": "buttonedge",
@@ -230,7 +230,7 @@ const mockLogicFlow = {
         },
         {
             "source": "STT_1",
-            "sourceHandle": "onError",
+            "sourceHandle": "STT_0-output-onError-xMessage",
             "target": "RETRY_0",
             "targetHandle": "Translation-input-text-input",
             "type": "buttonedge",
@@ -241,7 +241,7 @@ const mockLogicFlow = {
         },
         {
             "source": "CLASSIFIER_0",
-            "sourceHandle": "label_0",
+            "sourceHandle": "STT_0-output-label_0-xMessage",
             "target": "STT_2",
             "targetHandle": "Translation-input-text-input",
             "type": "buttonedge",
@@ -252,7 +252,7 @@ const mockLogicFlow = {
         },
         {
             "source": "CLASSIFIER_0",
-            "sourceHandle": "label_1",
+            "sourceHandle": "STT_0-output-label_1-xMessage",
             "target": "STT_2",
             "targetHandle": "Translation-input-text-input",
             "type": "buttonedge",
@@ -263,7 +263,7 @@ const mockLogicFlow = {
         },
         {
             "source": "CLASSIFIER_0",
-            "sourceHandle": "label_2",
+            "sourceHandle": "STT_0-output-label_2-xMessage",
             "target": "STT_1",
             "targetHandle": "Translation-input-text-input",
             "type": "buttonedge",

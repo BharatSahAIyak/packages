@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-recipe-compiler",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A compiler to convert flowise recipe to logicDef for uci",
   "type": "module",
   "main": "./dist/index.js",
