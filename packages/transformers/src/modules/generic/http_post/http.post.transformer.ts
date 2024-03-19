@@ -25,15 +25,20 @@ export class HttpPostTransformer implements ITransformer {
             body: typeof this.config.body === 'string' ? this.config.body : JSON.stringify(this.config.body ?? {}),
             headers: new Headers(JSON.parse(JSON.stringify(this.config.headers))),
         })
-        .then((resp => {
+        .then(resp => {
             if (!resp.ok) {
                 throw new Error(`Request failed with code: ${resp.status}`);
+            } else {
+                const contentType = resp.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return resp.json();
+                } else {
+                    return resp.text();
+                }
             }
-            else {
-                return resp.json();
-            }
-        }))
-        .then((resp) =>{
+        })
+        .then((resp) => {
+            console.log('resp',resp)
             if (!xmsg.transformer) {
                 xmsg.transformer = {
                     metaData: {}

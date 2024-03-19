@@ -20,7 +20,6 @@ export class TranslateTransformer implements ITransformer {
               metaData: {}
           };
       }
-      console.log("TRANSLATE transformer called.");
       if (!this.config.provider) {
         throw new Error('`provider` not defined in TRANSLATE transformer');
       }
@@ -33,6 +32,7 @@ export class TranslateTransformer implements ITransformer {
       if(!xmsg?.payload?.text){
         throw new Error('`input payload` not defined in TRANSLATE transformer');
       }
+      console.log("TRANSLATE transformer called.", this.config.inputLanguage, this.config.outputLanguage);
       if(this.config.inputLanguage==this.config.outputLanguage){
         return xmsg;
       }
@@ -51,6 +51,7 @@ export class TranslateTransformer implements ITransformer {
           this.config.outputLanguage,
           xmsg?.payload?.text
         ))['translated']
+        console.log("translated", xmsg.payload.text)
       } else {
         throw new Error('Azure is not configured yet in TRANSLATE transformer');
       }

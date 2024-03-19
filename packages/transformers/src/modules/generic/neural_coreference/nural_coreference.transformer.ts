@@ -6,7 +6,7 @@ export class NeuralCoreferenceTransformer implements ITransformer {
 
     /// Accepted config properties:
     ///     prompt: GPT prompt used to get coreferenced output.
-    ///     openAIAPIKey: openAI API key.
+    ///     APIKey: openAI API key.
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
@@ -18,8 +18,8 @@ export class NeuralCoreferenceTransformer implements ITransformer {
         if (!this.config.prompt) {
             throw new Error('`prompt` not defined in NEURAL_COREFERENCE transformer');
         }
-        if (!this.config.openAIAPIKey) {
-            throw new Error('`openAIAPIKey` not defined in NEURAL_COREFERENCE transformer');
+        if (!this.config.APIKey) {
+            throw new Error('`APIKey` not defined in NEURAL_COREFERENCE transformer');
         }
         this.config.prompt = [{
             role: "user",
@@ -27,7 +27,7 @@ export class NeuralCoreferenceTransformer implements ITransformer {
             .replace('{{user_history}}',`${xmsg.transformer?.metaData?.userHistory.map((message: any)=>message.from == 'admin' ? `AI:${message.payload.text}`: `USER:${message.payload.text}`).join("\n")}`)
             .replace('{{user_question}}',xmsg.payload.text)
         }];
-        const openai = new OpenAI({apiKey: this.config.openAIAPIKey});
+        const openai = new OpenAI({apiKey: this.config.APIKey});
         const response: any = await openai.chat.completions.create({
             model: 'gpt-3.5-turbo',
             messages: this.config.prompt

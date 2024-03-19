@@ -1,20 +1,23 @@
 import { MediaCategory, MessageMedia, MessageType, XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
-import OpenAI from 'openai';
+// import OpenAI from 'openai';
 import moment from "moment";
 import { generateSentences } from "./stream/tokenizer";
 import getBhashiniConfig from "../translate/bhashini/bhashini.getConfig";
 import computeBhashini from "../translate/bhashini/bhashini.compute";
+import { OpenAI as llamaindexOpenAI, serviceContextFromDefaults, Groq } from "llamaindex";
 
 export class LLMTransformer implements ITransformer {
 
     /// Accepted config properties:
-    ///     openAIAPIKey: openAI API key.
+
+    ///     APIKey: Provider's API key.
     ///     model: LLM model.
     ///     outboundURL: Endpoint of service which sends message to end user. Required if `enableStream` is set to `true`.
     ///     bhashiniUserId: user id for bhashini (required if provider is set to bhashini)
     ///     bhashiniAPIKey: API key for bhashini (required if provider is set to bhashini)
     ///     bhashiniURL: Base url for bhashini (required if provider is set to bhashini)
+    ///     provider: LLM API provider (optional), default is openAI
     ///     prompt: LLM prompt, if not provided `xmsg.transformer.metaData.prompt` will be used. (optional)
     ///     corpusPrompt: Specific instructions on corpus. (optional)
     ///     temperature: The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. (default: `0`) (optional)
@@ -37,8 +40,8 @@ export class LLMTransformer implements ITransformer {
         if (!this.config.model) {
             throw new Error('`model` not defined in LLM transformer');
         }
-        if (!this.config.openAIAPIKey) {
-            throw new Error('`openAIAPIKey` not defined in LLM transformer');
+        if (!this.config.APIKey) {
+            throw new Error('`APIKey` not defined in LLM transformer');
         }
         if (!this.config.temperature) {
             this.config.temperature = 0;
@@ -115,22 +118,28 @@ export class LLMTransformer implements ITransformer {
             `
         })
         console.log(`LLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt,null,3)}`);
-        const openai = new OpenAI({apiKey: this.config.openAIAPIKey});
-        const response: any = await openai.chat.completions.create({
-            model: this.config.model,
+
+        //llamaIndex implementaion
+        let llm: any;
+        if(this.config.provider?.toLowerCase() == "groq"){
+            llm = new Groq({apiKey: this.config.APIKey});
+        } else {
+           llm = new llamaindexOpenAI({apiKey: this.config.APIKey, model: this.config.model, temperature: this.config.temperature || 0});
+        }
+        const serviceContext = serviceContextFromDefaults({ llm });
+        let response: any = await serviceContext.llm.chat({
             messages: prompt,
-            temperature: this.config.temperature || 0,
-            stream: this.config.enableStream ?? false,
+            stream: this.config.enableStream ?? false
         }).catch((ex) => {
             console.error(`LLM failed. Reason: ${ex}`);
             throw ex;
         });
+
         let from = xmsg.from;
         xmsg.from = xmsg.to;
         xmsg.to = from;
         if(!this.config.enableStream) {
-            let answer = response["choices"][0].message.content.replace(/\*\*/g, '*') || "";
-            console.log("answer",answer)
+            let answer = response.message.content.replace(/\*\*/g, '*') || "";
             xmsg = this.postProcessResponse(xmsg, answer, searchResults)
             if(this.config.outputLanguage!='en') {
                 xmsg.payload.text = (await this.translateBhashini(
@@ -148,7 +157,7 @@ export class LLMTransformer implements ITransformer {
             }
             let sentences: any, allSentences = [], output = "" ,counter = 0;
             for await (const chunk of response) {
-                let currentChunk = chunk.choices[0]?.delta?.content || "";
+                let currentChunk = chunk.delta || "";
                 currentChunk = currentChunk?.replace("AI: ", "")
                 output += currentChunk;
                 const formattedText = output?.replace(/\n\n/g, '\n');
