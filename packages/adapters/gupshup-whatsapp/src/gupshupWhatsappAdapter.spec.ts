@@ -196,4 +196,34 @@ describe('gupshup whatsapp adapter', () => {
     xmsg.timestamp = 0;
     expect(xmsg).toStrictEqual(expectedXMessage);
   });
+  
+  //to test Location Message
+  it("Send Location Whatsapp message", async () => {
+    const mockLocationXMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
+    mockLocationXMessage.messageType = MessageType.LOCATION;
+    mockLocationXMessage.payload.location = {
+      latitude: 28.7041,
+      longitude: 77.1025,
+      name: "Delhi",
+      address: "Delhi, India"
+    };
+    
+    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=9999999999&password=pass2Way&send_to=919999999999&msg_type=LOCATION&location=' + encodeURIComponent(JSON.stringify({
+      longitude: "77.1025",
+      latitude: "28.7041",
+      name: "Delhi",
+      address: "Delhi, India"
+    }));
+  
+    const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
+    let actualParametersPassed: string | undefined = '';
+    mock.onGet(urlRegex).reply(config => {
+      actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
+      return [200, { response: { status: 'success' } }];
+    });
+  
+    await adapter.sendMessage(mockLocationXMessage);
+    expect(decodeURIComponent(actualParametersPassed)).toContain(expectedParameters);
+  });
+  
 })

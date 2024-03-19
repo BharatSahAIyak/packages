@@ -696,6 +696,51 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     queryParams.append('password', password);
     return queryParams;
   }
+
+
+
+  // Send Location as Meassage 
+  private async sendLocationMessage(
+    to: string,
+    locationParams: LocationParams
+  ): Promise<void> {
+    if (!locationParams.longitude || !locationParams.latitude || !locationParams.name || !locationParams.address) {
+      throw new Error('Missing location parameters for sending location message');
+    }
+
+    // Base URL
+    const baseUrl = 'https://media.smsgupshup.com/GatewayAPI/rest';
+
+    // Use the getURIBuilder method to get common parameters
+    const queryParams = this.getURIBuilder();
+
+    // Append the method-specific parameters
+    queryParams.append('method', 'SendMessage');
+    queryParams.append('msg_type', 'LOCATION');
+    queryParams.append('userid', this.providerConfig.username2Way);
+    queryParams.append('password', this.providerConfig.password2Way);
+    queryParams.append('send_to', to);
+    
+    queryParams.append('location', JSON.stringify({
+      longitude: locationParams.longitude.toString(),
+      latitude: locationParams.latitude.toString(),
+      name: locationParams.name,
+      address: locationParams.address
+    }));
+
+    // Full URL
+    const fullUrl = `${baseUrl}?${queryParams.toString()}`;
+
+    // GET request using axios
+    try {
+      const response = await axios.get(fullUrl);
+      console.log('Location message sent:', response.data);
+    } catch (error) {
+      console.error('Error sending location message:', error);
+      throw error;
+    }
+  }
+
   
   // Convert XMessage to GupShupWhatsAppMessage
   async sendMessage (xMsg: XMessage) {
@@ -710,6 +755,13 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       ) {
         let text: string = xMsg.payload.text || '';
         let builder = this.getURIBuilder();
+        
+        // XMessage of Location type
+        if (xMsg.messageType === MessageType.LOCATION && xMsg.payload.location) {
+          await this.sendLocationMessage(`91${xMsg.to.userID}`, xMsg.payload.location);
+          xMsg.messageState = MessageState.SENT;
+          return; 
+        }
   
         if (xMsg.messageState === MessageState.OPTED_IN) {
           text += this.renderMessageChoices(xMsg.payload.buttonChoices || []);
