@@ -64,7 +64,11 @@ export class RecipeCompiler {
             throw new Error('Invalid logic flow data!');
           }
           edgeMapping[edgeKey].forEach((state) => {
-            states[state] = indexNodeMap[adjacentNode].data.id;
+            // Original Id is extracted from the state name which is in the format:
+            //    LABEL_CLASSIFIER-output-LABEL_0-xMessage
+            // We want to extract "LABEL_0" in this.
+            const stateId = state.split("-")[2];
+            states[stateId] = indexNodeMap[adjacentNode].data.id;
           });
         });
     

@@ -6,7 +6,7 @@
     "config": {
         "required": {
             "prompt": "string",
-            "openAIAPIKey": "string"
+            "APIKey": "string"
         },
         "optional": { },
         "conditional": { }

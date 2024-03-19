@@ -5,7 +5,7 @@
     "description": "A general LLM model based transformer.",
     "config": {
         "required": {
-            "openAIAPIKey": "string",
+            "APIKey": "string",
             "model": "string"
         },
         "optional": {

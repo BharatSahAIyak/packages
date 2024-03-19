@@ -115,7 +115,7 @@
     "description": "A general LLM model based transformer.",
     "config": {
       "required": {
-        "openAIAPIKey": "string",
+        "APIKey": "string",
         "model": "string"
       },
       "optional": {
@@ -156,7 +156,7 @@
     "config": {
       "required": {
         "prompt": "string",
-        "openAIAPIKey": "string"
+        "APIKey": "string"
       },
       "optional": {},
       "conditional": {}
@@ -197,7 +197,7 @@
     "description": "A code runner capable of running custom JS code.",
     "config": {
       "required": {
-        "openAIAPIKey": "string",
+        "APIKey": "string",
         "model": "string",
         "xlsxIds": "string[]",
         "outboundURL": "string",

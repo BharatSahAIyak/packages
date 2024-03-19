@@ -16,7 +16,7 @@ export class HttpGetTransformer implements ITransformer {
                 metaData: {}
             };
         }
-        console.log("HTTP GET transformer used with: " + JSON.stringify(xmsg));
+        console.log("HTTP GET transformer called.");
 
         this.config.url = this.config.url ?? xmsg.transformer?.metaData?.httpUrl;
         this.config.queryJson = this.config.queryJson ?? xmsg.transformer?.metaData?.httpQueryJson ?? {};
@@ -30,14 +30,18 @@ export class HttpGetTransformer implements ITransformer {
             method: 'GET',
             headers: new Headers(JSON.parse(JSON.stringify(this.config.headers ?? {}))),
         })
-        .then((resp => {
+        .then(resp => {
             if (!resp.ok) {
                 throw new Error(`Request failed with code: ${resp.status}`);
+            } else {
+                const contentType = resp.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return resp.json();
+                } else {
+                    return resp.text();
+                }
             }
-            else {
-                return resp.json();
-            }
-        }))
+        })
         .then((resp) =>{
             if (!xmsg.transformer) {
                 xmsg.transformer = {

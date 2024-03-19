@@ -1,6 +1,8 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
-import axios, { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
+const qs = require('qs');
+import { v4 as uuid4 } from 'uuid';
 
 export class DocRetrieverTransformer implements ITransformer {
 
@@ -9,10 +11,11 @@ export class DocRetrieverTransformer implements ITransformer {
     ///     documentIds: list of documents to search from
     ///     staticNoContentResponse: Bot response message incase no related docs are found, If provided, it'll be attached to the XMessage.payload.text in case no related docs are found. (optional)
     ///     topK: Int describing number of top matched chunks to retrieve. Defaults to 6. (optional)
+    ///     searchAll: Boolean Set this to true in order to seach through all docs uploaded via an organization.
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        console.log("DOC_RETRIEVER transformer used with: " + JSON.stringify(xmsg));
+        console.log("DOC_RETRIEVER transformer called.");
         if (!xmsg.transformer) {
             xmsg.transformer = {
                 metaData: {}
@@ -24,24 +27,36 @@ export class DocRetrieverTransformer implements ITransformer {
         if (!this.config.topK) {
             this.config.topK = 6;
         }
-        let pdfIds = this.config.documentIds && this.config.documentIds.length ? `[${this.config.documentIds.filter((id: string)=>id).map((id:string)=>`"${id}"`).join(',')}]` : null;
+        
         try {
-            const config: AxiosRequestConfig = {
-              headers: {
-                'Content-Type': 'application/json'
-              }
+            let data = qs.stringify({
+                'requestId': uuid4(),
+                'query': xmsg.payload.text,
+                'topK': this.config.topK || '3',
+                'searchAll': this.config.searchAll,
+                'documentIds': this.config.documentIds
+            });
+
+            let config = {
+                method: 'post',
+                maxBodyLength: Infinity,
+                url: `${this.config.url}/data/retrieve`,
+                headers: { 
+                  'orgId': xmsg.orgId, 
+                  'ownerId': xmsg.ownerId,
+                  'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                data : data
             };
-            console.log(`retrieving chunks via '${`${this.config.url}/chunk/retrieve?text=${xmsg.payload.text}${pdfIds?`&pdfId=${pdfIds}`:''}${this.config.topK ? `&topK=${this.config.topK}`:''}`}'`)
-            const response = await axios.get(`${this.config.url}/chunk/retrieve?text=${xmsg.payload.text}${pdfIds?`&pdfId=${pdfIds}`:''}${this.config.topK ? `&topK=${this.config.topK}`:''}`, config);
+
+            console.log(`retrieving chunks via POST '${`${this.config.url}/data/retrieve`}'`);
+            const response = await axios.request(config);
             const responseData = response.data;
             xmsg.transformer.metaData!.retrievedChunks = responseData;
             xmsg.transformer.metaData!.state = (responseData && responseData.length) ? 'if' : 'else';
             if(xmsg.transformer.metaData!.state=='else' && this.config.staticNoContentResponse) {
                 xmsg.payload.text = this.config.staticNoContentResponse;
-                xmsg.payload.metaData = JSON.stringify({
-                    ...JSON.parse(xmsg.payload.metaData!),
-                    staticResponse: true
-                });
+                xmsg.payload.metaData!['staticResponse'] = true;
             }
             return xmsg;
         } catch (ex) {

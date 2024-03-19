@@ -8,7 +8,7 @@ import computeBhashini from "../translate/bhashini/bhashini.compute";
 export class SQLLLMTransformer implements ITransformer {
 
     /// Accepted config properties:
-    ///     openAIAPIKey: openAI API key.
+    ///     APIKey: openAI API key.
     ///     model: LLM model.
     ///     xlsxIds: list of excel ids to search from.
     ///     outboundURL: Endpoint of service which sends message to end user.
@@ -22,7 +22,7 @@ export class SQLLLMTransformer implements ITransformer {
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        console.log("SQLLLMTransformer transformer used with: " + JSON.stringify(xmsg));
+        console.log("SQLLLMTransformer transformer called.");
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length){
             xmsg.transformer = {
                 ...xmsg.transformer,
@@ -35,8 +35,8 @@ export class SQLLLMTransformer implements ITransformer {
         if (!this.config.model) {
             throw new Error('`model` not defined in SQLLLM transformer');
         }
-        if (!this.config.openAIAPIKey) {
-            throw new Error('`openAIAPIKey` not defined in SQLLLM transformer');
+        if (!this.config.APIKey) {
+            throw new Error('`APIKey` not defined in SQLLLM transformer');
         }
         if (!this.config.temperature) {
             this.config.temperature = 0;
@@ -96,7 +96,7 @@ export class SQLLLMTransformer implements ITransformer {
             }
         ]
         console.log(`SQLLLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt,null,3)}`);
-        const openai = new OpenAI({apiKey: this.config.openAIAPIKey});
+        const openai = new OpenAI({apiKey: this.config.APIKey});
         const response: any = await openai.chat.completions.create({
             model: this.config.model,
             messages: prompt,
