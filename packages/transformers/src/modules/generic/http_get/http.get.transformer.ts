@@ -22,7 +22,10 @@ export class HttpGetTransformer implements ITransformer {
         this.config.queryJson = this.config.queryJson ?? xmsg.transformer?.metaData?.httpQueryJson ?? {};
         this.config.headers = this.config.headers ?? xmsg.transformer?.metaData?.httpHeaders;
         this.config.query = this.config.query ?? xmsg.transformer?.metaData?.httpQuery ?? this.createQueryString(this.config.queryJson);
+        this.config.query = this.config.query?.replace(/\\/g, '');
 
+        console.log("query:", `${this.config.url}${this.config.query ?? ''}`)
+        console.log("headers",JSON.parse(JSON.stringify(this.config.headers ?? {})))
         if (!this.config.url) {
             throw new Error('`url` not defined in HTTP_GET transformer');
         }

@@ -1,4 +1,4 @@
-import { MediaCategory, MessageMedia, MessageType, XMessage } from "@samagra-x/xmessage";
+import { ButtonChoice, MediaCategory, MessageMedia, MessageType, XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
 // import OpenAI from 'openai';
 import moment from "moment";
@@ -6,6 +6,7 @@ import { generateSentences } from "./stream/tokenizer";
 import getBhashiniConfig from "../translate/bhashini/bhashini.getConfig";
 import computeBhashini from "../translate/bhashini/bhashini.compute";
 import { OpenAI as llamaindexOpenAI, serviceContextFromDefaults, Groq } from "llamaindex";
+import OpenAI from "openai";
 
 export class LLMTransformer implements ITransformer {
 
@@ -43,6 +44,8 @@ export class LLMTransformer implements ITransformer {
         if (!this.config.APIKey) {
             throw new Error('`APIKey` not defined in LLM transformer');
         }
+        //TODO: Fix this later.
+        process.env['OPENAI_API_KEY']=this.config.APIKey;
         if (!this.config.temperature) {
             this.config.temperature = 0;
         }
@@ -121,25 +124,39 @@ export class LLMTransformer implements ITransformer {
 
         //llamaIndex implementaion
         let llm: any;
+        let response: any;
+
         if(this.config.provider?.toLowerCase() == "groq"){
             llm = new Groq({apiKey: this.config.APIKey});
+            const serviceContext = serviceContextFromDefaults({ llm });
+            response = await serviceContext.llm.chat({
+                messages: prompt,
+                stream: this.config.enableStream ?? false
+            }).catch((ex) => {
+                console.error(`LLM failed. Reason: ${ex}`);
+                throw ex;
+            });
         } else {
-           llm = new llamaindexOpenAI({apiKey: this.config.APIKey, model: this.config.model, temperature: this.config.temperature || 0});
+            // OPEN AI Implementaion
+            const openai = new OpenAI({apiKey: this.config.APIKey});
+            response = await openai.chat.completions.create({
+                model: this.config.model,
+                messages: prompt,
+                temperature: this.config.temperature || 0,
+                stream: this.config.enableStream ?? false,
+            }).catch((ex) => {
+                console.error(`LLM failed. Reason: ${ex}`);
+                throw ex;
+            });
         }
-        const serviceContext = serviceContextFromDefaults({ llm });
-        let response: any = await serviceContext.llm.chat({
-            messages: prompt,
-            stream: this.config.enableStream ?? false
-        }).catch((ex) => {
-            console.error(`LLM failed. Reason: ${ex}`);
-            throw ex;
-        });
-
+                
         let from = xmsg.from;
         xmsg.from = xmsg.to;
         xmsg.to = from;
         if(!this.config.enableStream) {
-            let answer = response.message.content.replace(/\*\*/g, '*') || "";
+            let answer;
+            if(this.config.provider?.toLowerCase() == "groq") answer = response.message.content.replace(/\*\*/g, '*') || "";
+            else answer = response["choices"][0].message.content.replace(/\*\*/g, '*') || "";
             xmsg = this.postProcessResponse(xmsg, answer, searchResults)
             if(this.config.outputLanguage!='en') {
                 xmsg.payload.text = (await this.translateBhashini(
@@ -157,7 +174,9 @@ export class LLMTransformer implements ITransformer {
             }
             let sentences: any, allSentences = [], output = "" ,counter = 0;
             for await (const chunk of response) {
-                let currentChunk = chunk.delta || "";
+                let currentChunk: any;
+                if(this.config.provider?.toLowerCase() == "groq") currentChunk = chunk.delta || "";
+                else currentChunk = chunk.choices[0]?.delta?.content || "";
                 currentChunk = currentChunk?.replace("AI: ", "")
                 output += currentChunk;
                 const formattedText = output?.replace(/\n\n/g, '\n');
@@ -200,6 +219,7 @@ export class LLMTransformer implements ITransformer {
             await this.sendMessage(xmsg)
             xmsg.payload.text = allSentences.join(' ').replace("<end/>",'')
         }
+        delete process.env['OPENAI_API_KEY'];
         return xmsg;
     }
 
@@ -236,7 +256,7 @@ export class LLMTransformer implements ITransformer {
         })
         xmsg.payload.text = answer;
         xmsg.payload.metaData!['searchResults'] = updatedSearchResults;
-        xmsg.payload.metaData!['followUpQuestions'] = followUpQuestions;
+        xmsg.payload.buttonChoices = followUpQuestions.map((question: string, index: number): ButtonChoice=>{return {key: `${index}`,text: question,backmenu: false}})
         return xmsg;
     }
     //triggering inboud here itself for now to enable streaming feature

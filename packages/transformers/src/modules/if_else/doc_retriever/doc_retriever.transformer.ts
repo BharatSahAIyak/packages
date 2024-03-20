@@ -50,6 +50,7 @@ export class DocRetrieverTransformer implements ITransformer {
             };
 
             console.log(`retrieving chunks via POST '${`${this.config.url}/data/retrieve`}'`);
+            console.log("With config:",config)
             const response = await axios.request(config);
             const responseData = response.data;
             xmsg.transformer.metaData!.retrievedChunks = responseData;
