@@ -20,18 +20,20 @@ export class HttpGetTransformer implements ITransformer {
 
         this.config.url = this.config.url ?? xmsg.transformer?.metaData?.httpUrl;
         this.config.queryJson = this.config.queryJson ?? xmsg.transformer?.metaData?.httpQueryJson ?? {};
-        this.config.headers = this.config.headers ?? xmsg.transformer?.metaData?.httpHeaders;
+        this.config.headers = this.config.headers ?? xmsg.transformer?.metaData?.httpHeaders ?? {};
+        this.config.headers = typeof this.config.headers === 'string' ? JSON.parse(this.config.headers || "{}") : this.config.headers ?? {};
+        this.config.headers['Content-Type'] = 'application/json';
         this.config.query = this.config.query ?? xmsg.transformer?.metaData?.httpQuery ?? this.createQueryString(this.config.queryJson);
         this.config.query = this.config.query?.replace(/\\/g, '');
 
         console.log("query:", `${this.config.url}${this.config.query ?? ''}`)
-        console.log("headers",JSON.parse(JSON.stringify(this.config.headers ?? {})))
+        console.log("headers", JSON.stringify(this.config.headers))
         if (!this.config.url) {
             throw new Error('`url` not defined in HTTP_GET transformer');
         }
         await fetch(`${this.config.url}${this.config.query ?? ''}`, {
             method: 'GET',
-            headers: new Headers(JSON.parse(JSON.stringify(this.config.headers ?? {}))),
+            headers: new Headers(this.config.headers),
         })
         .then(resp => {
             if (!resp.ok) {

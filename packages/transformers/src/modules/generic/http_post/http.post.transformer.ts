@@ -14,6 +14,7 @@ export class HttpPostTransformer implements ITransformer {
 
         this.config.url = this.config.url ?? xmsg.transformer?.metaData?.httpUrl;
         this.config.headers = this.config.headers ?? xmsg.transformer?.metaData?.httpHeaders ?? {};
+        this.config.headers = typeof this.config.headers === 'string' ? JSON.parse(this.config.headers || "{}") : this.config.headers ?? {};
         this.config.headers['Content-Type'] = 'application/json';
         this.config.body = this.config.body ?? xmsg.transformer?.metaData?.httpBody ?? {};
 
@@ -23,7 +24,7 @@ export class HttpPostTransformer implements ITransformer {
         await fetch(this.config.url, {
             method: 'POST',
             body: typeof this.config.body === 'string' ? this.config.body : JSON.stringify(this.config.body ?? {}),
-            headers: new Headers(JSON.parse(JSON.stringify(this.config.headers))),
+            headers: new Headers(this.config.headers),
         })
         .then(resp => {
             if (!resp.ok) {
