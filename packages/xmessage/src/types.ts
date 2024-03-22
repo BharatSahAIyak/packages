@@ -70,9 +70,17 @@ export enum DeviceType {
   PHONE = "PHONE",
 }
 
+export type SideEffectData = {
+  transformerId: string,
+  eventName: string,
+  timestamp: string,
+  eventData: Record<string, any>,
+}
+
 export class Transformer {
   id?: string;
   metaData?: Record<string, any>;
+  sideEffectData?: SideEffectData;
 }
 
 export type XMessagePayload = {

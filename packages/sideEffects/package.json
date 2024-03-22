@@ -1,0 +1,27 @@
+{
+  "name": "@samagra-x/uci-side-effects",
+  "version": "0.0.1",
+  "description": "Library of independent side effects that represent secondary functionalities of a transformer.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "dev": "npm run build -- --watch",
+    "test": "jest"
+  },
+  "author": "chinmoy12c",
+  "license": "MIT",
+  "dependencies": {
+    "@samagra-x/xmessage": "^1.0.16",
+    "axios": "^1.6.5",
+    "tsup": "^8.0.0",
+    "typescript": "^4.3.5",
+    "uuid": "^9.0.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/uuid": "^9.0.8",
+    "tsx": "^4.7.1"
+  }
+}
