@@ -47,7 +47,7 @@ export class DocRetrieverTransformer implements ITransformer {
                 url: `${this.config.url}/data/retrieve`,
                 headers: { 
                   'orgId': xmsg.orgId, 
-                  'ownerId': xmsg.ownerId,
+                  'botId': xmsg.app,
                   'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 data : data
