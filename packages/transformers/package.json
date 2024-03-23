@@ -21,7 +21,11 @@
     ],
     "transform": {
       "^.+\\.ts?$": "ts-jest"
-    }
+    },
+    "automock": false,
+    "setupFiles": [
+      "./setupJest.js"
+    ]
   },
   "author": "Amruth-Vamshi",
   "license": "MIT",
