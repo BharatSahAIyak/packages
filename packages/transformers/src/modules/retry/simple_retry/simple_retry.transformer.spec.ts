@@ -14,6 +14,10 @@ describe('SimpleRetryTransformer', () => {
         } as XMessage;
     });
 
+    const mockDelay = async () => {
+        return new Promise(resolve => setTimeout(resolve, 1000));
+    };
+
     it('should retry the specified number of times before erroring out', async () => {
         await transformer.transform(xmsg);
         expect(xmsg.transformer?.metaData!.retryCount).toBe(1);
@@ -29,11 +33,14 @@ describe('SimpleRetryTransformer', () => {
     });
 
     it('should wait for the specified delay before retrying', async () => {
+        const delaySpy = jest.spyOn(transformer as any, 'delay').mockImplementation(mockDelay);
         const start = Date.now();
+
         await transformer.transform(xmsg);
         const end = Date.now();
 
         expect(end - start).toBeGreaterThanOrEqual(1000);
+        delaySpy.mockRestore();
     });
 
     it('should retry only the specified number of times', async () => {
