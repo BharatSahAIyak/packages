@@ -1,4 +1,4 @@
-import { MediaCategory, MessageMedia, MessageType, XMessage } from "@samagra-x/xmessage";
+import { ButtonChoice, MediaCategory, MessageMedia, MessageType, XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
 // import OpenAI from 'openai';
 import moment from "moment";
@@ -6,6 +6,7 @@ import { generateSentences } from "./stream/tokenizer";
 import getBhashiniConfig from "../translate/bhashini/bhashini.getConfig";
 import computeBhashini from "../translate/bhashini/bhashini.compute";
 import { OpenAI as llamaindexOpenAI, serviceContextFromDefaults, Groq } from "llamaindex";
+import OpenAI from "openai";
 
 export class LLMTransformer implements ITransformer {
 
@@ -18,7 +19,7 @@ export class LLMTransformer implements ITransformer {
     ///     bhashiniAPIKey: API key for bhashini (required if provider is set to bhashini)
     ///     bhashiniURL: Base url for bhashini (required if provider is set to bhashini)
     ///     provider: LLM API provider (optional), default is openAI
-    ///     prompt: LLM prompt, if not provided `xmsg.transformer.metaData.prompt` will be used. (optional)
+    ///     prompt: LLM prompt, priority would be to use `xmsg.transformer.metaData.prompt`, if this null then the value passed here will be used. (optional)
     ///     corpusPrompt: Specific instructions on corpus. (optional)
     ///     temperature: The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. (default: `0`) (optional)
     ///     enableStream: boolean which allowes user to get streaming responses if enabled. By default this is set to `false`. (optional)
@@ -43,11 +44,13 @@ export class LLMTransformer implements ITransformer {
         if (!this.config.APIKey) {
             throw new Error('`APIKey` not defined in LLM transformer');
         }
+        //TODO: Fix this later.
+        process.env['OPENAI_API_KEY']=this.config.APIKey;
         if (!this.config.temperature) {
             this.config.temperature = 0;
         }
         if (!this.config.outputLanguage) {
-            this.config.outputLanguage = xmsg?.transformer?.metaData?.language || 'en';
+            this.config.outputLanguage = xmsg?.transformer?.metaData?.inputLanguage || 'en';
         }
         if(this.config.outputLanguage!='en') {
             if (!this.config.bhashiniUserId) {
@@ -89,7 +92,7 @@ export class LLMTransformer implements ITransformer {
                 })
             }
         }) || '';
-        let systemInstructions = this.config.prompt || xmsg.transformer?.metaData?.prompt || 'You are am assistant who helps with answering questions for users based on the search results. If question is not relevant to search reults/corpus, refuse to answer';
+        let systemInstructions = xmsg.transformer?.metaData?.prompt || this.config.prompt || 'You are am assistant who helps with answering questions for users based on the search results. If question is not relevant to search reults/corpus, refuse to answer';
         systemInstructions = systemInstructions.replace('{{date}}', moment().format('MMM DD, YYYY (dddd)'))
         let contentString = this.config.corpusPrompt || 'Relevant Corpus:\n{{corpus}}'
         contentString = contentString.replace('{{corpus}}',expertContext)
@@ -121,25 +124,39 @@ export class LLMTransformer implements ITransformer {
 
         //llamaIndex implementaion
         let llm: any;
+        let response: any;
+
         if(this.config.provider?.toLowerCase() == "groq"){
             llm = new Groq({apiKey: this.config.APIKey});
+            const serviceContext = serviceContextFromDefaults({ llm });
+            response = await serviceContext.llm.chat({
+                messages: prompt,
+                stream: this.config.enableStream ?? false
+            }).catch((ex) => {
+                console.error(`LLM failed. Reason: ${ex}`);
+                throw ex;
+            });
         } else {
-           llm = new llamaindexOpenAI({apiKey: this.config.APIKey, model: this.config.model, temperature: this.config.temperature || 0});
+            // OPEN AI Implementaion
+            const openai = new OpenAI({apiKey: this.config.APIKey});
+            response = await openai.chat.completions.create({
+                model: this.config.model,
+                messages: prompt,
+                temperature: this.config.temperature || 0,
+                stream: this.config.enableStream ?? false,
+            }).catch((ex) => {
+                console.error(`LLM failed. Reason: ${ex}`);
+                throw ex;
+            });
         }
-        const serviceContext = serviceContextFromDefaults({ llm });
-        let response: any = await serviceContext.llm.chat({
-            messages: prompt,
-            stream: this.config.enableStream ?? false
-        }).catch((ex) => {
-            console.error(`LLM failed. Reason: ${ex}`);
-            throw ex;
-        });
-
+                
         let from = xmsg.from;
         xmsg.from = xmsg.to;
         xmsg.to = from;
         if(!this.config.enableStream) {
-            let answer = response.message.content.replace(/\*\*/g, '*') || "";
+            let answer;
+            if(this.config.provider?.toLowerCase() == "groq") answer = response.message.content.replace(/\*\*/g, '*') || "";
+            else answer = response["choices"][0].message.content.replace(/\*\*/g, '*') || "";
             xmsg = this.postProcessResponse(xmsg, answer, searchResults)
             if(this.config.outputLanguage!='en') {
                 xmsg.payload.text = (await this.translateBhashini(
@@ -155,9 +172,11 @@ export class LLMTransformer implements ITransformer {
             if (!this.config.outboundURL){
                 throw new Error('`outboundURL` not defined in LLM transformer');
             }
-            let sentences: any, allSentences = [], output = "" ,counter = 0;
+            let sentences: any, allSentences = [], translatedSentences = [], output = "" ,counter = 0;
             for await (const chunk of response) {
-                let currentChunk = chunk.delta || "";
+                let currentChunk: any;
+                if(this.config.provider?.toLowerCase() == "groq") currentChunk = chunk.delta || "";
+                else currentChunk = chunk.choices[0]?.delta?.content || "";
                 currentChunk = currentChunk?.replace("AI: ", "")
                 output += currentChunk;
                 const formattedText = output?.replace(/\n\n/g, '\n');
@@ -171,7 +190,6 @@ export class LLMTransformer implements ITransformer {
                     allSentences.push(currentSentence);
                     counter++;
                     if (counter > 1) {
-                        console.log("currentSentence", currentSentence)
                         xmsg = this.postProcessResponse(xmsg, currentSentence.replace(/<newline>/g, '\n'), searchResults)
                         if(this.config.outputLanguage!='en') {
                             xmsg.payload.text = (await this.translateBhashini(
@@ -180,13 +198,14 @@ export class LLMTransformer implements ITransformer {
                                 xmsg.payload.text!
                             ))['translated']
                         }
+                        translatedSentences.push(xmsg.payload.text);
                         xmsg.payload.media = media;
+                        console.log("currentSentence",  xmsg.payload.text )
                         await this.sendMessage(xmsg)
                     }
                 }
             }
             allSentences.push(sentences[sentences.length - 1])
-            console.log("currentSentence", sentences[sentences.length - 1])
             xmsg = this.postProcessResponse(xmsg, sentences[sentences.length - 1], searchResults)
             if(this.config.outputLanguage!='en') {
                 xmsg.payload.text = (await this.translateBhashini(
@@ -195,11 +214,21 @@ export class LLMTransformer implements ITransformer {
                     xmsg.payload.text!
                 ))['translated']
             }
+            translatedSentences.push(xmsg.payload.text);
+            console.log("currentSentence", xmsg.payload.text )
             xmsg.payload.text = `${xmsg.payload.text}<end/>`
             xmsg.payload.media = media;
             await this.sendMessage(xmsg)
-            xmsg.payload.text = allSentences.join(' ').replace("<end/>",'')
+            xmsg.payload.text = translatedSentences.join(' ').replace("<end/>",'')
+            xmsg.transformer = {
+                ...xmsg.transformer,
+                metaData: {
+                    ...xmsg.transformer?.metaData,
+                    responseInEnglish: allSentences.join(' ').replace("<end/>",'')
+                }
+            }
         }
+        delete process.env['OPENAI_API_KEY'];
         return xmsg;
     }
 
@@ -236,7 +265,7 @@ export class LLMTransformer implements ITransformer {
         })
         xmsg.payload.text = answer;
         xmsg.payload.metaData!['searchResults'] = updatedSearchResults;
-        xmsg.payload.metaData!['followUpQuestions'] = followUpQuestions;
+        xmsg.payload.buttonChoices = followUpQuestions.map((question: string, index: number): ButtonChoice=>{return {key: `${index}`,text: question,backmenu: false}})
         return xmsg;
     }
     //triggering inboud here itself for now to enable streaming feature
