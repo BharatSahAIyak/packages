@@ -1,5 +1,5 @@
 import { GupshupWhatsappProvider, IGSWhatsappConfig } from './GupShupWhatsappAdapter';
-import { MediaCategory, MessageState, MessageType, StylingTag, XMessage } from '@samagra-x/xmessage';
+import { MediaCategory, MessageState, MessageType, StylingTag, XMessage, MessageMedia, MessageId } from '@samagra-x/xmessage';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 
@@ -242,4 +242,23 @@ describe('gupshup whatsapp adapter', () => {
     await expect(provider['sendLocationMessage'](to, locationParams)).rejects.toThrowError('Missing location parameters for sending location message');
   });  
 
+  it('should send an audio message successfully', async () => {
+    const xMsg: XMessage = {
+      messageType: MessageType.AUDIO,
+      messageId: { Id: '123' } as MessageId,
+      from: { userID: 'senderUserID' },
+      to: { userID: '1234567890' },
+      channelURI: 'whatsapp://1234567890',
+      payload: {
+        media: [{ url: 'https://example.com/audio.mp3', category: 'AUDIO' }] as MessageMedia[],
+      },
+      providerURI: 'yourProviderURI',
+      timestamp: Date.now(),
+      messageState: MessageState.DELIVERED,
+    };
+  
+    mock.onGet(expect.stringContaining('https://media.smsgupshup.com/GatewayAPI/rest')).reply(200, { response: { status: 'success' } });
+    await adapter.sendMessage(xMsg);
+    expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('https://media.smsgupshup.com/GatewayAPI/rest'));
+  });  
 })

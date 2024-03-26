@@ -733,6 +733,34 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       throw error;
     }
   }
+
+  private async sendAudioMessage(xMsg: XMessage, media: MessageMedia): Promise<void> {
+    try {
+      const { url } = media;
+      if (!url) {
+        console.error('Audio URL is missing');
+        return;
+      }
+  
+      const phoneNumber = '91' + xMsg.to.userID;
+      const baseUrl = 'https://media.smsgupshup.com/GatewayAPI/rest';
+      const queryParams = new URLSearchParams();
+      queryParams.append('method', 'SendMessage');
+      queryParams.append('msg_type', 'AUDIO');
+      queryParams.append('userid', this.providerConfig?.username2Way ?? '');
+      queryParams.append('password', this.providerConfig?.password2Way ?? '');
+      queryParams.append('send_to', phoneNumber);
+      queryParams.append('audio', JSON.stringify({ url }));
+  
+      const fullUrl = `${baseUrl}?${queryParams.toString()}`;
+      const response = await axios.get(fullUrl);
+      console.log('Audio message sent:', response.data);
+    } catch (error) {
+      console.error('Error sending audio message:', error);
+      throw error;
+    }
+  }
+  
   // Convert XMessage to GupShupWhatsAppMessage
   async sendMessage (xMsg: XMessage) {
     if (!this.providerConfig) {
@@ -752,7 +780,29 @@ export class GupshupWhatsappProvider implements XMessageProvider {
           xMsg.messageState = MessageState.SENT;
           return; 
         }
-  
+
+        if (xMsg.payload.media && xMsg.payload.media.length > 0) {
+          const media: MessageMedia = xMsg.payload.media[0];
+          const isAudio: boolean = media.category === MediaCategory.AUDIO;
+        
+          if (isAudio) {
+            await this.sendAudioMessage(xMsg, media);
+            return;
+          }
+
+          builder.set('method', MethodType.MEDIAMESSAGE);
+          let plainText = true;
+          if (media.url && media.category) {
+            builder.set('msg_type', this.getMessageTypeByMediaCategory(media.category));
+            builder.set('media_url', media.url);
+            builder.set('caption', media.text || '');
+            builder.set('isHSM', 'false');
+            plainText = false;
+          } else {
+            console.error('Media URL or category is missing');
+          }
+        }                        
+
         if (xMsg.messageState === MessageState.OPTED_IN) {
           text += this.renderMessageChoices(xMsg.payload.buttonChoices || []);
   
