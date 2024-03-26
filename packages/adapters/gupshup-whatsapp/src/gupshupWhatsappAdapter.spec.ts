@@ -3,6 +3,8 @@ import { MediaCategory, MessageState, MessageType, StylingTag, XMessage } from '
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 
+jest.mock('axios');
+
 const mockGSWhatsappReport = {
   externalId: 'report-123',
   eventType: 'SENT',
@@ -58,6 +60,8 @@ describe('gupshup whatsapp adapter', () => {
     };
 
     adapter = new GupshupWhatsappProvider(mockCredentials);
+
+    (axios as jest.Mocked<typeof axios>).get.mockResolvedValue({ data: 'Location message sent successfully' });
   })
 
   afterEach(() => {
@@ -118,11 +122,11 @@ describe('gupshup whatsapp adapter', () => {
 
   it("Send Image Whatsapp message", async () => {
     const mockListXMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
-    mockListXMessage.payload.media = {
+    mockListXMessage.payload.media = [{
       category: MediaCategory.IMAGE,
       url: 'http://fakeurl.jpg',
       text: 'This is a caption'
-    }
+    }]
     const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMediaMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=IMAGE&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&media_url=http%3A%2F%2Ffakeurl.jpg&caption=This+is+a+caption&isHSM=false'
     const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
     let actualParametersPassed: string | undefined = '';
@@ -136,11 +140,11 @@ describe('gupshup whatsapp adapter', () => {
 
   it("Send Document Whatsapp message", async () => {
     const mockListXMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
-    mockListXMessage.payload.media = {
+    mockListXMessage.payload.media = [{
       category: MediaCategory.FILE,
       url: 'http://fakeurl.pdf',
       text: 'This is a caption'
-    }
+    }]
     const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMediaMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=DOCUMENT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&media_url=http%3A%2F%2Ffakeurl.pdf&caption=This+is+a+caption&isHSM=false'
     const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
     let actualParametersPassed: string | undefined = '';
@@ -196,4 +200,46 @@ describe('gupshup whatsapp adapter', () => {
     xmsg.timestamp = 0;
     expect(xmsg).toStrictEqual(expectedXMessage);
   });
+
+  it('should send a location message successfully', async () => {
+    const providerConfig = {
+      username2Way: 'your_username',
+      password2Way: 'your_password',
+      usernameHSM: 'your_hsm_username',
+      passwordHSM: 'your_hsm_password'
+    };
+    const provider = new GupshupWhatsappProvider(providerConfig);
+    const to = 'recipient_number';
+    const locationParams = {
+      longitude: 123.456,
+      latitude: 78.901,
+      name: 'Test Location',
+      address: 'Test Address',
+      url: 'Test URL'
+    };
+
+    await expect(provider['sendLocationMessage'](to, locationParams)).resolves.toBeUndefined();
+    expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('https://media.smsgupshup.com/GatewayAPI/rest'));
+  });
+
+  it('should throw an error if location parameters are missing', async () => {
+    const providerConfig = {
+      username2Way: 'your_username',
+      password2Way: 'your_password',
+      usernameHSM: 'your_hsm_username',
+      passwordHSM: 'your_hsm_password'
+    };
+    const provider = new GupshupWhatsappProvider(providerConfig);
+    const to = 'recipient_number';
+    const locationParams = {
+      longitude: null,
+      latitude: null,
+      name: 'Test Location',
+      address: 'Test Address',
+      url: 'Test URL'
+    };
+
+    await expect(provider['sendLocationMessage'](to, locationParams)).rejects.toThrowError('Missing location parameters for sending location message');
+  });  
+
 })
