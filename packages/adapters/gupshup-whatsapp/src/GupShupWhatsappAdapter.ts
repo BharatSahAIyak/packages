@@ -533,7 +533,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.text = '';
-      xmsgPayload.media = await this.getInboundMediaMessage(message);
+      xmsgPayload.media = [await this.getInboundMediaMessage(message)];
       messageIdentifier.channelMessageId = message.messageId || '';
 
       return this.processedXMessage(
@@ -696,6 +696,113 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     queryParams.append('password', password);
     return queryParams;
   }
+
+  private async sendLocationMessage(
+    to: string,
+    locationParams: LocationParams
+  ): Promise<void> {
+  
+    const { longitude, latitude, name, address } = locationParams;
+  
+    if (!longitude || !latitude || !name || !address) {
+      throw new Error('Missing location parameters for sending location message');
+    }
+  
+    const baseUrl = 'https://media.smsgupshup.com/GatewayAPI/rest';
+  
+    const queryParams = new URLSearchParams();
+    queryParams.append('method', 'SendMessage');
+    queryParams.append('msg_type', 'LOCATION');
+    queryParams.append('userid', this.providerConfig?.username2Way ?? '');
+    queryParams.append('password', this.providerConfig?.password2Way ?? '');
+    queryParams.append('send_to', to);
+    queryParams.append('location', JSON.stringify({
+      longitude: longitude.toString(),
+      latitude: latitude.toString(),
+      name,
+      address
+    }));
+  
+    const fullUrl = `${baseUrl}?${queryParams.toString()}`;
+  
+    try {
+      const response = await axios.get(fullUrl);
+      console.log('Location message sent:', response.data);
+    } catch (error) {
+      console.error('Error sending location message:', error);
+      throw error;
+    }
+  }
+
+  private async sendAudioMessage(xMsg: XMessage, media: MessageMedia): Promise<void> {
+    try {
+      const { url } = media;
+      if (!url) {
+        console.error('Audio URL is missing');
+        return;
+      }
+  
+      const phoneNumber = '91' + xMsg.to.userID;
+      const baseUrl = 'https://media.smsgupshup.com/GatewayAPI/rest';
+      const queryParams = new URLSearchParams();
+      queryParams.append('method', 'SendMessage');
+      queryParams.append('msg_type', 'AUDIO');
+      queryParams.append('userid', this.providerConfig?.username2Way ?? '');
+      queryParams.append('password', this.providerConfig?.password2Way ?? '');
+      queryParams.append('send_to', phoneNumber);
+      queryParams.append('audio', JSON.stringify({ url }));
+  
+      const fullUrl = `${baseUrl}?${queryParams.toString()}`;
+      const response = await axios.get(fullUrl);
+      console.log('Audio message sent:', response.data);
+    } catch (error) {
+      console.error('Error sending audio message:', error);
+      throw error;
+    }
+  }
+
+  async sendProductMessage(xMsg: XMessage): Promise<void> {
+    if (xMsg.payload.singleProductMessage || xMsg.payload.multiProductMessage) {
+      let builder = this.getURIBuilder();
+      builder.set('send_to', '91' + xMsg.to.userID);
+      builder.set('channel', 'Whatsapp');
+  
+      let content = '';
+      if (xMsg.payload.singleProductMessage) {
+        content = JSON.stringify(xMsg.payload.singleProductMessage);
+      } else if (xMsg.payload.multiProductMessage) {
+        content = JSON.stringify(xMsg.payload.multiProductMessage);
+      }
+  
+      builder.set('interactive_type', 'list');
+      builder.set('action', content);
+  
+      const expanded = new URL(
+        `https://media.smsgupshup.com/GatewayAPI/rest?${builder}`
+      );
+  
+      try {
+        const response: GSWhatsappOutBoundResponse = await this.sendOutboundMessage(
+          expanded.toString()
+        );
+  
+        if (response !== null && response.response.status === 'success') {
+          xMsg.messageId = MessageId.builder()
+            .setChannelMessageId(response.response.id)
+            .build();
+          xMsg.messageState = MessageState.SENT;
+        } else {
+          console.error(
+            'Gupshup Whatsapp Message not sent: ',
+            response.response.details
+          );
+          xMsg.messageState = MessageState.NOT_SENT;
+        }
+      } catch (error) {
+        console.error('Error in Send GS Whatsapp Outbound Message', error);
+      }
+    }
+  }
   
   // Convert XMessage to GupShupWhatsAppMessage
   async sendMessage (xMsg: XMessage) {
@@ -710,7 +817,41 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       ) {
         let text: string = xMsg.payload.text || '';
         let builder = this.getURIBuilder();
-  
+        
+        if (xMsg.messageType === MessageType.LOCATION && xMsg.payload.location) {
+          await this.sendLocationMessage(`91${xMsg.to.userID}`, xMsg.payload.location);
+          xMsg.messageState = MessageState.SENT;
+          return; 
+        }
+
+        if (xMsg.messageType === MessageType.SINGLEPRODUCTMESSAGE || xMsg.messageType === MessageType.MULTIPRODUCTMESSAGE) {
+          await this.sendProductMessage(xMsg)
+          xMsg.messageState = MessageState.SENT;
+          return; 
+        }
+
+        if (xMsg.payload.media && xMsg.payload.media.length > 0) {
+          const media: MessageMedia = xMsg.payload.media[0];
+          const isAudio: boolean = media.category === MediaCategory.AUDIO;
+        
+          if (isAudio) {
+            await this.sendAudioMessage(xMsg, media);
+            return;
+          }
+
+          builder.set('method', MethodType.MEDIAMESSAGE);
+          let plainText = true;
+          if (media.url && media.category) {
+            builder.set('msg_type', this.getMessageTypeByMediaCategory(media.category));
+            builder.set('media_url', media.url);
+            builder.set('caption', media.text || '');
+            builder.set('isHSM', 'false');
+            plainText = false;
+          } else {
+            console.error('Media URL or category is missing');
+          }
+        }                        
+
         if (xMsg.messageState === MessageState.OPTED_IN) {
           text += this.renderMessageChoices(xMsg.payload.buttonChoices || []);
   
@@ -824,20 +965,19 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             }
           }
   
-          if (xMsg.payload.media && xMsg.payload.media.url) {
-            const media: MessageMedia = xMsg.payload.media;
-  
+          if (xMsg.payload.media && xMsg.payload.media.length > 0) {
+            const media: MessageMedia = xMsg.payload.media[0];
             builder.set('method', MethodType.MEDIAMESSAGE);
-            builder.set(
-              'msg_type',
-              this.getMessageTypeByMediaCategory(media.category)
-            );
-  
-            builder.set('media_url', media.url);
-            builder.set('caption', media.text);
-            builder.set('isHSM', 'false');
-            plainText = false;
-          }
+            if (media.url && media.category) {
+              builder.set('msg_type', this.getMessageTypeByMediaCategory(media.category));
+              builder.set('media_url', media.url);
+              builder.set('caption', media.text || '');
+              builder.set('isHSM', 'false');
+              plainText = false;
+            } else {
+              console.error('Media URL or category is missing');
+            }
+          }          
   
           if (plainText) {
             text += this.renderMessageChoices(xMsg.payload.buttonChoices || []);
