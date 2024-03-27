@@ -760,6 +760,49 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       throw error;
     }
   }
+
+  async sendProductMessage(xMsg: XMessage): Promise<void> {
+    if (xMsg.payload.singleProductMessage || xMsg.payload.multiProductMessage) {
+      let builder = this.getURIBuilder();
+      builder.set('send_to', '91' + xMsg.to.userID);
+      builder.set('channel', 'Whatsapp');
+  
+      let content = '';
+      if (xMsg.payload.singleProductMessage) {
+        content = JSON.stringify(xMsg.payload.singleProductMessage);
+      } else if (xMsg.payload.multiProductMessage) {
+        content = JSON.stringify(xMsg.payload.multiProductMessage);
+      }
+  
+      builder.set('interactive_type', 'list');
+      builder.set('action', content);
+  
+      const expanded = new URL(
+        `https://media.smsgupshup.com/GatewayAPI/rest?${builder}`
+      );
+  
+      try {
+        const response: GSWhatsappOutBoundResponse = await this.sendOutboundMessage(
+          expanded.toString()
+        );
+  
+        if (response !== null && response.response.status === 'success') {
+          xMsg.messageId = MessageId.builder()
+            .setChannelMessageId(response.response.id)
+            .build();
+          xMsg.messageState = MessageState.SENT;
+        } else {
+          console.error(
+            'Gupshup Whatsapp Message not sent: ',
+            response.response.details
+          );
+          xMsg.messageState = MessageState.NOT_SENT;
+        }
+      } catch (error) {
+        console.error('Error in Send GS Whatsapp Outbound Message', error);
+      }
+    }
+  }
   
   // Convert XMessage to GupShupWhatsAppMessage
   async sendMessage (xMsg: XMessage) {
@@ -777,6 +820,12 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         
         if (xMsg.messageType === MessageType.LOCATION && xMsg.payload.location) {
           await this.sendLocationMessage(`91${xMsg.to.userID}`, xMsg.payload.location);
+          xMsg.messageState = MessageState.SENT;
+          return; 
+        }
+
+        if (xMsg.messageType === MessageType.SINGLEPRODUCTMESSAGE || xMsg.messageType === MessageType.MULTIPRODUCTMESSAGE) {
+          await this.sendProductMessage(xMsg)
           xMsg.messageState = MessageState.SENT;
           return; 
         }

@@ -1,5 +1,5 @@
 import { GupshupWhatsappProvider, IGSWhatsappConfig } from './GupShupWhatsappAdapter';
-import { MediaCategory, MessageState, MessageType, StylingTag, XMessage, MessageMedia, MessageId } from '@samagra-x/xmessage';
+import { MediaCategory, MessageState, MessageType, StylingTag, XMessage, MessageMedia, MessageId, ProductMessageData, XMessagePayload } from '@samagra-x/xmessage';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 
@@ -261,4 +261,34 @@ describe('gupshup whatsapp adapter', () => {
     await adapter.sendMessage(xMsg);
     expect(axios.get).toHaveBeenCalledWith(expect.stringContaining('https://media.smsgupshup.com/GatewayAPI/rest'));
   });  
+
+  it("should create a single product message", () => {
+    const singleProductMessage: ProductMessageData = {
+      catalogId: "558215241949699",
+      productId: "2v3fh1axoq",
+    };
+
+    const xMsg: XMessage = {
+          messageType: MessageType.AUDIO,
+          messageId: { Id: '123' } as MessageId,
+          from: { userID: 'senderUserID' },
+          to: { userID: '1234567890' },
+          channelURI: 'whatsapp://1234567890',
+          providerURI: 'yourProviderURI',
+          timestamp: Date.now(),
+          messageState: MessageState.DELIVERED,
+          payload:{
+            singleProductMessage: {
+            catalogId: "558215241949699",
+            productId: "2v3fh1axoq",
+          }
+        }
+        };
+
+    adapter.sendProductMessage(xMsg);
+
+    // Assertions
+    expect(adapter.sendProductMessage).toHaveBeenCalledTimes(1);
+    expect(adapter.sendProductMessage).toHaveBeenCalledWith(xMsg);
+  });
 })
