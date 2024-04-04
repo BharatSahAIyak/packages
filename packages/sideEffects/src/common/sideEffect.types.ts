@@ -5,8 +5,5 @@ export type SideEffectData = {
     transformerId: string,
     eventName: string,
     timestamp: number,
-    version:string;
-    environment:string,
-    phonenumber:;
     eventData: XMessage,
 }

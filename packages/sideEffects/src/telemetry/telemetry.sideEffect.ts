@@ -6,31 +6,35 @@ import { MessageId } from '@samagra-x/xmessage';
 interface SubEventData {
     botId: string;
     userId: string;
-    conversationId: string;
     orgId: string;
-    messageId: MessageId;
+    messageId?: MessageId;
     error?: string;
-    phoneNumber: string;
+    totalTime?: number;
 }
 
 interface ConstructedEventData {
+    generator: string;
     version: string;
-    eventType: 'single' | 'chain';
-    event: string;
-    subEvent: SubEventData;
-    timestamp: number;
+    timestamp: string;
     actorId: string;
     actorType: string;
-    environment: string;
     sessionId?: string;
-    timeTaken?: number;
+    deviceId?: string;
+    env: string;
+    eventId: string;
+    event: string;
+    subEvent: string;
+    timeElapsed?: number;
+    eventData:SubEventData;
 }
+
+const AcceptedEvents: string[] = ['DEFAULT:TRANSFORMER_START_EVENT', 'DEFAULT:TRANSFORMER_END_EVENT'];
 
 export class TelemetrySideEffect implements ISideEffect {
     constructor(private readonly config: Record<string, any>) { }
 
-    static doesConsumeEvent(eventName: string): boolean {
-        return false;
+    static doesConsumeEvent(eventName: string): Boolean {
+        return AcceptedEvents.includes(eventName);
     }
 
     getName(): string {
@@ -58,26 +62,30 @@ export class TelemetrySideEffect implements ISideEffect {
 
     private createEventData(sideEffectData: SideEffectData): ConstructedEventData {
         const subEventData: SubEventData = {
-            botId: "botId",
+            botId: sideEffectData.eventData.app || '',
             userId: sideEffectData.eventData.to.userID,
-            conversationId: "conversationId",
             orgId: sideEffectData.eventData?.orgId || '',
             messageId: sideEffectData.eventData?.messageId || '',
-            error: sideEffectData.error,
-            phoneNumber: "phonenumber",
         };
 
         const eventData: ConstructedEventData = {
-            version: sideEffectData.version,
-            eventType: "single",
-            event: sideEffectData.eventName,
-            subEvent: subEventData,
-            timestamp: Date.now(),
+            generator: "Transformer",
+            version: "0.0.1", // Placeholder
+            timestamp: new Date().toISOString(),
             actorId: sideEffectData.transformerId,
             actorType: "Transformer",
-            environment: sideEffectData.environment,
+            env: "prod", // Placeholder
+            eventId: "E040",
+            event: 'Transformer Execution',
+            subEvent: sideEffectData.eventName,
+            eventData: subEventData
         };
 
+        if (sideEffectData.eventName === 'DEFAULT:TRANSFORMER_END_EVENT') {
+            eventData.eventId = "E041";
+            eventData.timeElapsed = xmessage.transformer.metadata.totalTime; // Placeholder
+        }
+    
         return eventData;
     }
 
@@ -85,9 +93,13 @@ export class TelemetrySideEffect implements ISideEffect {
         return this.config[this.getName()].host || "";
     }
 
-    private async sendEventDataToTelemetry(eventData: ConstructedEventData, host: string): Promise<void> {
+    private async sendEventDataToTelemetry(eventDataArray: ConstructedEventData, host: string): Promise<void> {
         try {
-            await axios.post(`${host}/save`, eventData);
+            await axios.post(`${host}/metrics/v1/save`, eventDataArray, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
         } catch (error) {
             console.error("Error occurred while sending event data to Telemetry service:", error);
             throw error;
