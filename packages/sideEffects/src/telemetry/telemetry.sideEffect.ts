@@ -1,9 +1,9 @@
+import { HttpStatusCode } from "axios";
 import { ISideEffect } from "../common/sideEffect.interface";
 import { Events, SideEffectData } from "../common/sideEffect.types";
 
 type SubEventData = {
     botId: string;
-    userId: string;
     orgId: string;
     messageId?: string;
     error?: string;
@@ -64,7 +64,6 @@ export class TelemetrySideEffect implements ISideEffect {
     private createEventData(sideEffectData: SideEffectData): ConstructedEventData {
         const subEventData: SubEventData = {
             botId: sideEffectData.eventData.app!,
-            userId: sideEffectData.eventData.to.userID,
             orgId: sideEffectData.eventData?.orgId!,
             messageId: sideEffectData.eventData?.messageId.Id,
         };
@@ -73,7 +72,8 @@ export class TelemetrySideEffect implements ISideEffect {
             generator: sideEffectData.transformerId,
             version: '0.0.1',
             timestamp: sideEffectData.timestamp,
-            actorId: sideEffectData.transformerId,
+            // For cases where a node maybe the end node and to and from have been switched
+            actorId: sideEffectData.eventData.from?.userID || sideEffectData.eventData.to.userID,
             actorType: 'Transformer',
             env: process.env.ENVIRONMENT || 'UNKNOWN',
             eventId: 'E041',
@@ -104,7 +104,9 @@ export class TelemetrySideEffect implements ISideEffect {
                 }
             })
             .then(async (resp) => {
-                console.log(await resp.json());
+                if (resp.status == HttpStatusCode.BadRequest) {
+                    console.log(await resp.json());
+                }
                 if (!resp.ok) {
                     throw new Error(`Failed to send telemetry, status: ${resp.status}`);
                 }
