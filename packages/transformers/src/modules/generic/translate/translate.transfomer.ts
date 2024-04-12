@@ -2,6 +2,7 @@ import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
 import getBhashiniConfig from "./bhashini/bhashini.getConfig";
 import computeBhashini from "./bhashini/bhashini.compute";
+import { Events } from "@samagra-x/uci-side-effects";
 
 export class TranslateTransformer implements ITransformer {
 
@@ -15,21 +16,25 @@ export class TranslateTransformer implements ITransformer {
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-      if (!xmsg.transformer) {
-          xmsg.transformer = {
-              metaData: {}
-          };
-      }
-      if (!this.config.provider) {
-        throw new Error('`provider` not defined in TRANSLATE transformer');
-      }
+      let startTime = Date.now();
       if (!this.config.inputLanguage) {
         this.config.inputLanguage = xmsg?.transformer?.metaData?.inputLanguage || 'en';
       }
       if (!this.config.outputLanguage) {
         this.config.inputLanguage = xmsg?.transformer?.metaData?.outputLanguage || 'en';
       }
+      this.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} started!`, startTime);
+      if (!xmsg.transformer) {
+          xmsg.transformer = {
+              metaData: {}
+          };
+      }
+      if (!this.config.provider) {
+        this.sendErrorTelemetry(xmsg, '`provider` not defined in TRANSLATE transformer');
+        throw new Error('`provider` not defined in TRANSLATE transformer');
+      }
       if(!xmsg?.payload?.text){
+        this.sendErrorTelemetry(xmsg, '`input payload` not defined in TRANSLATE transformer');
         throw new Error('`input payload` not defined in TRANSLATE transformer');
       }
       console.log("TRANSLATE transformer called.", this.config.inputLanguage, this.config.outputLanguage);
@@ -38,6 +43,7 @@ export class TranslateTransformer implements ITransformer {
       }
       if(this.config.provider.toLowerCase()=='bhashini') {
         if (!this.config.bhashiniUserId) {
+          this.sendErrorTelemetry(xmsg, '`bhashiniUserId` not defined in TRANSLATE transformer');
           throw new Error('`bhashiniUserId` not defined in TRANSLATE transformer');
         }
         if (!this.config.bhashiniAPIKey) {
@@ -55,6 +61,7 @@ export class TranslateTransformer implements ITransformer {
       } else {
         throw new Error('Azure is not configured yet in TRANSLATE transformer');
       }
+      this.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} finished!`, startTime);
       return xmsg;
     }
 
@@ -110,6 +117,28 @@ export class TranslateTransformer implements ITransformer {
           error: error
         }
       }
-    }
-    
+  }
+  
+  private async sendErrorTelemetry(xmsg: XMessage, error: string) {
+    const xmgCopy = {...xmsg};
+    xmgCopy.transformer!.metaData!.errorString = error;
+    this.config.eventBus.pushEvent({
+      eventName: Events.CUSTOM_TELEMETRY_EVENT_ERROR,
+      transformerId: this.config.transformerId,
+      eventData: xmgCopy,
+      timestamp: Date.now(),
+    })
+  }
+
+  private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number) {
+    const xmgCopy = {...xmsg};
+    xmgCopy.transformer!.metaData!.telemetryLog = log;
+    xmgCopy.transformer!.metaData!.stateExecutionTime = Date.now() - startTime;
+    this.config.eventBus.pushEvent({
+      eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
+      transformerId: this.config.transformerId,
+      eventData: xmgCopy,
+      timestamp: Date.now(),
+    })
+  }
 }
