@@ -25,6 +25,7 @@ export class LabelClassifierTransformer implements ITransformer{
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = Date.now();
+        this.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER : ${this.config.transformerId} started`, startTime);
         if (!xmsg.transformer) {
             xmsg.transformer = {
                 metaData: {}
@@ -37,7 +38,7 @@ export class LabelClassifierTransformer implements ITransformer{
                 text: xmsg.payload?.text ?? this.config.prompt,
             },
             eventBus: this.config.eventBus,
-            transformerId: this.config.transformerId,
+            transformerId: `INTERNAL_HTTP_POST_${this.config.transformerId}`,
         });
         await httpTransformer.transform(xmsg)
         .then((resp) => {

@@ -19,6 +19,7 @@ export class DocRetrieverTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = Date.now();
+        this.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
         console.log("DOC_RETRIEVER transformer called.");
         if (!xmsg.transformer) {
             xmsg.transformer = {
@@ -61,6 +62,7 @@ export class DocRetrieverTransformer implements ITransformer {
             const response = await axios.request(config);
             const responseData = response.data;
             xmsg.transformer.metaData!.retrievedChunks = responseData;
+            xmsg.transformer.metaData!.retrievedChunksStringified = JSON.stringify(responseData);
             xmsg.transformer.metaData!.state = (responseData && responseData.length) ? 'if' : 'else';
             if(xmsg.transformer.metaData!.state=='else' && this.config.staticNoContentResponse) {
                 xmsg.payload.text = this.config.staticNoContentResponse;

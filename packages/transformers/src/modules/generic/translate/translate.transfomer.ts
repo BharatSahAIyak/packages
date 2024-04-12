@@ -17,6 +17,13 @@ export class TranslateTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
       let startTime = Date.now();
+      if (!this.config.inputLanguage) {
+        this.config.inputLanguage = xmsg?.transformer?.metaData?.inputLanguage || 'en';
+      }
+      if (!this.config.outputLanguage) {
+        this.config.inputLanguage = xmsg?.transformer?.metaData?.outputLanguage || 'en';
+      }
+      this.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} started!`, startTime);
       if (!xmsg.transformer) {
           xmsg.transformer = {
               metaData: {}
@@ -25,12 +32,6 @@ export class TranslateTransformer implements ITransformer {
       if (!this.config.provider) {
         this.sendErrorTelemetry(xmsg, '`provider` not defined in TRANSLATE transformer');
         throw new Error('`provider` not defined in TRANSLATE transformer');
-      }
-      if (!this.config.inputLanguage) {
-        this.config.inputLanguage = xmsg?.transformer?.metaData?.inputLanguage || 'en';
-      }
-      if (!this.config.outputLanguage) {
-        this.config.inputLanguage = xmsg?.transformer?.metaData?.outputLanguage || 'en';
       }
       if(!xmsg?.payload?.text){
         this.sendErrorTelemetry(xmsg, '`input payload` not defined in TRANSLATE transformer');
@@ -51,7 +52,6 @@ export class TranslateTransformer implements ITransformer {
         if (!this.config.bhashiniURL) {
           throw new Error('`bhashiniURL` not defined in TRANSLATE transformer');
         }
-        this.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
         xmsg.payload.text = (await this.translateBhashini(
           this.config.inputLanguage,
           this.config.outputLanguage,
@@ -61,7 +61,7 @@ export class TranslateTransformer implements ITransformer {
       } else {
         throw new Error('Azure is not configured yet in TRANSLATE transformer');
       }
-      this.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage}`, startTime);
+      this.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} finished!`, startTime);
       return xmsg;
     }
 

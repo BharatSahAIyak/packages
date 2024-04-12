@@ -30,6 +30,7 @@ export class LLMTransformer implements ITransformer {
     // TODO: use TRANSLATE transformer directly instead of repeating code
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = Date.now();
+        this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM Started`, startTime);
         console.log("LLM transformer called.");
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length){
             xmsg.transformer = {
@@ -237,7 +238,7 @@ export class LLMTransformer implements ITransformer {
             }
         }
         delete process.env['OPENAI_API_KEY'];
-        this.sendLogTelemetry(xmsg, `${this.config.transformerId} LLM generated response!`, startTime);
+        this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
         return xmsg;
     }
 

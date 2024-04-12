@@ -12,9 +12,11 @@ export class NeuralCoreferenceTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = Date.now();
+        this.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
         console.log("NEURAL_COREFERENCE transformer called.");
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length) {
-            console.log("UserHistory not found! Returning original XMessag in NEURAL_COREFERENCE transformer")
+            this.sendErrorTelemetry(xmsg, "UserHistory not found! Returning original XMessage in NEURAL_COREFERENCE transformer");
+            console.log("UserHistory not found! Returning original XMessage in NEURAL_COREFERENCE transformer")
             return xmsg
         };
         if (!this.config.prompt) {

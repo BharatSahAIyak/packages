@@ -112,7 +112,7 @@ export class CustomTelemetrySideEffect implements ISideEffect {
             })
             .then(async (resp) => {
                 if (resp.status == HttpStatusCode.BadRequest) {
-                    console.log(await resp.json());
+                    console.log(JSON.stringify(await resp.json()));
                 }
                 if (!resp.ok) {
                     throw new Error(`Failed to send telemetry, status: ${resp.status}`);
