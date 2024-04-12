@@ -1,15 +1,8 @@
 import { HttpStatusCode } from "axios";
 import { ISideEffect } from "../common/sideEffect.interface";
 import { Events, SideEffectData } from "../common/sideEffect.types";
-
-type SubEventData = {
-    botId: string;
-    orgId: string;
-    messageId?: string;
-    error?: string;
-    transformerId: string;
-    totalTime?: number;
-}
+import get from 'lodash/get';
+import set from 'lodash/set';
 
 type ConstructedEventData = {
     generator: string;
@@ -24,19 +17,19 @@ type ConstructedEventData = {
     event: string;
     subEvent: string;
     timeElapsed?: number;
-    eventData:SubEventData;
+    eventData: Record<string, any>;
 }
 
 const AcceptedEvents: string[] = [
-    Events.DEFAULT_TRANSFORMER_START_EVENT,
-    Events.DEFAULT_TRANSFORMER_END_EVENT,
+    Events.CUSTOM_TELEMETRY_EVENT_LOG,
+    Events.CUSTOM_TELEMETRY_EVENT_ERROR,
 ];
 
-export class TelemetrySideEffect implements ISideEffect {
+export class CustomTelemetrySideEffect implements ISideEffect {
     constructor(private readonly config: Record<string, any>) { }
 
     static getName(): string {
-        return "Telemetry";
+        return "CustomTelemetry";
     }
 
     static doesConsumeEvent(eventName: string): Boolean {
@@ -63,11 +56,14 @@ export class TelemetrySideEffect implements ISideEffect {
     }
 
     private createEventData(sideEffectData: SideEffectData): ConstructedEventData {
-        const subEventData: SubEventData = {
+        const subEventData: any = {
             botId: sideEffectData.eventData.app!,
             orgId: sideEffectData.eventData?.orgId!,
             messageId: sideEffectData.eventData?.messageId.Id,
             transformerId: sideEffectData.transformerId,
+            text: sideEffectData.eventData.payload.text,
+            userId: sideEffectData.eventData.from?.userID || sideEffectData.eventData.to.userID,
+            timeTaken: sideEffectData.eventData.transformer?.metaData?.stateExecutionTime,
         };
 
         const eventData: ConstructedEventData = {
@@ -78,19 +74,26 @@ export class TelemetrySideEffect implements ISideEffect {
             actorId: sideEffectData.eventData.from?.userID || sideEffectData.eventData.to.userID,
             actorType: 'System',
             env: process.env.ENVIRONMENT || 'UNKNOWN',
-            eventId: 'E041',
+            eventId: this.config.eventId ?? 'UNKNOWN_EVENT_ID',
             event: 'Transformer Execution',
             subEvent: sideEffectData.eventName,
             eventData: subEventData
         };
 
-        if (sideEffectData.eventName === Events.DEFAULT_TRANSFORMER_END_EVENT) {
-            eventData.timeElapsed = sideEffectData.eventData.transformer?.metaData?.stateExecutionTime;
-            eventData.eventId = 'E042';
+        if (sideEffectData.eventName == Events.CUSTOM_TELEMETRY_EVENT_LOG) {
+            subEventData['eventLog'] = sideEffectData.eventData.transformer?.metaData?.telemetryLog;
+        }
+        else if (sideEffectData.eventName == Events.CUSTOM_TELEMETRY_EVENT_ERROR) {
+            subEventData['error'] = sideEffectData.eventData.transformer?.metaData?.errorString;
         }
 
+        const setters: Record<string, string> = this.config.setters;
+        Object.entries(setters ?? {}).forEach((entry) => {
+            set(subEventData, entry[0], get(sideEffectData.eventData, entry[1]));
+        });
+
         eventData.timestamp = Math.trunc(eventData.timestamp / 1000);
-    
+
         return eventData;
     }
 

@@ -3,6 +3,7 @@ import { ITransformer } from "../../common/transformer.interface";
 import axios from 'axios';
 const qs = require('qs');
 import { v4 as uuid4 } from 'uuid';
+import { Events } from "@samagra-x/uci-side-effects";
 
 export class DocRetrieverTransformer implements ITransformer {
 
@@ -17,6 +18,7 @@ export class DocRetrieverTransformer implements ITransformer {
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
+        const startTime = Date.now();
         console.log("DOC_RETRIEVER transformer called.");
         if (!xmsg.transformer) {
             xmsg.transformer = {
@@ -24,6 +26,7 @@ export class DocRetrieverTransformer implements ITransformer {
             };
         }
         if (!this.config.url) {
+            this.sendErrorTelemetry(xmsg, '`url` not defined in DOC_RETRIEVER transformer');
             throw new Error('`url` not defined in DOC_RETRIEVER transformer');
         }
         if (!this.config.topK) {
@@ -63,10 +66,35 @@ export class DocRetrieverTransformer implements ITransformer {
                 xmsg.payload.text = this.config.staticNoContentResponse;
                 xmsg.payload.metaData!['staticResponse'] = true;
             }
+            this.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
             return xmsg;
         } catch (ex) {
+            this.sendErrorTelemetry(xmsg, `DOC_RETRIEVER failed. Reason: ${ex}`);
             console.error(`DOC_RETRIEVER failed. Reason: ${ex}`);
             throw ex;
         }
+    }
+
+    private async sendErrorTelemetry(xmsg: XMessage, error: string) {
+        const xmgCopy = {...xmsg};
+        xmgCopy.transformer!.metaData!.errorString = error;
+        this.config.eventBus.pushEvent({
+          eventName: Events.CUSTOM_TELEMETRY_EVENT_ERROR,
+          transformerId: this.config.transformerId,
+          eventData: xmgCopy,
+          timestamp: Date.now(),
+        })
+    }
+
+    private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number) {
+        const xmgCopy = {...xmsg};
+        xmgCopy.transformer!.metaData!.telemetryLog = log;
+        xmgCopy.transformer!.metaData!.stateExecutionTime = Date.now() - startTime;
+        this.config.eventBus.pushEvent({
+          eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
+          transformerId: this.config.transformerId,
+          eventData: xmgCopy,
+          timestamp: Date.now(),
+        })
     }
 }
