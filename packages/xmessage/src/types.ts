@@ -87,6 +87,13 @@ export type XMessagePayload = {
   mediaCaption?: string;
   metaData?: Record<string, any>;
   subject?: string;
+  singleProductMessage?: ProductMessageData;
+  multiProductMessage?: ProductMessageData;
+}
+
+export class ProductMessageData {
+  catalogId?: string;
+  productId?: string;
 }
 
 export class XMessageThread {
