@@ -10,7 +10,16 @@ export class PwaBotProvider implements XMessageProvider {
 
     async convertMessageToXMsg(msg: PwaBotMessage): Promise<XMessage> {
         let messageType = MessageType.TEXT;
-        let text = msg.body;
+        if (msg.messageType == MessageType.FEEDBACK_POSITIVE) {
+            messageType = MessageType.FEEDBACK_POSITIVE;
+        } 
+        else if (msg.messageType == MessageType.FEEDBACK_NEGATIVE) {
+            messageType = MessageType.FEEDBACK_NEGATIVE;
+        }
+        else if (msg.messageType == MessageType.FEEDBACK_NEUTRAL) {
+            messageType = MessageType.FEEDBACK_NEUTRAL;
+        }
+        let text = msg.body || '';
         if (text.startsWith('\\register')) {
             text = text.replace('\\register ', '').trim();
             messageType = MessageType.REGISTRATION;
@@ -28,8 +37,9 @@ export class PwaBotProvider implements XMessageProvider {
             providerURI: "Pwa",
             messageState: MessageState.REPLIED,
             messageId: {
-                channelMessageId: `${msg.conversationId}`,
+                channelMessageId: msg.conversationId,
                 Id: `${msg.messageId}`,
+                replyId: msg.replyId,
             },
             messageType: messageType,
             timestamp: new Date().getTime(),
