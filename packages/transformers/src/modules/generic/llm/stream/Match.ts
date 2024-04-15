@@ -176,5 +176,3 @@ exports.isBoundaryChar = function (word: any) {
         word === "!" ||
         word === "?";
 };
-
-export {}

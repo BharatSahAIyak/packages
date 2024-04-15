@@ -11,7 +11,7 @@ export type PwaBotMessage = {
     messageId: string,
     identifier: string,
     asrId: string,
-    pdfId?: string,
-    latitude?: string,
-    longitude?: string
+    pdfId?: string
+    messageType?: string
+    replyId?: string;
 }

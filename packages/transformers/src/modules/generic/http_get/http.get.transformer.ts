@@ -1,5 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common";
+import { Events } from "@samagra-x/uci-side-effects";
 
 export class HttpGetTransformer implements ITransformer {
 
@@ -11,6 +12,7 @@ export class HttpGetTransformer implements ITransformer {
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
+        const startTime = Date.now();
         if (!xmsg.transformer) {
             xmsg.transformer = {
                 metaData: {}
@@ -29,6 +31,7 @@ export class HttpGetTransformer implements ITransformer {
         console.log("query:", `${this.config.url}${this.config.query ?? ''}`)
         console.log("headers", JSON.stringify(this.config.headers))
         if (!this.config.url) {
+            this.sendErrorTelemetry(xmsg, '`url` not defined in HTTP_GET transformer');
             throw new Error('`url` not defined in HTTP_GET transformer');
         }
         await fetch(`${this.config.url}${this.config.query ?? ''}`, {
@@ -37,6 +40,7 @@ export class HttpGetTransformer implements ITransformer {
         })
         .then(resp => {
             if (!resp.ok) {
+                this.sendErrorTelemetry(xmsg, `Request failed with code: ${resp.status}`);
                 throw new Error(`Request failed with code: ${resp.status}`);
             } else {
                 const contentType = resp.headers.get('content-type');
@@ -56,9 +60,11 @@ export class HttpGetTransformer implements ITransformer {
             xmsg.transformer.metaData!.httpResponse = resp;
         })
         .catch((ex) => {
+            this.sendErrorTelemetry(xmsg, `GET request failed. Reason: ${ex}`);
             console.error(`GET request failed. Reason: ${ex}`);
             throw ex;
         });
+        this.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
         return xmsg;
     }
 
@@ -71,5 +77,28 @@ export class HttpGetTransformer implements ITransformer {
             .join('&');
 
         return `?${queryString}`;
+    }
+
+    private async sendErrorTelemetry(xmsg: XMessage, error: string) {
+        const xmgCopy = {...xmsg};
+        xmgCopy.transformer!.metaData!.errorString = error;
+        this.config.eventBus.pushEvent({
+          eventName: Events.CUSTOM_TELEMETRY_EVENT_ERROR,
+          transformerId: this.config.transformerId,
+          eventData: xmgCopy,
+          timestamp: Date.now(),
+        })
+    }
+
+    private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number) {
+        const xmgCopy = {...xmsg};
+        xmgCopy.transformer!.metaData!.telemetryLog = log;
+        xmgCopy.transformer!.metaData!.stateExecutionTime = Date.now() - startTime;
+        this.config.eventBus.pushEvent({
+          eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
+          transformerId: this.config.transformerId,
+          eventData: xmgCopy,
+          timestamp: Date.now(),
+        })
     }
 }

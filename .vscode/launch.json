@@ -13,7 +13,7 @@
               "--coverage=false",
               "--no-cache"
           ],
-          "cwd": "${workspaceRoot}/packages/adapters/factory",
+          "cwd": "${workspaceRoot}/packages/sideEffects/src/telemetry",
           "console": "integratedTerminal",
           "internalConsoleOptions": "neverOpen",
           "sourceMaps": true,
