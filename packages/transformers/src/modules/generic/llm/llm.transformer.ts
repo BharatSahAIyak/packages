@@ -282,6 +282,8 @@ export class LLMTransformer implements ITransformer {
     //TODO: add a queue at orchestrator and ping orchestrator here such that it tirggres outbound.
     async sendMessage(xmsg: XMessage){
         console.log(`sending message to ${this.config.outboundURL}...`)
+        // This also reduces payload size and prevents 413 error.
+        delete xmsg.transformer?.metaData?.userHistory;
         try{
           var myHeaders = new Headers();
           myHeaders.append("Content-Type", "application/json");
