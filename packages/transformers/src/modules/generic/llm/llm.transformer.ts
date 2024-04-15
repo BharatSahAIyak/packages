@@ -211,7 +211,7 @@ export class LLMTransformer implements ITransformer {
                         }
                         translatedSentences.push(xmsg.payload.text);
                         xmsg.payload.media = media;
-                        console.log("currentSentence",  xmsg.payload.text )
+                        xmsg.payload.text = translatedSentences.join(' ');
                         await this.sendMessage(xmsg)
                     }
                 }
@@ -226,8 +226,7 @@ export class LLMTransformer implements ITransformer {
                 ))['translated']
             }
             translatedSentences.push(xmsg.payload.text);
-            console.log("currentSentence", xmsg.payload.text )
-            xmsg.payload.text = `${xmsg.payload.text}<end/>`
+            xmsg.payload.text = `${translatedSentences.join(' ')}<end/>`
             xmsg.payload.media = media;
             await this.sendMessage(xmsg)
             xmsg.payload.text = translatedSentences.join(' ').replace("<end/>",'')
@@ -288,6 +287,8 @@ export class LLMTransformer implements ITransformer {
     //TODO: add a queue at orchestrator and ping orchestrator here such that it tirggres outbound.
     async sendMessage(xmsg: XMessage){
         console.log(`sending message to ${this.config.outboundURL}...`)
+        console.log('-------------------------------------------------------------')
+        console.log(xmsg.payload.text)
         // This also reduces payload size and prevents 413 error.
         delete xmsg.transformer?.metaData?.userHistory;
         xmsg.transformer!.metaData!.messageIdChanged = true;
