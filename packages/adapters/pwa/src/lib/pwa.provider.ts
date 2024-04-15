@@ -45,12 +45,7 @@ export class PwaBotProvider implements XMessageProvider {
             timestamp: new Date().getTime(),
             payload: {
                 text: text,
-                metaData: {
-                    userData: {
-                        latitude: msg.latitude,
-                        longitude: msg.longitude
-                    }
-                }
+                metaData: msg.metadata
             },
         };
 

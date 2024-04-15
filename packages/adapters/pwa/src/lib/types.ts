@@ -14,4 +14,5 @@ export type PwaBotMessage = {
     pdfId?: string
     messageType?: string
     replyId?: string;
+    metadata?: JSON;
 }
