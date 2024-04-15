@@ -8,6 +8,7 @@ import computeBhashini from "../translate/bhashini/bhashini.compute";
 import { OpenAI as llamaindexOpenAI, serviceContextFromDefaults, Groq } from "llamaindex";
 import OpenAI from "openai";
 import { Events } from "@samagra-x/uci-side-effects";
+import {v4 as uuid4} from 'uuid';
 
 export class LLMTransformer implements ITransformer {
 
@@ -162,6 +163,9 @@ export class LLMTransformer implements ITransformer {
         let from = xmsg.from;
         xmsg.from = xmsg.to;
         xmsg.to = from;
+        const oldMessageId = xmsg.messageId.Id;
+        const newMessageId = uuid4();
+        xmsg.messageId.Id = newMessageId;
         if(!this.config.enableStream) {
             let answer;
             if(this.config.provider?.toLowerCase() == "groq") answer = response.message.content.replace(/\*\*/g, '*') || "";
@@ -238,7 +242,9 @@ export class LLMTransformer implements ITransformer {
             }
         }
         delete process.env['OPENAI_API_KEY'];
+        xmsg.messageId.Id = oldMessageId;
         this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
+        xmsg.messageId.Id = newMessageId;
         return xmsg;
     }
 
@@ -284,6 +290,7 @@ export class LLMTransformer implements ITransformer {
         console.log(`sending message to ${this.config.outboundURL}...`)
         // This also reduces payload size and prevents 413 error.
         delete xmsg.transformer?.metaData?.userHistory;
+        xmsg.transformer!.metaData!.messageIdChanged = true;
         try{
           var myHeaders = new Headers();
           myHeaders.append("Content-Type", "application/json");
