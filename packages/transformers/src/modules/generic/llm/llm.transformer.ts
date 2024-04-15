@@ -160,9 +160,7 @@ export class LLMTransformer implements ITransformer {
             });
         }
                 
-        let from = xmsg.from;
-        xmsg.from = xmsg.to;
-        xmsg.to = from;
+        this.switchFromTo(xmsg);
         const oldMessageId = xmsg.messageId.Id;
         const newMessageId = uuid4();
         xmsg.messageId.Id = newMessageId;
@@ -243,8 +241,10 @@ export class LLMTransformer implements ITransformer {
         }
         delete process.env['OPENAI_API_KEY'];
         xmsg.messageId.Id = oldMessageId;
+        this.switchFromTo(xmsg);
         this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
         xmsg.messageId.Id = newMessageId;
+        this.switchFromTo(xmsg);
         return xmsg;
     }
 
@@ -383,5 +383,12 @@ export class LLMTransformer implements ITransformer {
           eventData: xmgCopy,
           timestamp: Date.now(),
         })
+    }
+
+    private switchFromTo(xmsg: XMessage): XMessage {
+        const from = xmsg.from;
+        xmsg.from = xmsg.to;
+        xmsg.to = from;
+        return xmsg;
     }
 }
