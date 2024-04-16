@@ -103,9 +103,9 @@ export class LLMTransformer implements ITransformer {
             }
         }) || '';
         let systemInstructions = xmsg.transformer?.metaData?.prompt || this.config.prompt || 'You are am assistant who helps with answering questions for users based on the search results. If question is not relevant to search reults/corpus, refuse to answer';
-        systemInstructions = systemInstructions.replace('{{date}}', moment().format('MMM DD, YYYY (dddd)'))
+        systemInstructions = systemInstructions?.replace('{{date}}', moment().format('MMM DD, YYYY (dddd)'))
         let contentString = this.config.corpusPrompt || 'Relevant Corpus:\n{{corpus}}'
-        contentString = contentString.replace('{{corpus}}',expertContext)
+        contentString = contentString?.replace('{{corpus}}',expertContext)
         const prompt: any = [
             {
                 role: 'system',
@@ -166,8 +166,8 @@ export class LLMTransformer implements ITransformer {
         xmsg.messageId.Id = newMessageId;
         if(!this.config.enableStream) {
             let answer;
-            if(this.config.provider?.toLowerCase() == "groq") answer = response.message.content.replace(/\*\*/g, '*') || "";
-            else answer = response["choices"][0].message.content.replace(/\*\*/g, '*') || "";
+            if(this.config.provider?.toLowerCase() == "groq") answer = response.message.content?.replace(/\*\*/g, '*') || "";
+            else answer = response["choices"][0].message.content?.replace(/\*\*/g, '*') || "";
             xmsg = this.postProcessResponse(xmsg, answer, searchResults)
             if(this.config.outputLanguage!='en') {
                 xmsg.payload.text = (await this.translateBhashini(
@@ -190,18 +190,20 @@ export class LLMTransformer implements ITransformer {
                 else currentChunk = chunk.choices[0]?.delta?.content || "";
                 currentChunk = currentChunk?.replace("AI: ", "")
                 output += currentChunk;
-                const formattedText = output?.replace(/\n\n/g, '\n');
+                let formattedText = output?.replace(/\n\n/g, '<newline>');
+                formattedText = formattedText?.replace(/\n/g, '<newline>');
                 sentences = generateSentences(formattedText, {
                     preserve_whitespace: true,
                 });
                 if (sentences && allSentences.length < sentences.length) {
-                    const currentSentence = sentences[sentences.length - 2]?.replace("AI", "")
+                    let currentSentence = sentences[sentences.length - 2]?.replace("AI", "")
                         ?.replace("AI:")
                         ?.replace("AI: ");
+                    currentSentence = currentSentence?.replace(/<newline>/g, '\n');
                     allSentences.push(currentSentence);
                     counter++;
                     if (counter > 1) {
-                        xmsg = this.postProcessResponse(xmsg, currentSentence.replace(/<newline>/g, '\n'), searchResults)
+                        xmsg = this.postProcessResponse(xmsg, currentSentence, searchResults)
                         if(this.config.outputLanguage!='en') {
                             xmsg.payload.text = (await this.translateBhashini(
                                 'en',
@@ -227,14 +229,15 @@ export class LLMTransformer implements ITransformer {
             }
             translatedSentences.push(xmsg.payload.text);
             xmsg.payload.text = `${translatedSentences.join(' ')}<end/>`
+            xmsg.payload.text = xmsg.payload.text?.replace(/<newline>/g, '\n');
             xmsg.payload.media = media;
             await this.sendMessage(xmsg)
-            xmsg.payload.text = translatedSentences.join(' ').replace("<end/>",'')
+            xmsg.payload.text = translatedSentences.join(' ')?.replace("<end/>",'')
             xmsg.transformer = {
                 ...xmsg.transformer,
                 metaData: {
                     ...xmsg.transformer?.metaData,
-                    responseInEnglish: allSentences.join(' ').replace("<end/>",'')
+                    responseInEnglish: allSentences.join(' ')?.replace("<end/>",'')
                 }
             }
         }
@@ -258,7 +261,7 @@ export class LLMTransformer implements ITransformer {
         if (matches) {
             followUpQuestions = matches.map((match: string) => match.slice(2, -2).trim());
         } 
-        answer = answer.replace(/<<(.*?)>>/g, '').trim();
+        answer = answer?.replace(/<<(.*?)>>/g, '').trim();
         const referenceRegex = /\[(\d+)\]/g;
         let referencesArray = [];
         let match;
@@ -273,7 +276,7 @@ export class LLMTransformer implements ITransformer {
             page: any
         }> = [];
         referencesArray.forEach((ref,i)=>{
-            answer = answer.replace(`[${ref}]`,`[${i+1}]`)
+            answer = answer?.replace(`[${ref}]`,`[${i+1}]`)
             let newSearch = searchResults[ref-1];
             newSearch.index = i+1
             updatedSearchResults.push(newSearch)
@@ -328,7 +331,7 @@ export class LLMTransformer implements ITransformer {
             this.config.bhashiniAPIKey,
             this.config.bhashiniURL
           )
-          let textArray = text.replace(/\n\n/g, "\n").split("\n")
+          let textArray = text?.replace(/\n\n/g, "\n").split("\n")
           for (let i = 0; i < textArray.length; i++) {
             let response: any = await computeBhashini(
               bhashiniConfig?.pipelineInferenceAPIEndPoint?.inferenceApiKey?.value,
