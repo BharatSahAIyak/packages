@@ -135,6 +135,8 @@ export class LLMTransformer implements ITransformer {
         //llamaIndex implementaion
         let llm: any;
         let response: any;
+        let responseStartTime = Date.now();
+        let streamStartLatency;
 
         if(this.config.provider?.toLowerCase() == "groq"){
             llm = new Groq({apiKey: this.config.APIKey});
@@ -185,6 +187,9 @@ export class LLMTransformer implements ITransformer {
             }
             let sentences: any, allSentences = [], translatedSentences = [], output = "" ,counter = 0;
             for await (const chunk of response) {
+                if(!streamStartLatency){ 
+                    streamStartLatency = Date.now() - responseStartTime;
+                }
                 let currentChunk: any;
                 if(this.config.provider?.toLowerCase() == "groq") currentChunk = chunk.delta || "";
                 else currentChunk = chunk.choices[0]?.delta?.content || "";
@@ -214,6 +219,7 @@ export class LLMTransformer implements ITransformer {
                         translatedSentences.push(xmsg.payload.text);
                         xmsg.payload.media = media;
                         xmsg.payload.text = translatedSentences.join(' ');
+                        xmsg.payload.text = xmsg.payload.text?.replace(/<newline>/g, '\n')
                         await this.sendMessage(xmsg)
                     }
                 }
@@ -233,11 +239,15 @@ export class LLMTransformer implements ITransformer {
             xmsg.payload.media = media;
             await this.sendMessage(xmsg)
             xmsg.payload.text = translatedSentences.join(' ')?.replace("<end/>",'')
+            xmsg.payload.text = xmsg.payload.text?.replace(/<newline>/g, '\n');
+            xmsg.payload.text = xmsg.payload.text?.replace(/<ନୂତନ ଲାଇନ୍>/g, '\n');
+            xmsg.payload.text = xmsg.payload.text?.replace(/<न्यूलाइन>/g, '\n');
             xmsg.transformer = {
                 ...xmsg.transformer,
                 metaData: {
                     ...xmsg.transformer?.metaData,
-                    responseInEnglish: allSentences.join(' ')?.replace("<end/>",'')
+                    responseInEnglish: allSentences.join(' ')?.replace("<end/>",''),
+                    streamStartLatency
                 }
             }
         }
@@ -291,6 +301,9 @@ export class LLMTransformer implements ITransformer {
     async sendMessage(xmsg: XMessage){
         console.log(`sending message to ${this.config.outboundURL}...`)
         console.log('-------------------------------------------------------------')
+        xmsg.payload.text = xmsg.payload.text?.replace(/<newline>/g, '\n');
+        xmsg.payload.text = xmsg.payload.text?.replace(/<ନୂତନ ଲାଇନ୍>/g, '\n');
+        xmsg.payload.text = xmsg.payload.text?.replace(/<न्यूलाइन>/g, '\n');
         console.log(xmsg.payload.text)
         // This also reduces payload size and prevents 413 error.
         delete xmsg.transformer?.metaData?.userHistory;
