@@ -2,6 +2,7 @@ import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
 import getBhashiniConfig from "./bhashini/bhashini.getConfig";
 import computeBhashini from "./bhashini/bhashini.compute";
+import computeAzure from "./azure/azure.compute";
 import { Events } from "@samagra-x/uci-side-effects";
 
 export class TranslateTransformer implements ITransformer {
@@ -58,11 +59,45 @@ export class TranslateTransformer implements ITransformer {
           xmsg?.payload?.text
         ))['translated']
         console.log("translated", xmsg.payload.text)
+      } else if(this.config.provider.toLowerCase()=='azure') {
+        xmsg.payload.text = (await this.translateAzure(
+          this.config.inputLanguage,
+          this.config.outputLanguage,
+          xmsg?.payload?.text,
+          xmsg
+        ))['translated']
       } else {
         throw new Error('Azure is not configured yet in TRANSLATE transformer');
       }
       this.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} finished!`, startTime);
       return xmsg;
+    }
+
+    async translateAzure(
+      source: string,
+      target: string,
+      text: string,
+      xmsg: XMessage
+    ) {
+      try {
+        let response: any = await computeAzure({
+          sourceLanguage: source,
+          targetLanguage: target,
+          text,
+          botId: xmsg.app,
+          orgId: xmsg.orgId
+        }, 'https://ai-tools.dev.bhasai.samagra.io/text_translation/azure_dict/remote/');
+        return {
+          translated: response.translated,
+          error: null
+        }
+      } catch (error) {
+        console.log(error)
+        return {
+          translated: "",
+          error: error
+        }
+      }
     }
 
     async translateBhashini(
