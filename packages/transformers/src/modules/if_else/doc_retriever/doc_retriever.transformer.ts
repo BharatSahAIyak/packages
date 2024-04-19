@@ -15,6 +15,7 @@ export class DocRetrieverTransformer implements ITransformer {
     ///     searchAll: Boolean Set this to true in order to seach through all docs uploaded via an organization.
     ///     logic: String Type of retrieval logic that needs to be used. Accepted values: "custom" | "topK" (optional). Default: "topK",
     ///     recipeConfig: JSON (optional) Optional JSON configuration for the search recipe. Used for advanced query customization.
+    ///     threshold: Precentage similarity threshold.
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
@@ -42,7 +43,8 @@ export class DocRetrieverTransformer implements ITransformer {
                 'searchAll': this.config.searchAll,
                 'documentIds': this.config.documentIds,
                 'logic': this.config.logic || 'topK',
-                'recipeConfig': JSON.stringify(this.config.recipeConfig || {})
+                'recipeConfig': JSON.stringify(this.config.recipeConfig || {}),
+                'threshold': this.config.threshold || 0
             });
 
             let config = {
