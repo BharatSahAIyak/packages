@@ -20,6 +20,9 @@ export class HttpPostTransformer implements ITransformer {
         this.config.headers = typeof this.config.headers === 'string' ? JSON.parse(this.config.headers || "{}") : this.config.headers ?? {};
         this.config.headers['Content-Type'] = 'application/json';
         this.config.body = this.config.body ?? xmsg.transformer?.metaData?.httpBody ?? {};
+        console.log("HTTP POST url-", this.config.url)
+        console.log("HTTP POST body -", typeof this.config.body === 'string' ? this.config.body : JSON.stringify(this.config.body ?? {}));
+        console.log("HTTP POST headers -", new Headers(this.config.headers))
 
         if (!this.config.url) {
             this.sendErrorTelemetry(xmsg, '`url` not defined in HTTP_POST transformer');
