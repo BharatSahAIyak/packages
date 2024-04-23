@@ -69,6 +69,13 @@ export class TranslateTransformer implements ITransformer {
       } else {
         throw new Error('Azure is not configured yet in TRANSLATE transformer');
       }
+      xmsg.transformer = {
+        ...xmsg.transformer,
+        metaData: {
+            ...xmsg.transformer?.metaData,
+            transalatedQuery: xmsg.payload.text
+        }
+      }
       this.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} finished!`, startTime);
       return xmsg;
     }

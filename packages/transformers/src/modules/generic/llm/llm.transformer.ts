@@ -121,11 +121,20 @@ export class LLMTransformer implements ITransformer {
                 content: contentString
             }
         ]
-        xmsg.transformer.metaData?.userHistory.forEach((message:any) => {
-            prompt.push({
-                role: message?.from?.meta?.phoneNumber ? "user": "assistant",
-                content: message?.metaData?.responseInEnglish || message?.payload?.text
-            })
+        xmsg.transformer.metaData?.userHistory.filter((message:any) => { 
+            if(message.from=='admin') return true
+            else return false
+         }).forEach((message:any) => {
+            if(message?.metaData?.transalatedQuery){
+                prompt.push({
+                    role: "user",
+                    content: message?.metaData?.transalatedQuery
+                })
+                prompt.push({
+                    role: "assistant",
+                    content: message?.metaData?.responseInEnglish || message?.payload?.text
+                })
+            }
         });
         prompt.push({
             role: "user",
