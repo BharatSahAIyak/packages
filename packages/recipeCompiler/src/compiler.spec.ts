@@ -1,4 +1,4 @@
-import { RecipeCompiler } from "../dist";
+import { RecipeCompiler } from "./compiler";
 
 // Contains redundant fields to match flowise output format
 const mockLogicFlow = {
@@ -37,12 +37,20 @@ const mockLogicFlow = {
                     },
                     {
                     "name": "accessToken"
+                    },
+                    {
+                    "name": "sideEffects"
                     }
                 ],
                 "inputs": {
                     "text": "",
                     "model": "xyz",
-                    "accessToken": "aaaaa"
+                    "accessToken": "aaaaa",
+                    "sideEffects": {
+                        "Telemetry": {
+                            "host": "TELEMETRY_HOST",
+                        }
+                    },
                 }
             }
         },
@@ -120,12 +128,24 @@ const mockLogicFlow = {
                 },
                 {
                 "name": "delay"
+                },
+                {
+                "name": "sideEffects"
                 }
             ],
             "inputs": {
                 "model": "xyz",
                 "retry": "5",
                 "delay": 10,
+                "sideEffects": {
+                    "CustomTelemetry": {
+                        "eventId": "E000",
+                        "host": "TELEMETRY_HOST",
+                        "setters": {
+                            "queryClass": "transformer.metaData.state"
+                        }
+                    }
+                },
             }
             }
         },
@@ -301,6 +321,11 @@ const mockLogicDef = {
             states: {
                 onSuccess: "STT_1",
             },
+            sideEffects: {
+                Telemetry: {
+                    host: "TELEMETRY_HOST",
+                }
+            },
         },
         {
             id: "TTS_0",
@@ -347,6 +372,15 @@ const mockLogicDef = {
             states: {
                 retry: "TTS_0",
             },
+            sideEffects: {
+                CustomTelemetry: {
+                    eventId: "E000",
+                    host: "TELEMETRY_HOST",
+                    setters: {
+                        "queryClass": "transformer.metaData.state"
+                    }
+                }
+            }
         },
         {
             id: "CLASSIFIER_0",

@@ -28,6 +28,7 @@ export type TransformerNode = {
     type: string,
     config: Record<string, any>,
     states: Record<string, string>,
+    sideEffects?: Record<string, any>,
 };
 
 export type LogicDef = {
