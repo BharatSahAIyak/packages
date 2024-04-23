@@ -129,11 +129,7 @@ export class LLMTransformer implements ITransformer {
         });
         prompt.push({
             role: "user",
-            content: 
-            `
-            Query: ${xmsg?.payload?.text}
-            Answer:
-            `
+            content: xmsg?.payload?.text
         })
         xmsg.transformer.metaData!.prompt = prompt;
         console.log(`LLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt,null,3)}`);
