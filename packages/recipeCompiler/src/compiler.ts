@@ -1,4 +1,4 @@
-import { Recipe, GraphNode, LogicDef } from "./types";
+import { Recipe, GraphNode, LogicDef, TransformerNode } from "./types";
 import { v4 as uuid4 } from "uuid";
 
 export class RecipeCompiler {
@@ -74,18 +74,29 @@ export class RecipeCompiler {
     
         const config: Record<string, any> = {};
         const configParameters = new Set(indexNodeMap[node].data.inputParams.map((input) => input.name));
+        let sideEffects = undefined;
         Object.entries(indexNodeMap[node].data.inputs).forEach(([key, value]) => {
           if (!configParameters.has(key)) return;
+          // Side-Effects are passed along with other parameters
+          // from flowise.
+          if (key === 'sideEffects') {
+            sideEffects = value;
+            return;
+          }
           config[key] = value;
         });
-    
-        logicDef.transformers.push({
+
+        const nodeData: TransformerNode = {
           id: indexNodeMap[node].data.id,
           type: indexNodeMap[node].data.name,
           config: config,
           states: states,
-        });
-    
+        };
+        if (sideEffects) {
+          nodeData.sideEffects = sideEffects;
+        }
+        logicDef.transformers.push(nodeData);
+
         logicGraph[node].forEach((adjacentnode) => {
           if (visited[adjacentnode]) return;
           this.traverse(adjacentnode, logicGraph, indexNodeMap, edgeMapping, visited, logicDef);
