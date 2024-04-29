@@ -172,7 +172,8 @@ export class LLMTransformer implements ITransformer {
                 throw ex;
             });
         }
-                
+
+        xmsg.messageId.replyId = xmsg.messageId.Id;
         this.switchFromTo(xmsg);
         const oldMessageId = xmsg.messageId.Id;
         const newMessageId = uuid4();
