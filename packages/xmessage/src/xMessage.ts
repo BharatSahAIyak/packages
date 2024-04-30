@@ -48,58 +48,22 @@ export class XMessage {
   adapterId?: string;
   orgId?: string;
   ownerId?: string;
-
   messageId!: MessageId;
   to!: SenderReceiverInfo;
-
   from!: SenderReceiverInfo;
   channelURI!: string;
   providerURI!: string;
   timestamp!: number;
-
   userState?: string;
   encryptionProtocol?: string;
   messageState!: MessageState;
-
   lastMessageID?: string;
-
   conversationStage?: ConversationStage;
-
   conversationLevel?: Array<number>;
-
   transformer?: Transformer;
-
   thread?: XMessageThread;
   payload!: XMessagePayload;
-
-  public toXML?(): string {
-    return "";
-  }
-
-  public getChannel?(): string {
-    return this.channelURI;
-  }
-
-  public getProvider?(): string {
-    return this.providerURI;
-  }
-
-  public secondsSinceLastMessage?(): number {
-    if (this.timestamp != null) {
-      const currentTimestamp = Date.now() / 1000;
-      return currentTimestamp - this.timestamp;
-    } else {
-      return Number.MAX_VALUE;
-    }
-  }
-
-  public setChannel?(channel: string) {
-    this.channelURI = channel;
-  }
-
-  public setProvider?(provider: string) {
-    this.providerURI = provider;
-  }
+  tags?: Array<string>;
 }
 
 // TODO: enable attachments
