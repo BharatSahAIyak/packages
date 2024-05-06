@@ -396,14 +396,17 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   // Convert GupShupWhatsAppMessage to XMessage
   convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
     const message = msg as GSWhatsAppMessage;
-    const from: SenderReceiverInfo = { userID: '' }; // Replace with actual initialization
-    const to: SenderReceiverInfo = { userID: 'admin' }; // Replace with actual initialization
+    const from: SenderReceiverInfo = { userID: '' };
+    const to: SenderReceiverInfo = { userID: 'admin' };
   
     const messageState: MessageState[] = [MessageState.REPLIED];
-    const messageIdentifier: MessageId = { Id: uuid4() }; // Replace with actual initialization
+    const messageIdentifier: MessageId = { Id: uuid4() };
+    if (message.messageId) {
+      messageIdentifier.replyId = message.messageId;
+    }
     const messageType: MessageType = message.type?.toUpperCase() as MessageType ?? MessageType.REPORT;
     // @ts-ignore
-    const xmsgPayload: XMessagePayload = {}; // Replace with actual initialization
+    const xmsgPayload: XMessagePayload = {};
 
     const thumbsUpEmojis = ['👍', '👍🏻', '👍🏼', '👍🏽', '👍🏾', '👍🏿'];
     const thumbsDownEmojis = ['👎', '👎🏻', '👎🏼', '👎🏽', '👎🏾', '👎🏿'];
@@ -414,11 +417,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       for (const reportMsg of participantJsonList) {
         const eventType = reportMsg.eventType;
         xmsgPayload.text = '';
-        messageIdentifier.channelMessageId = reportMsg.externalId;
         from.userID = reportMsg.destAddr.substring(2);
         messageState[0] = this.getMessageState(eventType);
       }
-  
+
       return this.processedXMessage(
         message,
         xmsgPayload,
@@ -429,13 +431,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         messageType
       );
     }
-    else if (thumbsUpEmojis.includes(msg.text)) {
+    else if (thumbsUpEmojis.includes(message.text ?? '')) {
       from.userID = message.mobile.substring(2);
-      if (message.messageId) {
-        messageIdentifier.channelMessageId = message.messageId;
-      }
       return this.processedXMessage(
-        msg,
+        message,
         xmsgPayload,
         from,
         to,
@@ -444,13 +443,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         MessageType.FEEDBACK_POSITIVE,
       );
     }
-    else if (thumbsDownEmojis.includes(msg.text)) {
+    else if (thumbsDownEmojis.includes(message.text ?? '')) {
       from.userID = message.mobile.substring(2);
-      if (message.messageId) {
-        messageIdentifier.channelMessageId = message.messageId;
-      }
       return this.processedXMessage(
-        msg,
+        message,
         xmsgPayload,
         from,
         to,
@@ -461,12 +457,6 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     }
     else if (message.type === 'text' && message.text) {
       from.userID = message.mobile.substring(2);
-      if (message.replyId) {
-        messageIdentifier.replyId = message.replyId || '';
-      }
-      if (message.messageId) {
-          messageIdentifier.channelMessageId = message.messageId;
-      }
       messageState[0] = MessageState.REPLIED;
       if (message.text.startsWith('\\register')) {
         xmsgPayload.text = message.text.replace('\\register ', '').trim();
@@ -494,11 +484,9 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       }
     } else if (message.type === 'interactive') {
       from.userID = message.mobile.substring(2);
-      messageIdentifier.replyId = message.replyId;
   
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.text = this.getInboundInteractiveContentText(message);
-      messageIdentifier.channelMessageId = message.messageId || '';
   
       return this.processedXMessage(
         message,
@@ -511,12 +499,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       );
     } else if (message.type === 'location') {
       from.userID = message.mobile.substring(2);
-      messageIdentifier.replyId = message.replyId;
   
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.location = this.getInboundLocationParams(message);
       xmsgPayload.text = '';
-      messageIdentifier.channelMessageId = message.messageId || '';
   
       return this.processedXMessage(
         message,
@@ -529,12 +515,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       );
     } else if (this.isInboundMediaMessage(message.type)) {
       from.userID = message.mobile.substring(2);
-      messageIdentifier.replyId = message.replyId;
   
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.text = '';
       xmsgPayload.media = await this.getInboundMediaMessage(message);
-      messageIdentifier.channelMessageId = message.messageId || '';
 
       return this.processedXMessage(
         message,
@@ -792,10 +776,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
           builder.set('phone_number', '91' + xMsg.to.userID);
           builder.set('msg_type', xMsg.messageType);
           builder.set('channel', 'Whatsapp');
-          if (xMsg.messageId.channelMessageId) {
-            builder.set('msg_id', xMsg.messageId.channelMessageId);
+          if (xMsg.messageId.Id) {
+            builder.set('msg_id', xMsg.messageId.Id);
           }
-  
+
           if (
             stylingTag !== undefined &&
             FileUtil.isStylingTagIntercativeType(stylingTag) &&
@@ -823,7 +807,8 @@ export class GupshupWhatsappProvider implements XMessageProvider {
               }
             }
           }
-  
+
+          // Note: We only support single media per message
           if (xMsg.payload.media && xMsg.payload.media.url) {
             const media: MessageMedia = xMsg.payload.media;
   
@@ -833,8 +818,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
               this.getMessageTypeByMediaCategory(media.category)
             );
   
-            builder.set('media_url', media.url);
-            builder.set('caption', media.text);
+            builder.set('media_url', media.url!);
+            if (media.text) {
+              builder.set('caption', media.text);
+            }
             builder.set('isHSM', 'false');
             plainText = false;
           }
