@@ -60,6 +60,9 @@ export class TranslateTransformer implements ITransformer {
         ))['translated']
         console.log("translated", xmsg.payload.text)
       } else if(this.config.provider.toLowerCase()=='azure') {
+        if (!this.config.bhashiniURL) {
+          throw new Error('`bhashiniURL` not defined in TRANSLATE transformer');
+        }
         xmsg.payload.text = (await this.translateAzure(
           this.config.inputLanguage,
           this.config.outputLanguage,
@@ -93,7 +96,7 @@ export class TranslateTransformer implements ITransformer {
           text,
           botId: xmsg.app,
           orgId: xmsg.orgId
-        }, 'https://ai-tools.dev.bhasai.samagra.io/text_translation/azure_dict/remote/');
+        }, this.config.bhashiniURL);
         return {
           translated: response.translated,
           error: null
