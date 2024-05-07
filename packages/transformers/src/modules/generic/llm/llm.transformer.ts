@@ -107,7 +107,7 @@ export class LLMTransformer implements ITransformer {
                 }
             }) || '';
         }
-        let systemInstructions = xmsg.transformer?.metaData?.prompt || this.config.prompt || 'You are am assistant who helps with answering questions for users based on the search results. If question is not relevant to search reults/corpus, refuse to answer';
+        let systemInstructions: string = xmsg.transformer?.metaData?.prompt || this.config.prompt || 'You are am assistant who helps with answering questions for users based on the search results. If question is not relevant to search reults/corpus, refuse to answer';
         systemInstructions = systemInstructions?.replace('{{date}}', moment().format('MMM DD, YYYY (dddd)'))
         let contentString = this.config.corpusPrompt || 'Relevant Corpus:\n{{corpus}}'
         contentString = contentString?.replace('{{corpus}}',expertContext)

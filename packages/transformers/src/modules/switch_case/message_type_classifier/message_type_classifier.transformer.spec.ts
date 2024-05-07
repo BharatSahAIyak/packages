@@ -19,7 +19,10 @@ describe("MessageTypeClassifierTransformer", () => {
                 providerURI: "Pwa",
                 timestamp: 0,
                 messageState: MessageState.REPLIED,
-                payload: {}
+                payload: {},
+                transformer: {
+                    metaData: {}
+                }
             }
             const transformer = new MessageTypeClassifierTransformer({});
             expect((await transformer.transform(msg)).transformer!.metaData!.state).toBe(MessageType.HSM);
@@ -43,7 +46,10 @@ describe("MessageTypeClassifierTransformer", () => {
                 providerURI: "Pwa",
                 timestamp: 0,
                 messageState: MessageState.REPLIED,
-                payload: {}
+                payload: {},
+                transformer: {
+                    metaData: {}
+                }
             };
             const transformer = new MessageTypeClassifierTransformer({});
             expect((await transformer.transform(msg)).transformer!.metaData!.state).toBe(MessageType.TEXT);

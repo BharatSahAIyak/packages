@@ -25,7 +25,13 @@ describe('HttpGetTransformer', () => {
     payload: {
       text: "Testing bot",
     },
+    transformer: {
+      metaData: {}
+    }
   };
+  const eventBus = {
+    pushEvent: (event: any) => {}
+  }
 
   beforeEach(() => {
     global.fetch = jest.fn() as jest.Mock;
@@ -39,6 +45,7 @@ describe('HttpGetTransformer', () => {
     const mockConfig = {
       query: '?param=value',
       headers: { 'Authorization': 'Bearer TOKEN' },
+      eventBus
     };
     const httpGetTransformer = new HttpGetTransformer(mockConfig);
     await expect(httpGetTransformer.transform(mockXMessage)).rejects.toThrowError('`url` not defined in HTTP_GET transformer');
@@ -47,6 +54,7 @@ describe('HttpGetTransformer', () => {
   it('should handle GET request failure and throw an error with the failed response code', async () => {
     const mockConfig = {
       url: 'https://example.com/api',
+      eventBus
     };
     const httpGetTransformer = new HttpGetTransformer(mockConfig);
 
@@ -73,6 +81,7 @@ describe('HttpGetTransformer', () => {
       url: 'https://www.google.com/',
       query: '?param=value',
       headers: { 'Authorization': 'Bearer TOKEN' },
+      eventBus
     };
 
     const httpGetTransformer = new HttpGetTransformer(mockConfig);
@@ -84,6 +93,11 @@ describe('HttpGetTransformer', () => {
         },
       },
     };
-    await expect(httpGetTransformer.transform(mockXMessage)).resolves.toEqual(expectedModifiedXMessage);
+    const transformedXMessage = await httpGetTransformer.transform(mockXMessage);
+    delete transformedXMessage.transformer?.metaData?.telemetryLog;
+    delete transformedXMessage.transformer?.metaData?.stateExecutionTime;
+    delete transformedXMessage.transformer?.metaData?.errorString;
+
+    await expect(transformedXMessage).toEqual(expectedModifiedXMessage);
   });
 });

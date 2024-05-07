@@ -1,6 +1,10 @@
 import { XMessage, MessageType, MessageState } from "@samagra-x/xmessage";
 import { SQLLLMTransformer } from "./sqlLLM.transformer";
 
+const eventBus = {
+  pushEvent: (event: any) => {}
+}
+
 const openai200normal = {
   "id": "cmpl-8Y1uU3RVsY9kkGnQrSE7rmWcdHNvk",
   "object": "text_completion",
@@ -67,30 +71,35 @@ const mockXMessage: XMessage = {
   payload: {
     text: "Test query",
   },
+  transformer: {
+    metaData: {}
+  }
 };
 
 describe("SQLLLMTransformer", () => {
   describe("transform", () => {
-    it("should throw an error when `openAIAPIKey` is not defined", async () => {
+    it("should throw an error when `APIKey` is not defined", async () => {
       const config = {
         model: "model_name",
         xlsxIds: ["xlsx_id"],
         outputLanguage: "en",
         excelParserURL: "http://example.com",
+        eventBus
       };
       const transformer = new SQLLLMTransformer(config);
 
       await expect(transformer.transform(mockXMessage)).rejects.toThrow(
-        "`openAIAPIKey` not defined in SQLLLM transformer"
+        "`APIKey` not defined in SQLLLM transformer"
       );
     });
 
     it("should throw an error when `xlsxIds` is not defined", async () => {
       const config = {
-        openAIAPIKey: "api_key",
+        APIKey: "api_key",
         model: "model_name",
         outputLanguage: "en",
         excelParserURL: "http://example.com",
+        eventBus
       };
       const transformer = new SQLLLMTransformer(config);
       await expect(transformer.transform(mockXMessage)).rejects.toThrow(
@@ -100,10 +109,11 @@ describe("SQLLLMTransformer", () => {
 
     it("should throw an error when `excelParserURL` is not defined", async () => {
       const config = {
-        openAIAPIKey: "api_key",
+        APIKey: "api_key",
         model: "model_name",
         xlsxIds: ["xlsx_id"],
         outputLanguage: "en",
+        eventBus
       };
       const transformer = new SQLLLMTransformer(config);
       await expect(transformer.transform(mockXMessage)).rejects.toThrow(
@@ -116,6 +126,7 @@ describe("SQLLLMTransformer", () => {
         xlsxIds: ["xlsx_id"],
         outputLanguage: "en",
         excelParserURL: "http://example.com",
+        eventBus
       };
       const transformer = new SQLLLMTransformer(config);
       await expect(transformer.transform(mockXMessage)).rejects.toThrow(
@@ -124,11 +135,12 @@ describe("SQLLLMTransformer", () => {
     });
     it("should successfully process a message and return transformed message", async () => {
       const config = {
-        openAIAPIKey: "api_key",
+        APIKey: "api_key",
         model: "model_name",
         xlsxIds: ["xlsx_id"],
         outputLanguage: "en",
         excelParserURL: "http://example.com",
+        eventBus
       };
       const transformer = new SQLLLMTransformer(config);
       (global.fetch as jest.Mock).mockResolvedValue({

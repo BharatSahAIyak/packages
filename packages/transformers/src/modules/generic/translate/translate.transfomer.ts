@@ -70,7 +70,7 @@ export class TranslateTransformer implements ITransformer {
           xmsg
         ))['translated']
       } else {
-        throw new Error('Azure is not configured yet in TRANSLATE transformer');
+        throw new Error(`${this.config.provider.toLowerCase()} is not configured yet in TRANSLATE transformer`);
       }
       xmsg.transformer = {
         ...xmsg.transformer,
