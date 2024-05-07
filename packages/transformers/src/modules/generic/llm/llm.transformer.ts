@@ -399,7 +399,7 @@ export class LLMTransformer implements ITransformer {
             text,
             botId: xmsg.app,
             orgId: xmsg.orgId
-          }, 'https://ai-tools.dev.bhasai.samagra.io/text_translation/azure_dict/remote/');
+          }, this.config.bhashiniURL);
           return {
             translated: response.translated,
             error: null
