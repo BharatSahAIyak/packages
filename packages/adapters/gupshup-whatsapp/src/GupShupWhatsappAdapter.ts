@@ -452,7 +452,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         to,
         MessageState.REPLIED,
         messageIdentifier,
-        MessageType.FEEDBACK_POSITIVE,
+        MessageType.FEEDBACK_NEGATIVE,
       );
     }
     else if (message.type === 'text' && message.text) {
