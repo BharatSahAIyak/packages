@@ -12,6 +12,7 @@ export enum TransformerType {
     SQLLLM = 'SQLLLM',
     CODE_RUNNER = 'CODE_RUNNER',
     FIELD_SETTER = 'FIELD_SETTER',
+    MESSAGE_TYPE_CLASSIFIER = 'MESSAGE_TYPE_CLASSIFIER',
 }
 
 export enum TransformerClass {
@@ -20,6 +21,7 @@ export enum TransformerClass {
     SwitchCaseTransformer = 'SwitchCaseTransformer',
     RetryTransformer = 'RetryTransformer',
     StateRestoreTransformer = 'StateRestoreTransformer',
+    MessageTypeClassifierTransformer = 'MessageTypeClassifierTransformer',
 }
 
 export const TransformerMapping: Record<TransformerType, TransformerClass> = {
@@ -36,4 +38,5 @@ export const TransformerMapping: Record<TransformerType, TransformerClass> = {
     [TransformerType.SQLLLM]: TransformerClass.GenericTransformer,
     [TransformerType.CODE_RUNNER]: TransformerClass.GenericTransformer,
     [TransformerType.FIELD_SETTER]: TransformerClass.GenericTransformer,
+    [TransformerType.MESSAGE_TYPE_CLASSIFIER]: TransformerClass.SwitchCaseTransformer,
 };

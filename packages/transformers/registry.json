@@ -149,6 +149,18 @@
     "version": "0.0.1"
   },
   {
+    "name": "Message Type Classifier",
+    "class": "SwitchCaseTransformer",
+    "type": "MESSAGE_TYPE_CLASSIFIER",
+    "description": "A transformer which classifies an input into a label based on the `MessageType` parameter.",
+    "config": {
+      "required": {},
+      "optional": {},
+      "conditional": {}
+    },
+    "version": "0.0.1"
+  },
+  {
     "name": "Neural Coreference",
     "class": "GenericTransformer",
     "type": "NEURAL_COREFERENCE",

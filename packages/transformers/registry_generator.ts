@@ -46,6 +46,7 @@ const generator = (parent: string) => {
                     return parsed;
                 }
                 catch (ex: any) {
+                    console.error(ex);
                     if (ex.code == 'ENOENT') {
                         throw new Error(`config.json not present or empty at: ${configFile}`);
                     }
