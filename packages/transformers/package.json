@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-transformers",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Library of of independent nodes that are capable of modifying XMessage data and produce an output state.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
