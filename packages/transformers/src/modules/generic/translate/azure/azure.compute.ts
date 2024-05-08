@@ -16,7 +16,7 @@ export default async function(input: azureInput, url: string) {
         "target_language": input.targetLanguage,
         "text": input.text,
         "orgId": input.orgId,
-        "botId": input.orgId
+        "botId": input.botId
     });
 
     var requestOptions: any = {
