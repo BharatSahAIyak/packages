@@ -77,7 +77,7 @@ export class Transformer {
 
 export type XMessagePayload = {
   text?: string;
-  media?: MessageMedia;
+  media?: MessageMedia[];
   location?: LocationParams;
   contactCard?: ContactCard;
   buttonChoices?: Array<ButtonChoice>;

@@ -518,7 +518,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.text = '';
-      xmsgPayload.media = await this.getInboundMediaMessage(message);
+      xmsgPayload.media = [ await this.getInboundMediaMessage(message) ];
 
       return this.processedXMessage(
         message,
@@ -808,10 +808,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             }
           }
 
-          // Note: We only support single media per message
-          if (xMsg.payload.media && xMsg.payload.media.url) {
-            const media: MessageMedia = xMsg.payload.media;
-  
+          // Note: We only support single media per message for now.
+          if (xMsg.payload.media && xMsg.payload.media.length && xMsg.payload.media[0].url) {
+            const media: MessageMedia = xMsg.payload.media[0];
+
             builder.set('method', MethodType.MEDIAMESSAGE);
             builder.set(
               'msg_type',
