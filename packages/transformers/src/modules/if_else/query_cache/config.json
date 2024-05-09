@@ -1,0 +1,17 @@
+{
+    "name": "Query Cache Transformer",
+    "class": "IfElseTransformer",
+    "type": "QUERY_CACHE",
+    "description": "A transformer capable of retrieving cached response for a query from an API.",
+    "config": {
+        "required": {
+            "url": "string",
+            "query": "string",
+            "threshold": "number",
+            "persist": "Boolean"
+        },
+        "optional": { },
+        "conditional": { }
+    },
+    "version": "0.0.1"
+}
