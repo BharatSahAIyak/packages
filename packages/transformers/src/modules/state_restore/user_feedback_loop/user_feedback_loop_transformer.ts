@@ -20,6 +20,11 @@ export class UserFeedbackLoopTransformer implements ITransformer {
         // `config.restoreState` is an injected value, pulled from state.
         // This value is not supposed to be set externally.
         xmsg.transformer.metaData!.restoreState = this.config.restoreState;
+        if (!this.config.prompt) {
+            if (!xmsg.payload.text) {
+                throw new Error ('prompt or `XMessage.payload.text` is required!')
+            }
+        }
         xmsg.payload.text = this.config.prompt || xmsg.payload.text;
         return xmsg;
     }

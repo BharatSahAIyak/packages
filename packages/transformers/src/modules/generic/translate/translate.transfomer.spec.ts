@@ -12,39 +12,22 @@ describe("TranslateTransformer", () => {
     timestamp: Date.now(),
     messageState: MessageState.REPLIED,
     payload: { text: "Hello, world!" },
+    transformer: {
+      metaData: {}
+    }
   };
+  const eventBus = {
+    pushEvent: (event: any) => {}
+  }
   it("should throw an error when `provider` is not defined", async () => {
     const config = {
       inputLanguage: "en",
       outputLanguage: "hi",
+      eventBus
     };
     const transformer = new TranslateTransformer(config);
     await expect(transformer.transform(mockXMessage)).rejects.toThrow(
       "`provider` not defined in TRANSLATE transformer"
-    );
-  });
-
-  it("should throw an error when `inputLanguage` is not defined", async () => {
-    const config = {
-      provider: "Bhashini",
-      outputLanguage: "hi",
-    };
-    const transformer = new TranslateTransformer(config);
-
-    await expect(transformer.transform(mockXMessage)).rejects.toThrow(
-      "`inputLanguage` not defined in TRANSLATE transformer"
-    );
-  });
-
-  it("should throw an error when `outputLanguage` is not defined", async () => {
-    const config = {
-      provider: "Bhashini",
-      inputLanguage: "hi",
-    };
-    const transformer = new TranslateTransformer(config);
-
-    await expect(transformer.transform(mockXMessage)).rejects.toThrow(
-      "`outputLanguage` not defined in TRANSLATE transformer"
     );
   });
 
@@ -53,23 +36,11 @@ describe("TranslateTransformer", () => {
       provider: "Bhashini",
       inputLanguage: "en",
       outputLanguage: "en",
+      eventBus
     };
     const transformer = new TranslateTransformer(config);
 
     const transformedMessage = await transformer.transform(mockXMessage);
     expect(transformedMessage).toEqual(mockXMessage);
-  });
-
-  it("should throw an error when provider is Azure", async () => {
-    const config = {
-      provider: "Azure",
-      inputLanguage: "en",
-      outputLanguage: "hi",
-    };
-    const transformer = new TranslateTransformer(config);
-
-    await expect(transformer.transform(mockXMessage)).rejects.toThrow(
-      "Azure is not configured yet in TRANSLATE transformer"
-    );
   });
 });

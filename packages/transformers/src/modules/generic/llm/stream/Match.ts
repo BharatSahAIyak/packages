@@ -1,6 +1,6 @@
-var abbreviations: any;
+export var abbreviations: any;
 
-var englishAbbreviations = [
+export var englishAbbreviations = [
     "al",
     "adj",
     "assn",
@@ -63,7 +63,7 @@ var englishAbbreviations = [
     "v",
 ];
 
-exports.setAbbreviations = function (abbr: any) {
+export function setAbbreviations(abbr: any) {
     if (abbr) {
         abbreviations = abbr;
     } else {
@@ -71,23 +71,23 @@ exports.setAbbreviations = function (abbr: any) {
     }
 }
 
-var isCapitalized = exports.isCapitalized = function (str: any) {
+export function isCapitalized(str: any) {
     return /^[A-Z][a-z].*/.test(str) || isNumber(str);
 }
 
 // Start with opening quotes or capitalized letter
-exports.isSentenceStarter = function (str: any) {
+export function isSentenceStarter(str: any) {
     return isCapitalized(str) || /``|"|'/.test(str.substring(0, 2));
 }
 
-exports.isCommonAbbreviation = function (str: any) {
+export function isCommonAbbreviation(str: any) {
     var noSymbols = str.replace(/[-'`~!@#$%^&*()_|+=?;:'",.<>\{\}\[\]\\\/]/gi, "");
 
     return ~abbreviations.indexOf(noSymbols);
 }
 
 // This is going towards too much rule based
-exports.isTimeAbbreviation = function (word: any, next: any) {
+export function isTimeAbbreviation(word: any, next: any) {
     if (word === "a.m." || word === "p.m.") {
         var tmp = next.replace(/\W+/g, '').slice(-3).toLowerCase();
 
@@ -99,14 +99,14 @@ exports.isTimeAbbreviation = function (word: any, next: any) {
     return false;
 }
 
-exports.isDottedAbbreviation = function (word: any) {
+export function isDottedAbbreviation(word: any) {
     var matches = word.replace(/[\(\)\[\]\{\}]/g, '').match(/(.\.)*/);
     return matches && matches[0].length > 0;
 }
 
 // TODO look for next words, if multiple are capitalized,
 // then it's probably not a sentence ending
-exports.isCustomAbbreviation = function (str: any) {
+export function isCustomAbbreviation(str: any) {
     if (str.length <= 3) {
         return true;
     }
@@ -116,7 +116,7 @@ exports.isCustomAbbreviation = function (str: any) {
 
 // Uses current word count in sentence and next few words to check if it is
 // more likely an abbreviation + name or new sentence.
-exports.isNameAbbreviation = function (wordCount: any, words: any) {
+export function isNameAbbreviation(wordCount: any, words: any) {
     if (words.length > 0) {
         if (wordCount < 5 && words[0].length < 6 && isCapitalized(words[0])) {
             return true;
@@ -132,7 +132,7 @@ exports.isNameAbbreviation = function (wordCount: any, words: any) {
     return false;
 }
 
-var isNumber = exports.isNumber = function (str: any, dotPos=null) {
+export function isNumber(str: any, dotPos=null) {
     if (dotPos) {
         str = str.slice(dotPos - 1, dotPos + 2);
     }
@@ -142,19 +142,19 @@ var isNumber = exports.isNumber = function (str: any, dotPos=null) {
 
 // Phone number matching
 // http://stackoverflow.com/a/123666/951517
-exports.isPhoneNr = function (str: any) {
+export function isPhoneNr(str: any) {
     return str.match(/^(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:\(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9])\s*\)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)?([2-9]1[02-9]|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+))?$/);
 };
 
 // Match urls / emails
 // http://stackoverflow.com/a/3809435/951517
-exports.isURL = function (str: any) {
+export function isURL(str: any) {
     return str.match(/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/);
 };
 
 // Starting a new sentence if beginning with capital letter
 // Exception: The word is enclosed in brackets
-exports.isConcatenated = function (word: any) {
+export function isConcatenated(word: any) {
     var i = 0;
 
     if ((i = word.indexOf(".")) > -1 ||
@@ -171,7 +171,7 @@ exports.isConcatenated = function (word: any) {
     return false;
 };
 
-exports.isBoundaryChar = function (word: any) {
+export function isBoundaryChar(word: any) {
     return word === "." ||
         word === "!" ||
         word === "?";

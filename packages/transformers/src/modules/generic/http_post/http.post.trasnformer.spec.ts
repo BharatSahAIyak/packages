@@ -7,12 +7,15 @@ jest.mock('node-fetch', () => fetch);
 describe('HttpPostTransformer', () => {
   let httpPostTransformer: HttpPostTransformer;
   let mockXMessage: XMessage;
-
+  const eventBus = {
+      pushEvent: (event: any) => {}
+  }
   beforeEach(() => {
       httpPostTransformer = new HttpPostTransformer({
           url: "https://example.com/api",
           body: { key: "value" },
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/json" },
+          eventBus: eventBus
       });
       mockXMessage = {
         messageType: MessageType.TEXT,
@@ -37,12 +40,23 @@ describe('HttpPostTransformer', () => {
         payload: {
             text: "Testing bot",
         },
+        transformer: {
+            metaData: {}
+        }
     };
   });
 
   test('transform method sends a POST request', async () => {
     const mockFetch: jest.Mock = jest.fn().mockResolvedValue({
         ok: true,
+        headers: {
+            get: (header: string) => {
+                if (header.toLowerCase() === 'content-type') {
+                    return 'application/json';
+                }
+                return null;
+            }
+          },
         json: () => Promise.resolve({ success: true })
     });
     global.fetch = mockFetch;
@@ -63,7 +77,8 @@ describe('HttpPostTransformer', () => {
 
       const invalidHttpPostTransformer = new HttpPostTransformer({
           body: { key: "value" },
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/json" },
+          eventBus
       });
       await expect(invalidHttpPostTransformer.transform(mockXMessage)).rejects.toThrowError('`url` not defined in HTTP_POST transformer');
   });
@@ -71,11 +86,20 @@ describe('HttpPostTransformer', () => {
   test('transform method sends a POST request without headers and body', async () => {
 
       const minimalHttpPostTransformer = new HttpPostTransformer({
-          url: "https://example.com/api"
+          url: "https://example.com/api",
+          eventBus
       });
 
       const mockFetch: jest.Mock = jest.fn().mockResolvedValue({
           ok: true,
+          headers: {
+            get: (header: string) => {
+                if (header.toLowerCase() === 'content-type') {
+                    return 'application/json';
+                }
+                return null;
+            }
+          },
           json: () => Promise.resolve({ success: true }) 
       });
       global.fetch = mockFetch;

@@ -1,6 +1,10 @@
 import { XMessage, MessageType, MessageState } from "@samagra-x/xmessage";
 import { NeuralCoreferenceTransformer } from "./nural_coreference.transformer";
 
+const eventBus = {
+  pushEvent: (event: any) => {}
+}
+
 const openai200normal = {
   id: "cmpl-8Y1uU3RVsY9kkGnQrSE7rmWcdHNvk",
   object: "text_completion",
@@ -77,20 +81,22 @@ const mockXMessage: XMessage = {
 
 describe("NeuralCoreferenceTransformer", () => {
   describe("transform", () => {
-    it("should throw an error when `openAIAPIKey` is not defined", async () => {
+    it("should throw an error when `APIKey` is not defined", async () => {
       const config = {
         prompt: "Prompt",
+        eventBus
       };
       const transformer = new NeuralCoreferenceTransformer(config);
 
       await expect(transformer.transform(mockXMessage)).rejects.toThrow(
-        "`openAIAPIKey` not defined in NEURAL_COREFERENCE transformer"
+        "`APIKey` not defined in NEURAL_COREFERENCE transformer"
       );
     });
 
     it("should throw an error when `prompt` is not defined", async () => {
       const config = {
-        openAIAPIKey: "api_key",
+        APIKey: "api_key",
+        eventBus
       };
       const transformer = new NeuralCoreferenceTransformer(config);
       await expect(transformer.transform(mockXMessage)).rejects.toThrow(
@@ -99,10 +105,11 @@ describe("NeuralCoreferenceTransformer", () => {
     });
 
     it("should transform XMessage with UserHistory", async () => {
-      const openAIAPIKey = "apikey";
+      const APIKey = "apikey";
       const openAIConfig = {
         prompt: "What is the capital of France?",
-        openAIAPIKey,
+        APIKey,
+        eventBus
       };
       const transformer = new NeuralCoreferenceTransformer(openAIConfig);
       const transformedXmsg = await transformer.transform(mockXMessage);
