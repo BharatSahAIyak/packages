@@ -21,7 +21,6 @@ export enum TransformerClass {
     SwitchCaseTransformer = 'SwitchCaseTransformer',
     RetryTransformer = 'RetryTransformer',
     StateRestoreTransformer = 'StateRestoreTransformer',
-    MessageTypeClassifierTransformer = 'MessageTypeClassifierTransformer',
 }
 
 export const TransformerMapping: Record<TransformerType, TransformerClass> = {
