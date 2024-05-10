@@ -40,6 +40,7 @@ export enum MessageType {
   FEEDBACK_NEGATIVE = "FEEDBACK_NEGATIVE",
   FEEDBACK_NEUTRAL = "FEEDBACK_NEUTRAL",
   REGISTRATION = "REGISTRATION",
+  DEBUG = "DEBUG",
 }
 
 export class XMessage {
