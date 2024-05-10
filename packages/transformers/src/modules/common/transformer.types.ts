@@ -13,6 +13,7 @@ export enum TransformerType {
     CODE_RUNNER = 'CODE_RUNNER',
     FIELD_SETTER = 'FIELD_SETTER',
     MESSAGE_TYPE_CLASSIFIER = 'MESSAGE_TYPE_CLASSIFIER',
+    QUERY_CACHE = 'QUERY_CACHE',
 }
 
 export enum TransformerClass {
@@ -38,4 +39,5 @@ export const TransformerMapping: Record<TransformerType, TransformerClass> = {
     [TransformerType.CODE_RUNNER]: TransformerClass.GenericTransformer,
     [TransformerType.FIELD_SETTER]: TransformerClass.GenericTransformer,
     [TransformerType.MESSAGE_TYPE_CLASSIFIER]: TransformerClass.SwitchCaseTransformer,
+    [TransformerType.QUERY_CACHE]: TransformerClass.IfElseTransformer,
 };
