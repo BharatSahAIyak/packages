@@ -48,6 +48,7 @@ export class XMessage {
   adapterId?: string;
   orgId?: string;
   ownerId?: string;
+  sessionId?: string;
   messageId!: MessageId;
   to!: SenderReceiverInfo;
   from!: SenderReceiverInfo;
