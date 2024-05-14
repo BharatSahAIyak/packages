@@ -37,6 +37,9 @@ const baseMockXMessage: XMessage = {
   messageState: MessageState.REPLIED,
   payload: {
     text: "Testing bot",
+    buttonChoices: {
+      choices: []
+    }
   },
 };
 
@@ -81,10 +84,10 @@ describe('gupshup whatsapp adapter', () => {
   it("Send List Options Whatsapp message", async () => {
     const mockListXMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
     mockListXMessage.payload.stylingTag = StylingTag.LIST;
-    mockListXMessage.payload.buttonChoices = [
-      {key: 'option1', text: 'Option 1', backmenu: false},
-      {key: 'option2', text: 'Option 2', backmenu: false},
-      {key: 'option3', text: 'Option 3', backmenu: false}
+    mockListXMessage.payload.buttonChoices!.choices = [
+      {key: 'option1', text: 'Option 1'},
+      {key: 'option2', text: 'Option 2'},
+      {key: 'option3', text: 'Option 3'}
     ];
     const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=TEXT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&interactive_type=list&action=%7B%22button%22%3A%22Options%22%2C%22sections%22%3A%5B%7B%22title%22%3A%22Choose+an+option%22%2C%22rows%22%3A%5B%7B%22id%22%3A%22option1%22%2C%22title%22%3A%22Option+1%22%7D%2C%7B%22id%22%3A%22option2%22%2C%22title%22%3A%22Option+2%22%7D%2C%7B%22id%22%3A%22option3%22%2C%22title%22%3A%22Option+3%22%7D%5D%7D%5D%7D&msg=Testing+bot'
     const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
@@ -100,10 +103,10 @@ describe('gupshup whatsapp adapter', () => {
   it("Send Quick Button Options Whatsapp message", async () => {
     const mockListXMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
     mockListXMessage.payload.stylingTag = StylingTag.QUICKREPLYBTN;
-    mockListXMessage.payload.buttonChoices = [
-      {key: 'option1', text: 'Option 1', backmenu: false},
-      {key: 'option2', text: 'Option 2', backmenu: false},
-      {key: 'option3', text: 'Option 3', backmenu: false}
+    mockListXMessage.payload.buttonChoices!.choices = [
+      {key: 'option1', text: 'Option 1'},
+      {key: 'option2', text: 'Option 2'},
+      {key: 'option3', text: 'Option 3'}
     ];
     const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=TEXT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&interactive_type=dr_button&action=%7B%22buttons%22%3A%5B%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option1%22%2C%22title%22%3A%22Option+1%22%7D%7D%2C%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option2%22%2C%22title%22%3A%22Option+2%22%7D%7D%2C%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option3%22%2C%22title%22%3A%22Option+3%22%7D%7D%5D%7D&msg=Testing+bot'
     const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
@@ -317,6 +320,7 @@ describe('gupshup whatsapp adapter', () => {
     xmsg.messageId.Id = 'testId';
     expect(xmsg.timestamp).toBeGreaterThan(0);
     xmsg.timestamp = 0;
+    xmsg.messageId.Id = 'testId';
     expect(xmsg).toStrictEqual(expectedXMessage);
   });
 })
