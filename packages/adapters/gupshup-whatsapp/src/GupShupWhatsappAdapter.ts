@@ -1,8 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
-import { GSWhatsAppMessage, MediaSizeLimit, MethodType } from './types';
+import { GSWhatsAppMessage, MethodType } from './types';
 import {
   StylingTag,
-  MessageMediaError,
   MessageId,
   SenderReceiverInfo,
   XMessagePayload,
@@ -18,7 +17,6 @@ import {
 import { v4 as uuid4 } from 'uuid';
 import { FileUtil } from './utils';
 import { URLSearchParams } from 'url';
-import { uploadFileFromPath } from './minioClient';
 
 export type IGSWhatsappConfig = {
   password2Way: string,
@@ -145,8 +143,8 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     return text;
   };
   
-  private getMediaCategoryByMimeType = (mimeType: string): MediaCategory | null => {
-    let category: MediaCategory | null = null;
+  private getMediaCategoryByMimeType = (mimeType: string): MediaCategory | undefined => {
+    let category: MediaCategory | undefined = undefined;
     if (FileUtil.isFileTypeImage(mimeType)) {
       category = MediaCategory.IMAGE;
     } else if (FileUtil.isFileTypeAudio(mimeType)) {
@@ -160,13 +158,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   };
   
   private getMediaInfo = async (message: GSWhatsAppMessage) => {
-    const result: Record<string, any> = {};
-  
-    let mediaUrl = '';
+    const result: MessageMedia = {};
     let mime_type = '';
-    let category: any = null;
     let mediaContent = '';
-  
+
     if (message.type === 'image') {
       mediaContent = message.image || '';
     } else if (message.type === 'audio') {
@@ -178,27 +173,21 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     } else if (message.type === 'document') {
       mediaContent = message.document || '';
     }
-  
+
     if (mediaContent && mediaContent.length > 0) {
       try {
         const node = JSON.parse(mediaContent);
-        // console.log('media content node:', node);
-  
         const url = node.url || '';
         const signature = node.signature || '';
         mime_type = node.mime_type || '';
-  
-        mediaUrl = url + signature;
-  
-        category = this.getMediaCategoryByMimeType(mime_type);
+        result.url = url + signature;
+        result.category = this.getMediaCategoryByMimeType(mime_type);
+        result.mimeType = mime_type;
       } catch (error: any) {
         console.error('Exception in getMediaInfo:', error);
+        throw error;
       }
     }
-  
-    result.mediaUrl = mediaUrl;
-    result.mime_type = mime_type;
-    result.category = category;
   
     return result;
   };
@@ -222,101 +211,6 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   
     return messageType;
   };
-  
-  private uploadInboundMediaFile = async (
-    messageId: string,
-    mediaUrl: string,
-    mime_type: string
-  ): Promise<Record<string, any>> => {
-    const result: Record<string, any> = {};
-    const mediaSizeLimit = new MediaSizeLimit(
-      /* imageSize: */ 10, // 10 MB
-      /* audioSize: */ 5,
-      /* videoSize: */ 20,
-      /* documentSize: */ 15
-    );
-    const maxSizeForMedia: number = mediaSizeLimit.getMaxSizeForMedia(mime_type);
-    let name = '';
-    let url = '';
-  
-    if (mediaUrl && mediaUrl.length > 0) {
-      const inputBytes: Uint8Array | null =
-        await FileUtil.getInputBytesFromUrl(mediaUrl);
-  
-      if (inputBytes) {
-        const sizeError: string = FileUtil.validateFileSizeByInputBytes(
-          inputBytes,
-          maxSizeForMedia
-        );
-  
-        if (sizeError === '') {
-          // Unique File Name
-          name = FileUtil.getUploadedFileName(mime_type, messageId);
-          const filePath: string | null = await FileUtil.fileToLocalFromBytes(
-            inputBytes,
-            mime_type,
-            name
-          );
-  
-          if (filePath && filePath.length > 0) {
-            url = await uploadFileFromPath(filePath, name);
-          } else {
-            result.size = 0;
-            result.error = MessageMediaError.EMPTY_RESPONSE;
-          }
-        } else {
-          result.size = inputBytes.length;
-          result.error = MessageMediaError.PAYLOAD_TOO_LARGE;
-        }
-      } else {
-        result.size = 0;
-        result.error = MessageMediaError.EMPTY_RESPONSE;
-      }
-    } else {
-      result.size = 0;
-      result.error = MessageMediaError.EMPTY_RESPONSE;
-    }
-  
-    result.name = name;
-    result.url = url;
-  
-    return result;
-  };
-  
-  private getInboundMediaMessage = async (
-    message: GSWhatsAppMessage
-  ): Promise<MessageMedia> => {
-    try {
-      const mediaInfo: Record<string, any> = await this.getMediaInfo(message);
-      const mediaData: Record<string, any> = await this.uploadInboundMediaFile(
-        message.messageId || '',
-        mediaInfo.mediaUrl,
-        mediaInfo.mime_type
-      );
-  
-      // console.log('media data:', mediaData);
-  
-      const media: MessageMedia = {
-        text: mediaData.name,
-        url: mediaData.url,
-        category: mediaInfo.category as MediaCategory,
-      };
-  
-      if (mediaData.error) {
-        media.messageMediaError = mediaData.error as MessageMediaError;
-      }
-  
-      if (mediaData.size) {
-        media.size = mediaData.size as number;
-      }
-  
-      return media;
-    } catch (err) {
-      console.log('Error in getInboundMediaMessage:', err);
-      return {} as MessageMedia;
-    }
-  };
-  
   private getInboundLocationParams = (
     message: GSWhatsAppMessage
   ): LocationParams => {
@@ -353,7 +247,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   
     return location;
   };
-  
+
   private processedXMessage = (
     message: GSWhatsAppMessage,
     xmsgPayload: XMessagePayload,
@@ -518,7 +412,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.text = '';
-      xmsgPayload.media = [ await this.getInboundMediaMessage(message) ];
+      xmsgPayload.media = [ await this.getMediaInfo(message) ];
 
       return this.processedXMessage(
         message,
@@ -815,12 +709,12 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             builder.set('method', MethodType.MEDIAMESSAGE);
             builder.set(
               'msg_type',
-              this.getMessageTypeByMediaCategory(media.category)
+              this.getMessageTypeByMediaCategory(media.category!)
             );
   
             builder.set('media_url', media.url!);
-            if (media.text) {
-              builder.set('caption', media.text);
+            if (media.caption) {
+              builder.set('caption', media.caption);
             }
             builder.set('isHSM', 'false');
             plainText = false;
