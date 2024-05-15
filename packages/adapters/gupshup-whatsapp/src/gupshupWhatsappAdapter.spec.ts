@@ -118,11 +118,13 @@ describe('gupshup whatsapp adapter', () => {
 
   it("Send Image Whatsapp message", async () => {
     const mockListXMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
-    mockListXMessage.payload.media = {
-      category: MediaCategory.IMAGE,
-      url: 'http://fakeurl.jpg',
-      text: 'This is a caption'
-    }
+    mockListXMessage.payload.media = [
+      {
+        category: MediaCategory.IMAGE,
+        url: 'http://fakeurl.jpg',
+        caption: 'This is a caption'
+      }
+    ];
     const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMediaMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=IMAGE&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&media_url=http%3A%2F%2Ffakeurl.jpg&caption=This+is+a+caption&isHSM=false'
     const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
     let actualParametersPassed: string | undefined = '';
@@ -136,11 +138,13 @@ describe('gupshup whatsapp adapter', () => {
 
   it("Send Document Whatsapp message", async () => {
     const mockListXMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
-    mockListXMessage.payload.media = {
-      category: MediaCategory.FILE,
-      url: 'http://fakeurl.pdf',
-      text: 'This is a caption'
-    }
+    mockListXMessage.payload.media = [
+      {
+        category: MediaCategory.FILE,
+        url: 'http://fakeurl.pdf',
+        caption: 'This is a caption'
+      }
+    ];
     const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMediaMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=DOCUMENT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&media_url=http%3A%2F%2Ffakeurl.pdf&caption=This+is+a+caption&isHSM=false'
     const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
     let actualParametersPassed: string | undefined = '';
@@ -183,7 +187,7 @@ describe('gupshup whatsapp adapter', () => {
       providerURI: 'Gupshup',
       messageState: 'DELIVERED',
       messageId: {
-        channelMessageId: '5057936233376494042-daf67a98-e3a3-4f02-8d0b-02bd41ba3aae'
+        Id: 'testId',
       },
       messageType: 'REPORT',
       timestamp: 0,
@@ -193,6 +197,125 @@ describe('gupshup whatsapp adapter', () => {
     // Timestamp will be different every time, hence only
     // check for existence of field.
     expect("timestamp" in xmsg).toBeTruthy();
+    expect(xmsg.messageId.Id).toBeDefined();
+    xmsg.timestamp = 0;
+    xmsg.messageId.Id = 'testId';
+    expect(xmsg).toStrictEqual(expectedXMessage);
+  });
+
+  it("Convert Whatsapp Audio message to XMessage", async () => {
+    const mockAudioMessage = {
+      "mobile": "919999999999",
+      "type": "audio",
+      "audio": "{\"signature\":\"xyz\",\"mime_type\":\"audio/ogg; codecs=opus\",\"url\":\"baseurl?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20240514T101323Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=cred&X-Amz-Signature=\"}",
+      "timestamp": "1715681599000",
+      "waNumber": "918888888888",
+      "name": "User"
+    };
+    const expectedXMessage: XMessage = {
+      to: { userID: 'admin' },
+      from: { userID: '9999999999' },
+      channelURI: 'Whatsapp',
+      providerURI: 'Gupshup',
+      messageState: MessageState.REPLIED,
+      messageId: {
+        Id: 'testId',
+      },
+      messageType: MessageType.AUDIO,
+      timestamp: 0,
+      payload: {
+        text: "",
+        media: [
+          {
+            category: MediaCategory.AUDIO,
+            url: 'baseurl?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20240514T101323Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=cred&X-Amz-Signature=xyz',
+            mimeType: 'audio/ogg; codecs=opus',
+          }
+        ]
+      }
+    };
+    const xmsg = await adapter.convertMessageToXMsg(mockAudioMessage);
+    expect(xmsg.messageId.Id).toBeDefined();
+    xmsg.messageId.Id = 'testId';
+    expect(xmsg.timestamp).toBeGreaterThan(0);
+    xmsg.timestamp = 0;
+    expect(xmsg).toStrictEqual(expectedXMessage);
+  });
+
+  it("Convert Whatsapp Video message to XMessage", async () => {
+    const mockAudioMessage = {
+      "mobile": "919999999999",
+      "type": "video",
+      "video": "{\"signature\":\"xyz\",\"mime_type\":\"video/mp4\",\"url\":\"baseurl?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20240514T101323Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=cred&X-Amz-Signature=\"}",
+      "timestamp": "1715681599000",
+      "waNumber": "918888888888",
+      "name": "User"
+    };
+    const expectedXMessage: XMessage = {
+      to: { userID: 'admin' },
+      from: { userID: '9999999999' },
+      channelURI: 'Whatsapp',
+      providerURI: 'Gupshup',
+      messageState: MessageState.REPLIED,
+      messageId: {
+        Id: 'testId',
+      },
+      messageType: MessageType.VIDEO,
+      timestamp: 0,
+      payload: {
+        text: "",
+        media: [
+          {
+            category: MediaCategory.VIDEO,
+            url: 'baseurl?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20240514T101323Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=cred&X-Amz-Signature=xyz',
+            mimeType: 'video/mp4',
+          }
+        ]
+      }
+    };
+    const xmsg = await adapter.convertMessageToXMsg(mockAudioMessage);
+    expect(xmsg.messageId.Id).toBeDefined();
+    xmsg.messageId.Id = 'testId';
+    expect(xmsg.timestamp).toBeGreaterThan(0);
+    xmsg.timestamp = 0;
+    expect(xmsg).toStrictEqual(expectedXMessage);
+  });
+
+  it("Convert Whatsapp Image message to XMessage", async () => {
+    const mockAudioMessage = {
+      "mobile": "919999999999",
+      "type": "image",
+      "image": "{\"signature\":\"xyz\",\"mime_type\":\"image/jpeg\",\"url\":\"baseurl?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20240514T101323Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=cred&X-Amz-Signature=\"}",
+      "timestamp": "1715681599000",
+      "waNumber": "918888888888",
+      "name": "User"
+    };
+    const expectedXMessage: XMessage = {
+      to: { userID: 'admin' },
+      from: { userID: '9999999999' },
+      channelURI: 'Whatsapp',
+      providerURI: 'Gupshup',
+      messageState: MessageState.REPLIED,
+      messageId: {
+        Id: 'testId',
+      },
+      messageType: MessageType.IMAGE,
+      timestamp: 0,
+      payload: {
+        text: "",
+        media: [
+          {
+            category: MediaCategory.IMAGE,
+            url: 'baseurl?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20240514T101323Z&X-Amz-SignedHeaders=host&X-Amz-Expires=172800&X-Amz-Credential=cred&X-Amz-Signature=xyz',
+            mimeType: 'image/jpeg',
+          }
+        ]
+      }
+    };
+    const xmsg = await adapter.convertMessageToXMsg(mockAudioMessage);
+    expect(xmsg.messageId.Id).toBeDefined();
+    xmsg.messageId.Id = 'testId';
+    expect(xmsg.timestamp).toBeGreaterThan(0);
     xmsg.timestamp = 0;
     expect(xmsg).toStrictEqual(expectedXMessage);
   });

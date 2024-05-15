@@ -96,11 +96,11 @@ export class XMessageThread {
 }
 
 export class MessageMedia {
-  category!: MediaCategory; // category list {image, audio, document, video}
-  text?: string; // caption, if applicable
+  category?: MediaCategory; // category list {image, audio, document, video}
+  caption?: string;
   url?: string;
   size?: number;
-  messageMediaError?: MessageMediaError;
+  mimeType?: string;
 }
 
 export class LocationParams {
