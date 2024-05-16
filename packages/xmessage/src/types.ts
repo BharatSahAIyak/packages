@@ -79,7 +79,7 @@ export type XMessagePayload = {
   text?: string;
   media?: MessageMedia[];
   location?: LocationParams;
-  contactCard?: ContactCard;
+  contactCard?: Card;
   buttonChoices?: ButtonChoices;
   stylingTag?: StylingTag;
   flow?: string;
@@ -111,9 +111,20 @@ export class LocationParams {
   name!: String;
 }
 
-export class ContactCard {
-  address!: Address;
-  name!: string;
+export type Card = {
+  header?: Cell;
+  footer?: Cell;
+  content?: CardBody;
+}
+
+export class CardBody {
+  columns?: number;
+  cells?: Array<Cell>;
+}
+
+export type Cell = {
+  title?: string;
+  description?: string;
 }
 
 export type ButtonChoices = {
