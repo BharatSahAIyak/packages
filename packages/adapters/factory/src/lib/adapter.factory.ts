@@ -64,7 +64,7 @@ export class AdapterFactory {
             case 'DiscordDiscord':
                 return new DiscordProvider();
             case 'SlackSlack':
-                return new SlackProvider();
+                return new SlackProvider(consumerData.config);
             case 'TelegramTelegram':
                 return new TelegramBotProvider(consumerData.config);
             case 'GupshupWhatsapp':
