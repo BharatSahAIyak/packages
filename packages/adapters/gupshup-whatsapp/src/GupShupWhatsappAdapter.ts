@@ -491,7 +491,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   }
   
   private getOutboundListActionContent = (xMsg: XMessage): string => {
-    const rows: SectionRow[] = xMsg.payload.buttonChoices?.map((choice) =>
+    const rows: SectionRow[] = xMsg.payload.buttonChoices?.choices?.map((choice) =>
       this.createSectionRow(choice.key, choice.text)
     ) || [{ id: '', title: '' }];
   
@@ -523,7 +523,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   private getOutboundQRBtnActionContent = (xMsg: XMessage): string => {
     const buttons: Button[] = [];
   
-    xMsg.payload.buttonChoices?.forEach((choice) => {
+    xMsg.payload.buttonChoices?.choices?.forEach((choice) => {
       const button: Button = {
         type: 'reply',
         reply: {
@@ -590,7 +590,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         let builder = this.getURIBuilder();
   
         if (xMsg.messageState === MessageState.OPTED_IN) {
-          text += this.renderMessageChoices(xMsg.payload.buttonChoices || []);
+          text += this.renderMessageChoices(xMsg.payload.buttonChoices?.choices || []);
   
           builder = this.setBuilderCredentialsAndMethod(
             builder,
@@ -614,7 +614,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             this.providerConfig.password2Way,
           );
   
-          text += this.renderMessageChoices(xMsg.payload.buttonChoices || []);
+          text += this.renderMessageChoices(xMsg.payload.buttonChoices?.choices || []);
   
           builder = this.setBuilderCredentialsAndMethod(
             builder,
@@ -639,7 +639,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             this.providerConfig.password2Way,
           );
   
-          text += this.renderMessageChoices(xMsg.payload.buttonChoices || []);
+          text += this.renderMessageChoices(xMsg.payload.buttonChoices?.choices || []);
   
           builder = this.setBuilderCredentialsAndMethod(
             builder,
@@ -721,7 +721,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
           }
   
           if (plainText) {
-            text += this.renderMessageChoices(xMsg.payload.buttonChoices || []);
+            text += this.renderMessageChoices(xMsg.payload.buttonChoices?.choices || []);
             builder.set('msg', text);
           }
         }

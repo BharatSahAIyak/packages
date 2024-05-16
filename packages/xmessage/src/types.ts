@@ -80,7 +80,7 @@ export type XMessagePayload = {
   media?: MessageMedia[];
   location?: LocationParams;
   contactCard?: ContactCard;
-  buttonChoices?: Array<ButtonChoice>;
+  buttonChoices?: ButtonChoices;
   stylingTag?: StylingTag;
   flow?: string;
   questionIndex?: number;
@@ -116,10 +116,15 @@ export class ContactCard {
   name!: string;
 }
 
-export class ButtonChoice {
-  key!: string;
-  text!: string;
-  backmenu!: boolean;
+export type ButtonChoices = {
+  isSearchable?: Boolean | undefined;
+  choices: Array<ButtonChoice>;
+}
+
+export type ButtonChoice = {
+  key: string;
+  text: string;
+  isEnabled?: Boolean | undefined;
 }
 
 export enum StylingTag {
