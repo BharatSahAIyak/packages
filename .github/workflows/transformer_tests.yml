@@ -19,6 +19,10 @@ jobs:
 
       - name: Install Dependencies
         run: cd packages/transformers && npm install --legacy-peer-deps
+        run: cd packages/adapters/factory && npm install
+        run: cd packages/adapters/gupshup-whatsapp && npm install
 
       - name: Run Tests
         run: cd packages/transformers && npm run test
+        run: cd packages/adapters/factory && npm run test
+        run: cd packages/adapters/gupshup-whatsapp && npm run test
