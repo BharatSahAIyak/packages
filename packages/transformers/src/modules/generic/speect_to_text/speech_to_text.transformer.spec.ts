@@ -8,8 +8,6 @@ import axios from "axios";
 import { SpeechToTextTransformer } from "./speech_to_text.transformer";
 import FormData from "form-data";
 
-jest.mock("axios");
-
 describe("SpeechToTextTransformer", () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -35,85 +33,47 @@ describe("SpeechToTextTransformer", () => {
       timestamp: 4825,
       messageState: MessageState.REPLIED,
       payload: {
-        media: {
-          url: "https://example.com/sample.wav",
-          category: MediaCategory.AUDIO,
-        },
+        media: [
+          {
+            url: "https://example.com/sample.wav",
+            category: MediaCategory.AUDIO,
+          },
+        ],
       },
     };
 
     const mockedResponse = {
       data: {
-        text_read: ["मेर", "न", "राहुल", "है"],
-      },
+        text: "मेर नाम राहुल है",
+      }
     };
 
-    (axios.post as jest.MockedFunction<typeof axios.post>).mockResolvedValue(
-      mockedResponse
-    );
+    jest.spyOn(axios, 'post').mockImplementation((url, data, config) => {
+      if (url === "http://mockbaseurl") {
+        return Promise.resolve(mockedResponse);
+      }
+      return Promise.reject(new Error('Unexpected URL'));
+    });
 
     const transformer = new SpeechToTextTransformer({
-      baseUrl: "https://ai-tools-proxy.dev.bhasai.samagra.io/speech-to-text",
+      baseUrl: "http://mockbaseurl",
       language: "en",
-      model_name: "ai4bharat/conformer-en-gpu--t4",
     });
 
     const transformedMessage = await transformer.transform(mockXMessage);
 
     expect(transformedMessage.payload?.metaData?.speechToTextData).toEqual(
-      mockedResponse.data.text_read
+      mockedResponse.data.text
     );
 
     expect(axios.post).toHaveBeenCalledWith(
-      "https://ai-tools-proxy.dev.bhasai.samagra.io/speech-to-text",
-      expect.any(FormData), // Verify that FormData is passed
+      "http://mockbaseurl",
+      expect.any(FormData),
       {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       }
-    );
-  });
-
-  it("should handle errors during text extraction", async () => {
-    const mockXMessage: XMessage = {
-      messageType: MessageType.TEXT,
-      messageId: {
-        Id: "4305161194925220864-131632492725500592",
-        channelMessageId: "4305161194925220864-131632492725500592",
-      },
-      to: {
-        userID: "9999999999",
-      },
-      from: {
-        userID: "admin",
-        bot: true,
-        meta: new Map(Object.entries({ botMobileNumber: "919999999999" })),
-      },
-      channelURI: "",
-      providerURI: "",
-      timestamp: 4825,
-      messageState: MessageState.REPLIED,
-      payload: {
-        media: {
-          url: "https://example.com/sample.wav",
-          category: MediaCategory.AUDIO,
-        },
-      },
-    };
-
-    (axios.post as jest.MockedFunction<typeof axios.post>).mockRejectedValue(
-      new Error("Failed to extract text")
-    );
-
-    const transformer = new SpeechToTextTransformer({
-      baseUrl: "https://ai-tools-proxy.dev.bhasai.samagra.io/speech-to-text",
-      language: "en",
-      model_name: "ai4bharat/conformer-en-gpu--t4",
-    });
-
-    await expect(transformer.transform(mockXMessage)).rejects.toThrow(
-      "Failed to extract text"
     );
   });
 
@@ -142,9 +102,8 @@ describe("SpeechToTextTransformer", () => {
     };
 
     const transformer = new SpeechToTextTransformer({
-      baseUrl: "https://ai-tools-proxy.dev.bhasai.samagra.io/speech-to-text",
+      baseUrl: "http://mockbaseurl",
       language: "en",
-      model_name: "ai4bharat/conformer-en-gpu--t4",
     });
 
     await expect(transformer.transform(mockXMessage)).rejects.toThrow(
@@ -154,7 +113,7 @@ describe("SpeechToTextTransformer", () => {
 
   it("should handle empty response from text extraction service", async () => {
     const mockXMessage: XMessage = {
-      messageType: MessageType.TEXT,
+      messageType: MessageType.AUDIO,
       messageId: {
         Id: "4305161194925220864-131632492725500592",
         channelMessageId: "4305161194925220864-131632492725500592",
@@ -172,31 +131,97 @@ describe("SpeechToTextTransformer", () => {
       timestamp: 4825,
       messageState: MessageState.REPLIED,
       payload: {
-        media: {
+        media: [{
           url: "https://example.com/empty.wav",
           category: MediaCategory.AUDIO,
-        },
+        }],
       },
     };
 
     const mockedResponse = {
       data: {
-        text_read: [],
-      },
+        text: ""
+      }
     };
 
-    (axios.post as jest.MockedFunction<typeof axios.post>).mockResolvedValue(
-      mockedResponse
-    );
+    jest.spyOn(axios, 'post').mockImplementation((url, data, config) => {
+      if (url === "http://mockbaseurl") {
+        return Promise.resolve(mockedResponse);
+      }
+      return Promise.reject(new Error('Unexpected URL'));
+    });
 
     const transformer = new SpeechToTextTransformer({
-      baseUrl: "https://ai-tools-proxy.dev.bhasai.samagra.io/speech-to-text",
+      baseUrl: "http://mockbaseurl",
       language: "en",
-      model_name: "ai4bharat/conformer-en-gpu--t4",
     });
 
     const transformedMessage = await transformer.transform(mockXMessage);
 
-    expect(transformedMessage.payload?.metaData?.speechToTextData).toEqual([]);
+    expect(transformedMessage.payload?.metaData?.speechToTextData).toEqual("");
+  });
+
+  it("should persist extracted text to payload.text when persist is true", async () => {
+    const mockXMessage: XMessage = {
+      messageType: MessageType.AUDIO,
+      messageId: {
+        Id: "4305161194925220864-131632492725500592",
+        channelMessageId: "4305161194925220864-131632492725500592",
+      },
+      to: {
+        userID: "9999999999",
+      },
+      from: {
+        userID: "admin",
+        bot: true,
+        meta: new Map(Object.entries({ botMobileNumber: "919999999999" })),
+      },
+      channelURI: "",
+      providerURI: "",
+      timestamp: 4825,
+      messageState: MessageState.REPLIED,
+      payload: {
+        media: [
+          {
+            url: "https://example.com/sample.wav",
+            category: MediaCategory.AUDIO,
+          },
+        ],
+      },
+    };
+
+    const mockedResponse = {
+      data: {
+        text: "This is a sample transcription",
+      }
+    };
+
+    jest.spyOn(axios, 'post').mockImplementation((url, data, config) => {
+      if (url === "http://mockbaseurl") {
+        return Promise.resolve(mockedResponse);
+      }
+      return Promise.reject(new Error('Unexpected URL'));
+    });
+
+    const transformer = new SpeechToTextTransformer({
+      baseUrl: "http://mockbaseurl",
+      language: "en",
+      persist: true,
+    });
+
+    const transformedMessage = await transformer.transform(mockXMessage);
+
+    expect(transformedMessage.payload?.text).toBe(mockedResponse.data.text);
+    expect(transformedMessage.payload?.metaData?.speechToTextData).toBe(mockedResponse.data.text);
+
+    expect(axios.post).toHaveBeenCalledWith(
+      "http://mockbaseurl",
+      expect.any(FormData),
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
   });
 });

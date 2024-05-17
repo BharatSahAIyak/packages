@@ -9,7 +9,8 @@
       },
       "optional": {
         "language": "string",
-        "spellCheck": "string"
+        "spellCheck": "string",
+        "persist": "boolean"
       },
       "conditional": {}
     },
