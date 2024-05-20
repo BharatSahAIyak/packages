@@ -17,12 +17,26 @@ jobs:
         with:
           node-version: 16.18
 
-      - name: Install Dependencies
+      - name: Install Dependencies Transformer
         run: cd packages/transformers && npm install --legacy-peer-deps
+
+      - name: Run Tests Transformer
+        run: cd packages/transformers && npm run test
+
+      - name: Install Dependencies Factory
         run: cd packages/adapters/factory && npm install
+
+      - name: Run Tests Factory
+        run: cd packages/adapters/factory && npm run test
+
+      - name: Install Dependencies Gupshup Whatsapp
         run: cd packages/adapters/gupshup-whatsapp && npm install
 
-      - name: Run Tests
-        run: cd packages/transformers && npm run test
-        run: cd packages/adapters/factory && npm run test
+      - name: Run Tests Gupshup Whatsapp
         run: cd packages/adapters/gupshup-whatsapp && npm run test
+
+      - name: Install Dependencies Recipe Compiler
+        run: cd packages/recipeCompiler && npm install
+
+      - name: Run Tests Recipe Compiler
+        run: cd packages/recipeCompiler && npm run test
