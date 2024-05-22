@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/BharatSahAIyak/packages/badge.svg?branch=coveralls)](https://coveralls.io/github/BharatSahAIyak/packages?branch=coveralls)
+
 # UCI Packages Repository
 
 This repository holds various packages/components that collectively form the **Unified Communications Interface (UCI)**, providing a versatile and extensible solution for building conversational interfaces and chatbots.
