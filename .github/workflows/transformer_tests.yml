@@ -21,7 +21,7 @@ jobs:
         run: cd packages/transformers && npm install --legacy-peer-deps
 
       - name: Run Tests Transformer
-        run: cd packages/transformers && npm run test
+        run: cd packages/transformers && npx jest --coverage
       
       - name: Coveralls
         uses: coverallsapp/github-action@v2
