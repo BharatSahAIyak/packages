@@ -354,7 +354,11 @@ export class LLMTransformer implements ITransformer {
         })
         xmsg.payload.text = answer;
         xmsg.payload.metaData!['searchResults'] = updatedSearchResults;
-        xmsg.payload.buttonChoices = followUpQuestions.map((question: string, index: number): ButtonChoice=>{return {key: `${index}`,text: question,backmenu: false}})
+        if (followUpQuestions.length > 0) {
+            xmsg.payload.buttonChoices = {
+                choices: followUpQuestions.map((question: string, index: number): ButtonChoice=>{return {key: `${index}`, text: question, isEnabled: true}})
+            };
+        }
         return xmsg;
     }
     //triggering inboud here itself for now to enable streaming feature

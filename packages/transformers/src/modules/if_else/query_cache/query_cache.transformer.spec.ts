@@ -26,11 +26,10 @@ describe('QueryCacheTransformer', () => {
         fetchMock.getOnce('http://mockurl?question=my%20question&threshold=0.5', (url, _) => {
             const currentRequest = new URL(url);
             return {
-                data: [
-                    {
-                        answer: currentRequest.searchParams.toString(),
-                    }
-                ]
+                "id": "23aaa06a-bfd3-4499-b992-0186f26b6422",
+                "question": "my question",
+                "answer": currentRequest.searchParams.toString(),
+                "score": 0.9746254973001931
             }
         });
         const transformerWithPrompt = new QueryCacheTransformer({
@@ -47,11 +46,10 @@ describe('QueryCacheTransformer', () => {
         fetchMock.getOnce('http://mockurl?question=my%20question&threshold=0.9', (url, _) => {
             const currentRequest = new URL(url);
             return {
-                data: [
-                    {
-                        answer: currentRequest.searchParams.toString(),
-                    }
-                ]
+                "id": "23aaa06a-bfd3-4499-b992-0186f26b6422",
+                "question": "my question",
+                "answer": currentRequest.searchParams.toString(),
+                "score": 0.9746254973001931
             }
         });
         const transformerWithPrompt = new QueryCacheTransformer({
@@ -67,11 +65,10 @@ describe('QueryCacheTransformer', () => {
         fetchMock.getOnce('http://mockurl?question=my%20question&threshold=0.9', (url, _) => {
             const currentRequest = new URL(url);
             return {
-                data: [
-                    {
-                        answer: currentRequest.searchParams.toString(),
-                    }
-                ]
+                "id": "23aaa06a-bfd3-4499-b992-0186f26b6422",
+                "question": "my question",
+                "answer": currentRequest.searchParams.toString(),
+                "score": 0.9746254973001931
             }
         });
         const transformerWithPrompt = new QueryCacheTransformer({
@@ -85,11 +82,10 @@ describe('QueryCacheTransformer', () => {
         fetchMock.getOnce('http://mockurl?question=my%20question&threshold=0.9', (url, _) => {
             const currentRequest = new URL(url);
             return {
-                data: [
-                    {
-                        answer: currentRequest.searchParams.toString(),
-                    }
-                ]
+                "id": "23aaa06a-bfd3-4499-b992-0186f26b6422",
+                "question": "my question",
+                "answer": currentRequest.searchParams.toString(),
+                "score": 0.9746254973001931
             }
         });
         const transformerWithPrompt = new QueryCacheTransformer({
@@ -103,11 +99,10 @@ describe('QueryCacheTransformer', () => {
         fetchMock.getOnce('http://mockurl?question=my%20question&threshold=0.5', (url, _) => {
             const currentRequest = new URL(url);
             return {
-                data: [
-                    {
-                        answer: currentRequest.searchParams.toString(),
-                    }
-                ]
+                "id": "23aaa06a-bfd3-4499-b992-0186f26b6422",
+                "question": "my question",
+                "answer": currentRequest.searchParams.toString(),
+                "score": 0.9746254973001931
             }
         });
         const transformerWithPrompt = new QueryCacheTransformer({

@@ -6,7 +6,7 @@ export class QueryCacheTransformer implements ITransformer {
 
     /// Accepted config properties:
     ///     url: string: Endpoint of the caching service.
-    ///     query: string: Query for which cached response is required.
+    ///     query: string: Query for which cached response is required. If not provided, `XMessage.payload.text` will be used.
     ///     threshold: number: The threshold similarity score below which results would not be considered. If not provided, 0.9 will be used.
     ///     persist: Boolean: If true, the response of query will be persisted to `payload.text` in xmsg.
     constructor(readonly config: Record<string, any>) {}
@@ -20,7 +20,6 @@ export class QueryCacheTransformer implements ITransformer {
             throw new Error('`query` or `payload.text` must be defined!');
         }
         this.config.threshold = this.config.threshold ?? 0.9;
-        // TODO: send botId and orgId headers
         const httpTransformer = new HttpGetTransformer({
             url: this.config.url,
             queryJson: {
@@ -35,7 +34,7 @@ export class QueryCacheTransformer implements ITransformer {
         });
         await httpTransformer.transform(xmsg)
         .then((resp) => {
-            const queryResponse = resp.transformer!.metaData!.httpResponse?.data?.[0]?.answer;
+            const queryResponse = resp.transformer!.metaData!.httpResponse?.answer;
             if (!queryResponse) {
                 throw new Error(`Cache API returned empty data: ${JSON.stringify(resp.transformer!.metaData!.httpResponse)}`);
             }

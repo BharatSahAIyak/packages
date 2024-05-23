@@ -95,9 +95,9 @@ export class FileUtil {
     if (
       payload.stylingTag === StylingTag.LIST &&
       payload.buttonChoices &&
-      payload.buttonChoices.length <= 10
+      payload.buttonChoices.choices?.length <= 10
     ) {
-      for (const buttonChoice of payload.buttonChoices) {
+      for (const buttonChoice of payload.buttonChoices?.choices) {
         if (buttonChoice.text.length > 24) {
           return false;
         }
@@ -106,9 +106,9 @@ export class FileUtil {
     } else if (
       payload.stylingTag === StylingTag.QUICKREPLYBTN &&
       payload.buttonChoices &&
-      payload.buttonChoices.length <= 3
+      payload.buttonChoices?.choices?.length <= 3
     ) {
-      for (const buttonChoice of payload.buttonChoices) {
+      for (const buttonChoice of payload.buttonChoices?.choices) {
         if (buttonChoice.text.length > 20 || buttonChoice.key.length > 256) {
           return false;
         }

@@ -14,6 +14,7 @@ export enum TransformerType {
     FIELD_SETTER = 'FIELD_SETTER',
     MESSAGE_TYPE_CLASSIFIER = 'MESSAGE_TYPE_CLASSIFIER',
     QUERY_CACHE = 'QUERY_CACHE',
+    SPEECH_TO_TEXT = 'SPEECH_TO_TEXT',
 }
 
 export enum TransformerClass {
@@ -40,4 +41,5 @@ export const TransformerMapping: Record<TransformerType, TransformerClass> = {
     [TransformerType.FIELD_SETTER]: TransformerClass.GenericTransformer,
     [TransformerType.MESSAGE_TYPE_CLASSIFIER]: TransformerClass.SwitchCaseTransformer,
     [TransformerType.QUERY_CACHE]: TransformerClass.IfElseTransformer,
+    [TransformerType.SPEECH_TO_TEXT]: TransformerClass.GenericTransformer,
 };

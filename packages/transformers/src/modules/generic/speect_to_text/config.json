@@ -1,0 +1,18 @@
+{
+    "name": "Speech To Text",
+    "class": "GenericTransformer",
+    "type": "SPEECH_TO_TEXT",
+    "description": "Converts an audio file provided by a URL into text",
+    "config": {
+      "required": {
+        "baseUrl": "string"
+      },
+      "optional": {
+        "language": "string",
+        "spellCheck": "string",
+        "persist": "boolean"
+      },
+      "conditional": {}
+    },
+    "version": "0.0.1"
+  }

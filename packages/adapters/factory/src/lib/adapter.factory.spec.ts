@@ -12,7 +12,7 @@ describe('Adaptor Factory Test', () => {
 
     it('NodeMailer Factory test', async () => {
         const adapter = AdapterFactory.getAdapter({
-            type: 'NodeMailer',
+            type: 'NodemailerEmail',
             config: {
                 from: 'test@gmail.com',
                 host: 'smtp.gmail.com',
@@ -213,7 +213,7 @@ describe('Adaptor Factory Test', () => {
 
     it('DiscordProvider Factory test', async () => {
         const adapter = AdapterFactory.getAdapter({
-            type: 'Discord',
+            type: 'DiscordDiscord',
         });
  
         expect(adapter instanceof DiscordProvider).toBeTruthy();
@@ -246,7 +246,7 @@ describe('Adaptor Factory Test', () => {
 
     it('SlackProvider Factory test', async () => {
         const adapter = AdapterFactory.getAdapter({
-            type: 'Slack',
+            type: 'SlackSlack',
         });
  
         expect(adapter instanceof SlackProvider).toBeTruthy();
@@ -279,7 +279,7 @@ describe('Adaptor Factory Test', () => {
 
     it('TelegramBotProvider Factory test', async () => {
         const adapter = AdapterFactory.getAdapter({
-            type: 'TelegramBot',
+            type: 'TelegramTelegram',
             config: {
                 botToken: 'TEST_BOT_TOKEN'
             }

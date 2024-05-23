@@ -79,8 +79,8 @@ export type XMessagePayload = {
   text?: string;
   media?: MessageMedia[];
   location?: LocationParams;
-  contactCard?: ContactCard;
-  buttonChoices?: Array<ButtonChoice>;
+  contactCard?: Card;
+  buttonChoices?: ButtonChoices;
   stylingTag?: StylingTag;
   flow?: string;
   questionIndex?: number;
@@ -111,15 +111,31 @@ export class LocationParams {
   name!: String;
 }
 
-export class ContactCard {
-  address!: Address;
-  name!: string;
+export type Card = {
+  header?: Cell;
+  footer?: Cell;
+  content?: CardBody;
 }
 
-export class ButtonChoice {
-  key!: string;
-  text!: string;
-  backmenu!: boolean;
+export class CardBody {
+  columns?: number;
+  cells?: Array<Cell>;
+}
+
+export type Cell = {
+  title?: string;
+  description?: string;
+}
+
+export type ButtonChoices = {
+  isSearchable?: Boolean | undefined;
+  choices: Array<ButtonChoice>;
+}
+
+export type ButtonChoice = {
+  key: string;
+  text: string;
+  isEnabled?: Boolean | undefined;
 }
 
 export enum StylingTag {
