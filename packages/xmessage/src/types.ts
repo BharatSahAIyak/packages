@@ -136,6 +136,7 @@ export type ButtonChoice = {
   key: string;
   text: string;
   isEnabled?: Boolean | undefined;
+  action?: string;
 }
 
 export enum StylingTag {
