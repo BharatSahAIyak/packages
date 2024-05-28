@@ -24,7 +24,9 @@ export class PwaBotProvider implements XMessageProvider {
     }
 
     async sendMessage(xmsg: XMessage) {
-        if (xmsg.payload.text && !xmsg.payload.text.endsWith('<end/>')) {
+        // Add <end/> only if message is TEXT and message is already not coming
+        // from an LLM node.
+        if (xmsg.payload.text && !xmsg.transformer?.metaData?.messageIdChanged && !xmsg.payload.text.endsWith('<end/>')) {
             xmsg.payload.text = `${xmsg.payload.text}<end/>`;
         }
         await axios.post(

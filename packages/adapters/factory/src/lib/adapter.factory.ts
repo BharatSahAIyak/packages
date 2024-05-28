@@ -62,7 +62,7 @@ export class AdapterFactory {
             case 'TwilioSms':
                 return new TwilioSmsProvider(consumerData.config);
             case 'DiscordDiscord':
-                return new DiscordProvider();
+                return new DiscordProvider(consumerData.config);
             case 'SlackSlack':
                 return new SlackProvider();
             case 'TelegramTelegram':
