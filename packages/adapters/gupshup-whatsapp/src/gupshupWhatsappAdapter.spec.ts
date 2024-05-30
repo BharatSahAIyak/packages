@@ -323,4 +323,61 @@ describe('gupshup whatsapp adapter', () => {
     xmsg.messageId.Id = 'testId';
     expect(xmsg).toStrictEqual(expectedXMessage);
   });
-})
+});
+
+describe('GupshupWhatsappProvider location message tests', () => {
+  let axiosGetSpy: jest.SpyInstance;
+
+  const mockCredentials: IGSWhatsappConfig = {
+    password2Way: "pass2Way",
+    passwordHSM: "passHSM",
+    username2Way: "9999999999",
+    usernameHSM: "9999999999",
+  };
+
+  const setupMockLocationMessage = (overrides = {}): XMessage => {
+    const mockLocationMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
+    mockLocationMessage.payload.location = {
+      longitude: 77.594566,
+      latitude: 12.9715987,
+      name: "Test Location",
+      address: "123 Test Address",
+      url: 'https://sample.com',
+      ...overrides,
+    };
+    return mockLocationMessage;
+  };
+
+  beforeAll(() => {
+    axiosGetSpy = jest.spyOn(axios, 'get').mockResolvedValue({ data: mockGSWhatsappReport });
+  });
+
+  afterAll(() => {
+    axiosGetSpy.mockRestore();
+  });
+
+  it('should send location message successfully', async () => {
+    const adapter = new GupshupWhatsappProvider(mockCredentials);
+    const mockLocationMessage = setupMockLocationMessage();
+
+    const expectedUrl = `https://media.smsgupshup.com/GatewayAPI/rest?method=SendMessage&msg_type=LOCATION&userid=9999999999&password=pass2Way&send_to=9999999999&location=%7B%22longitude%22%3A%2277.594566%22%2C%22latitude%22%3A%2212.9715987%22%2C%22name%22%3A%22Test+Location%22%2C%22address%22%3A%22123+Test+Address%22%2C%22url%22%3A%22https%3A%2F%2Fsample.com%22%7D`;
+
+    await adapter.sendLocationMessage(mockLocationMessage);
+
+    expect(axios.get).toHaveBeenCalledWith(expectedUrl);
+    expect(axios.get).toHaveBeenCalledTimes(1);
+  });
+
+  it('should throw an error if location parameters are missing', async () => {
+    const adapter = new GupshupWhatsappProvider(mockCredentials);
+    const mockLocationMessage = setupMockLocationMessage({
+      name: "",
+      address: "",
+      latitude: null,
+      longitude: null,
+      url: ""
+    });
+
+    await expect(adapter.sendLocationMessage(mockLocationMessage)).rejects.toThrow('Missing location parameters for sending location message');
+  });
+});
