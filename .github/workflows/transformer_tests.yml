@@ -15,14 +15,20 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 16.18
+          node-version: 18.17
 
       - name: Install Dependencies Transformer
         run: cd packages/transformers && npm install --legacy-peer-deps
 
       - name: Run Tests Transformer
-        run: cd packages/transformers && npm run test
-
+        run: cd packages/transformers && npx jest --coverage
+      
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: packages/transformers/coverage/lcov.info
+      
       - name: Install Dependencies Factory
         run: cd packages/adapters/factory && npm install
 
