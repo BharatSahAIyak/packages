@@ -1,11 +1,11 @@
 {
-    "name": "Webhook Transformer",
+    "name": "Webhook",
     "class": "GenericTransformer",
     "type": "WEBHOOK",
     "description": "Able to run a webhook.",
     "config": {
         "required": {
-            "baseUrl": "string",
+            "baseUrl": "string"
         },
         "optional": { },
         "conditional": { }

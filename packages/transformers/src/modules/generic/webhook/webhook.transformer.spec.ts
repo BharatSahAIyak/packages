@@ -1,6 +1,6 @@
 import { XMessage, MessageType, MessageState } from "@samagra-x/xmessage";
 import axios from "axios";
-import { WebhookTransformer } from "./webhook-transformer";
+import { WebhookTransformer } from "./webhook.transformer";
 
 
 describe("WebhookTransformer", () => {
