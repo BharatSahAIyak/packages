@@ -294,18 +294,17 @@
       "conditional": {}
     },
     "version": "0.0.1"
-  }
-  ,{
+  },
+  {
     "name": "XMessage Field Setter Transformer",
     "class": "GenericTransformer",
-    "type": "XMESSAGE_FIELD_SETTER",
+    "type": "FIELD_SETTER",
     "description": "A transformer which turns raw text into an XMessage object.",
     "config": {
       "required": {
         "rawData": "string"
       },
-      "optional": {
-      },
+      "optional": {},
       "conditional": {}
     },
     "version": "0.0.1"
