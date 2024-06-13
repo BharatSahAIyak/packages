@@ -74,6 +74,24 @@ describe('Field Setter Tests', () => {
         expect(transformedMsg.payload.text).toBe('hi there');
     });
 
+    it('Does not error on non object or string fields', async () => {
+        const transformer = new FieldSetterTransformer({
+            setters: {
+                "transformer.metaData.myVar": true,
+                "transformer.metaData.myVar2": null,
+                "transformer.metaData.myVar3": undefined,
+                "transformer.metaData.myVar4": [1, 2, 4],
+                "transformer.metaData.myVar5": 124,
+            }
+        });
+        const transformedMsg = await transformer.transform(mockXMessage);
+        expect(transformedMsg.transformer!.metaData!.myVar).toBe(true);
+        expect(transformedMsg.transformer!.metaData!.myVar2).toBe(null);
+        expect(transformedMsg.transformer!.metaData!.myVar3).toBe(undefined);
+        expect(transformedMsg.transformer!.metaData!.myVar4).toStrictEqual([1, 2, 4]);
+        expect(transformedMsg.transformer!.metaData!.myVar5).toBe(124);
+    });
+
     it('Works with JSON without placeholders', async () => {
         const requiredValue = {
             "my key": "my value",
