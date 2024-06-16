@@ -1,11 +1,11 @@
 {
-    "name": "XMessage Field Setter Transformer",
+    "name": "XMessage Render Transformer",
     "class": "GenericTransformer",
-    "type": "FIELD_SETTER",
+    "type": "RENDERER",
     "description": "A transformer which turns raw text into an XMessage object.",
     "config": {
       "required": {
-        "rawData": "string"
+        "rawData": "array"
       },
       "optional": {
       },
