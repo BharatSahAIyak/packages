@@ -18,7 +18,7 @@ export class FieldSetterTransformer implements ITransformer {
     ) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        console.log("Field Setter called.");
+        // console.log("Field Setter called.");
         if (!this.config.setters) {
             throw new Error('`config.setters` is a required parameter!');
         }

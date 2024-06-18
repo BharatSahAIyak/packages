@@ -1,6 +1,7 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common";
 import { Events } from "@samagra-x/uci-side-effects";
+import { fetch } from "undici";
 
 export class HttpGetTransformer implements ITransformer {
 
@@ -18,7 +19,7 @@ export class HttpGetTransformer implements ITransformer {
                 metaData: {}
             };
         }
-        console.log("HTTP GET transformer called.");
+        // console.log("HTTP GET transformer called.");
 
         this.config.url = this.config.url ?? xmsg.transformer?.metaData?.httpUrl;
         this.config.queryJson = this.config.queryJson ?? xmsg.transformer?.metaData?.httpQueryJson ?? {};
@@ -28,8 +29,8 @@ export class HttpGetTransformer implements ITransformer {
         this.config.query = this.config.query ?? xmsg.transformer?.metaData?.httpQuery ?? this.createQueryString(this.config.queryJson);
         this.config.query = this.config.query?.replace(/\\/g, '');
 
-        console.log("query:", `${this.config.url}${this.config.query ?? ''}`)
-        console.log("headers", JSON.stringify(this.config.headers))
+        // console.log("query:", `${this.config.url}${this.config.query ?? ''}`)
+        // console.log("headers", JSON.stringify(this.config.headers))
         if (!this.config.url) {
             this.sendErrorTelemetry(xmsg, '`url` not defined in HTTP_GET transformer');
             throw new Error('`url` not defined in HTTP_GET transformer');
@@ -61,7 +62,7 @@ export class HttpGetTransformer implements ITransformer {
         })
         .catch((ex) => {
             this.sendErrorTelemetry(xmsg, `GET request failed. Reason: ${ex}`);
-            console.error(`GET request failed. Reason: ${ex}`);
+            // console.error(`GET request failed. Reason: ${ex}`);
             throw ex;
         });
         this.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
