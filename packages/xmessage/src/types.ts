@@ -76,6 +76,7 @@ export class Transformer {
 }
 
 export type XMessagePayload = {
+  [key: string]: any;
   text?: string;
   media?: MessageMedia[];
   location?: LocationParams;
