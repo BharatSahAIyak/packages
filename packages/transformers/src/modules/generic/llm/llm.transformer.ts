@@ -310,7 +310,7 @@ export class LLMTransformer implements ITransformer {
                 }
             }
             await this.sendMessage(xmsg)
-            xmsg.payload.text = translatedSentences.join(' ')?.replace("<end/>",'')
+            xmsg.payload.text = xmsg.payload.text?.replace("<end/>",'')
         }
         delete process.env['OPENAI_API_KEY'];
         xmsg.messageId.Id = oldMessageId;
