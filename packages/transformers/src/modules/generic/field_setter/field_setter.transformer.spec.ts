@@ -169,4 +169,24 @@ describe('Field Setter Tests', () => {
         xmsgCopy.channelURI = '';
         expect(xmsgCopy).toStrictEqual(transformedMsg);
     });
+
+    it('Field Setter stringifies objects', async () => {
+        const xmsgCopy = JSON.parse(JSON.stringify(mockXMessage));
+        xmsgCopy.transformer!.metaData!.myObjectData = {
+            "myVar1": "myValue1",
+            "myVar2": {
+                "myInnerVar": "myInnerValue",
+            }
+        }
+        xmsgCopy.transformer!.metaData!.myObjectData2 = ['a', 'b', 'c'];
+        const transformer = new FieldSetterTransformer({
+            setters: {
+                "payload.text": "{{msg:transformer.metaData.myObjectData}}",
+                "transformer.metaData.checkVal": "{{msg:transformer.metaData.myObjectData2}}"
+            }
+        });
+        const transformedMsg = await transformer.transform(xmsgCopy);
+        expect(transformedMsg.payload.text).toStrictEqual("{\"myVar1\":\"myValue1\",\"myVar2\":{\"myInnerVar\":\"myInnerValue\"}}");
+        expect(transformedMsg.transformer!.metaData!.checkVal).toStrictEqual("[\"a\",\"b\",\"c\"]");
+    });
 })
