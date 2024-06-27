@@ -294,5 +294,19 @@
       "conditional": {}
     },
     "version": "0.0.1"
+  },
+  {
+    "name": "Webhook",
+    "class": "GenericTransformer",
+    "type": "WEBHOOK",
+    "description": "Able to run a webhook.",
+    "config": {
+      "required": {
+        "baseUrl": "string"
+      },
+      "optional": {},
+      "conditional": {}
+    },
+    "version": "0.0.1"
   }
 ]
