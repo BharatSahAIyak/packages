@@ -8,6 +8,7 @@ export class NeuralCoreferenceTransformer implements ITransformer {
     /// Accepted config properties:
     ///     prompt: GPT prompt used to get coreferenced output.
     ///     APIKey: openAI API key.
+    ///     model: openAI API key.
     constructor(readonly config: Record<string, any>) { }
 
     async transform(xmsg: XMessage): Promise<XMessage> {
@@ -27,6 +28,9 @@ export class NeuralCoreferenceTransformer implements ITransformer {
             this.sendErrorTelemetry(xmsg, '`APIKey` not defined in NEURAL_COREFERENCE transformer');
             throw new Error('`APIKey` not defined in NEURAL_COREFERENCE transformer');
         }
+        if (!this.config.model) {
+            this.sendErrorTelemetry(xmsg, '`Model` not defined in NEURAL_COREFERENCE transformer, using gpt-3.5-turbo.');
+        }
         this.config.prompt = [{
             role: "user",
             content: this.config.prompt
@@ -35,7 +39,7 @@ export class NeuralCoreferenceTransformer implements ITransformer {
         }];
         const openai = new OpenAI({apiKey: this.config.APIKey});
         const response: any = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
+            model: this.config.model || 'gpt-3.5-turbo',
             messages: this.config.prompt
         }).catch((ex) => {
             this.sendErrorTelemetry(xmsg, `NEURAL_COREFERENCE failed. Reason: ${ex}`);

@@ -6,7 +6,8 @@
     "config": {
         "required": {
             "prompt": "string",
-            "APIKey": "string"
+            "APIKey": "string",
+            "model": "string"
         },
         "optional": { },
         "conditional": { }
