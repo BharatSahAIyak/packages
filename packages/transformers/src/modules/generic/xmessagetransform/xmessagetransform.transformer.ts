@@ -1,7 +1,9 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
 import { Events } from "@samagra-x/uci-side-effects";
-
+import get from 'lodash/get';
+import set from 'lodash/set';
+import { replace } from "lodash";
 export class XMessageTransform implements ITransformer {
 
     constructor(readonly config: Record<string, any>) { }
@@ -10,56 +12,47 @@ export class XMessageTransform implements ITransformer {
     async transform(xmsg: XMessage): Promise<XMessage> {
 
 
-        Object.keys(this.config.rawData).forEach(async (key) => {
-            if (xmsg.payload.hasOwnProperty(key)) {
-                if (key === 'text') {
-                    if (await this.checkForRequiredFields(key, this.config.rawData[key])) {
-                        xmsg.payload.text = this.config.rawData[key];
+        console.log("Renderer called.");
+        if (!this.config.rawData) {
+            throw new Error('config.rawData is required');
+        }
+        const xmsgCopy = { ...xmsg };
+        const rawData: { replacements?: any } = this.config.rawData;
+        if (rawData.replacements) {
+            for (const key in rawData.replacements) {
+                if (Object.prototype.hasOwnProperty.call(rawData.replacements, key)) {
+                    const element = rawData.replacements[key];
+                    if (key == 'text') {
+                        this.resolvePlaceholders(element, xmsg);
+                        set(xmsgCopy, 'payload.text', element.value);
+                    }
+                    else if (key == 'media') {
+                        this.resolvePlaceholders(element, xmsg);
+                        set(xmsgCopy, 'payload.media', element.value);
+
+                    }
+                    else if (key == 'contactCard') {
+                        this.resolvePlaceholders(element, xmsg);
+                        
+                        set(xmsgCopy, 'payload.contactCard', element.value);
+
+                    }
+                    else if (key == 'buttonChoices') {
+                        this.resolvePlaceholders(element, xmsg);
+                        
+                        set(xmsgCopy, 'payload.buttonChoices', element.value);
+
                     }
                     else {
-                        this.sendErrorTelemetry(xmsg, 'Data not valid for text key');
+                        throw new Error('Invalid key provided in rawData.replacements');
                     }
+                }
+            }
+        }
 
-                }
-            }
-            else if (key === 'media') {
-                if (await this.checkForRequiredFields(key, this.config.rawData[key])) {
-                    xmsg.payload.media = this.config.rawData[key];
-                }
-                else {
-                    this.sendErrorTelemetry(xmsg, 'Data not valid for media key');
-                }
-            }
-            else if (key === 'contactCard') {
-                if (await this.checkForRequiredFields(key, this.config.rawData[key])) {
-                    xmsg.payload.contactCard = this.config.rawData[key];
-                }
-                else {
-                    this.sendErrorTelemetry(xmsg, 'Data not valid for contactCard key');
-                }
-            }
-            else if (key === 'buttonChoices') {
-                if (await this.checkForRequiredFields(key, this.config.rawData[key])) {
-                    xmsg.payload.buttonChoices = this.config.rawData[key];
-                }
-                else {
-                    this.sendErrorTelemetry(xmsg, 'Data not valid for buttonChoices key');
-                }
-            }
-            else if (key === 'location') {
-                if (await this.checkForRequiredFields(key, this.config.rawData[key])) {
-                    xmsg.payload.location = this.config.rawData[key];
-                }
-                else {
-                    this.sendErrorTelemetry(xmsg, 'Data not valid for location key');
-                }
-            }
-            else {
-                this.sendErrorTelemetry(xmsg, `Key ${key} not found in xmsg.payload`);
-            }
+        return xmsgCopy;
 
-        });
-        return xmsg;
+
 
 
 
@@ -75,6 +68,37 @@ export class XMessageTransform implements ITransformer {
         })
     }
 
+    /// Recursively resolves all the placeholders inside a JSON.
+    private resolvePlaceholders(jsonValue: Record<string, any>, xmsg: XMessage) {
+        Object.entries(jsonValue).forEach(([key, value]) => {
+            if (typeof value === 'string') {
+                set(jsonValue, key, this.getResolvedValue(value, xmsg));
+            }
+            else {
+                this.resolvePlaceholders(jsonValue[key], xmsg);
+            }
+        });
+    }
+
+    /// Gets resolved value of a string containing placeholders
+    /// by extracting it from XMessage.
+    private getResolvedValue(value: string, xmsg: XMessage): string {
+        const xmsgPlaceholder = /\{\{msg:([^}]*)\}\}/g;
+        const historyPlaceholder = /\{\{history:([^}]*)\}\}/g;
+        const replacements: Record<string, any> = {};
+        let matched;
+        while ((matched = xmsgPlaceholder.exec(value)) !== null) {
+            replacements[matched[0]] = get(xmsg, matched[1]);
+        }
+        while ((matched = historyPlaceholder.exec(value)) !== null) {
+            replacements[matched[0]] = get(xmsg.transformer?.metaData?.userHistory[0] ?? {}, matched[1]);
+        }
+        Object.entries(replacements).forEach((replacement) => {
+            value = value.replaceAll(replacement[0], replacement[1] ?? '');
+        });
+        return value;
+    }
+
     private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number) {
         const xmgCopy = { ...xmsg };
         xmgCopy.transformer!.metaData!.telemetryLog = log;
@@ -86,83 +110,5 @@ export class XMessageTransform implements ITransformer {
             timestamp: Date.now(),
         })
     }
-    private async checkForRequiredFields(key: string, Object: any) {
-        if (key == 'text') {
 
-            if (typeof Object !== 'string') {
-                return false;
-
-            }
-            return true;
-        }
-        else if (key == 'media') {
-            if (Object.category && !['image', 'audio', 'document', 'video'].includes(Object.category)) {
-                return false;
-            }
-            if (Object.caption && typeof Object.caption !== 'string') {
-                return false;
-            }
-            if (Object.url && typeof Object.url !== 'string') {
-                return false;
-            }
-            if (Object.size && typeof Object.size !== 'number') {
-                return false;
-            }
-            if (Object.mimeType && typeof Object.mimeType !== 'string') {
-                return false;
-            }
-            return true;
-        }
-        else if (key == 'contactCard') {
-            if (Object.header && Object.header.title && typeof Object.header.title !== 'string') {
-                return false;
-            }
-            if (Object.header && Object.header.description && typeof Object.header.description !== 'string') {
-                return false;
-            }
-            if (Object.footer && Object.footer.title && typeof Object.footer.title !== 'string') {
-                return false;
-            }
-            if (Object.footer && Object.footer.description && typeof Object.footer.description !== 'string') {
-                return false;
-            }
-            if (Object.content && Object.content.columns && typeof Object.content.columns !== 'number') {
-                return false;
-            }
-            if (Object.content && Object.content.cells && !Array.isArray(Object.content.cells)) {
-                return false;
-            }
-            return true;
-        }
-        else if (key == 'buttonChoices') {
-            if (Object.isSearchable && typeof Object.isSearchable !== 'boolean') {
-                return false;
-            }
-            if (Object.choices.length == 0) {
-                return false;
-            }
-            return true;
-        }
-        else if (key == 'location') {
-            if (Object.longitude && typeof Object.longitude !== 'number' && Object.longitude !== null) {
-                return false;
-            }
-            if (Object.latitude && typeof Object.latitude !== 'number' && Object.latitude !== null) {
-                return false;
-            }
-            if (Object.address && typeof Object.address !== 'string') {
-                return false;
-            }
-            if (Object.url && typeof Object.url !== 'string') {
-                return false;
-            }
-            if (Object.name && typeof Object.name !== 'string') {
-                return false;
-            }
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
 }

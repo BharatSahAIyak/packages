@@ -27,7 +27,9 @@ import { XMessageTransform } from "./xmessagetransform.transformer";
             text: "Testing bot",
           },
           transformer: {
-            metaData: {}
+            metaData: {
+              myProperty1: 'modifiedMessage'
+            }
           }
       };
       const eventBus = {
@@ -35,16 +37,21 @@ import { XMessageTransform } from "./xmessagetransform.transformer";
       }
       const mockConfig = {
           rawData: {
-                text: 'modifiedMessage',
-                
-            },
-      };
+              replacements : {
+                  text: {
+                      value: "{{msg:payload.text}}",
+                  },
+                  
+              }
+          }
+        };
+
 describe('XMessageTransform', () => {
         
         it('should modify the XMessage accordingly', async () => {
             const xMessageTransform = new XMessageTransform(mockConfig);
             const modifiedXMessage = await xMessageTransform.transform(mockXMessage);
-            expect(modifiedXMessage.payload.text).toBe('modifiedMessage');
+            expect(modifiedXMessage.payload.text).toBe('Testing bot');
         });
     
         it('should throw an error if config.rawData is not provided', async () => {
