@@ -14,7 +14,8 @@ export class XMessageTransform implements ITransformer {
 
         console.log("Renderer called.");
         if (!this.config.rawData) {
-            throw new Error('config.rawData is required');
+            this.sendErrorTelemetry(xmsg, 'config.rawData is required');
+            return xmsg;
         }
         const xmsgCopy = { ...xmsg };
         const rawData: { replacements?: any } = this.config.rawData;
@@ -44,7 +45,8 @@ export class XMessageTransform implements ITransformer {
 
                     }
                     else {
-                        throw new Error('Invalid key provided in rawData.replacements');
+                        this.sendErrorTelemetry(xmsg, 'Invalid key provided in rawData.replacements');
+                        return xmsg;
                     }
                 }
             }

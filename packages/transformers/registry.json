@@ -298,7 +298,7 @@
   {
     "name": "XMessage Field Setter Transformer",
     "class": "GenericTransformer",
-    "type": "FIELD_SETTER",
+    "type": "RENDERER",
     "description": "A transformer which turns raw text into an XMessage object.",
     "config": {
       "required": {
