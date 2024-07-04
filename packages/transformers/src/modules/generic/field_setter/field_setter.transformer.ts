@@ -25,12 +25,12 @@ export class FieldSetterTransformer implements ITransformer {
         const xmsgCopy = { ...xmsg };
         const setters: Record<string, string> = this.config.setters;
         Object.entries(setters).forEach((entry) => {
-            if (typeof entry[1] === 'string') {
-                set(xmsgCopy, entry[0], this.getResolvedValue(entry[1], xmsg));
-            }
-            else {
+            if (entry[1] && typeof entry[1] === 'object') {
                 this.resolvePlaceholders(entry[1], xmsg);
                 set(xmsgCopy, entry[0], entry[1]);
+            }
+            else {
+                set(xmsgCopy, entry[0], this.getResolvedValue(entry[1], xmsg));
             }
         });
         return xmsgCopy;
@@ -39,11 +39,11 @@ export class FieldSetterTransformer implements ITransformer {
     /// Recursively resolves all the placeholders inside a JSON.
     private resolvePlaceholders(jsonValue: Record<string, any>, xmsg: XMessage) {
         Object.entries(jsonValue).forEach(([key, value]) => {
-            if (typeof value === 'string') {
-                set(jsonValue, key, this.getResolvedValue(value, xmsg));
+            if (value && typeof value === 'object') {
+                this.resolvePlaceholders(jsonValue[key], xmsg);
             }
             else {
-                this.resolvePlaceholders(jsonValue[key], xmsg);
+                set(jsonValue, key, this.getResolvedValue(value, xmsg));
             }
         });
     }
@@ -62,7 +62,13 @@ export class FieldSetterTransformer implements ITransformer {
             replacements[matched[0]] = get(xmsg.transformer?.metaData?.userHistory[0] ?? {}, matched[1]);
         }
         Object.entries(replacements).forEach((replacement) => {
-            value = value.replaceAll(replacement[0], replacement[1] ?? '');
+            value = value.replaceAll(
+                replacement[0],
+                replacement[1] ?
+                typeof replacement[1] == 'object' ?
+                JSON.stringify(replacement[1]) : replacement[1]
+                : ''
+            );
         });
         return value;
     }

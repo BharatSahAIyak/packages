@@ -297,8 +297,6 @@ export class LLMTransformer implements ITransformer {
             xmsg.payload.text = `${translatedSentences.join(' ')}<end/>`
             xmsg.payload.text = xmsg.payload.text?.replace(/<newline>/g, '\n');
             xmsg.payload.media = media;
-            await this.sendMessage(xmsg)
-            xmsg.payload.text = translatedSentences.join(' ')?.replace("<end/>",'')
             xmsg.payload.text = xmsg.payload.text?.replace(/<newline>/g, '\n');
             xmsg.payload.text = xmsg.payload.text?.replace(/<ନୂତନ ଲାଇନ୍>/g, '\n');
             xmsg.payload.text = xmsg.payload.text?.replace(/<न्यूलाइन>/g, '\n');
@@ -311,6 +309,8 @@ export class LLMTransformer implements ITransformer {
                     streamStartLatency
                 }
             }
+            await this.sendMessage(xmsg)
+            xmsg.payload.text = xmsg.payload.text?.replace("<end/>",'')
         }
         delete process.env['OPENAI_API_KEY'];
         xmsg.messageId.Id = oldMessageId;
