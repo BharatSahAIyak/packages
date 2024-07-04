@@ -1,27 +1,26 @@
-import { DiscordProvider } from './discord.provider';
+import { DiscordProvider } from "./discord.provider";
 
-describe("Discord adapter tests", async () => {
-  it('should trigger Discord provider correctly', async () => {
+describe("Discord adapter tests", () => {
+  it("should trigger Discord provider correctly", async () => {
     const provider = new DiscordProvider({
-      webhookUrl: 'webhookUrl',
+      webhookUrl: "webhookUrl",
     });
     const spy = jest
-      .spyOn(provider, 'sendMessage')
+      .spyOn(provider, "sendMessage")
       .mockImplementation(async () => {
         return {
-          dateCreated: new Date(),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any;
+          id: "12345",
+          date: new Date().toISOString(),
+        };
       });
-    //@ts-ignore
-    await provider.sendMessage({
-      content: 'chat message',
-    });
+
+    const data = {
+      content: "chat message",
+      webhookUrl: "webookUrl"
+    };
+    await provider.sendMessage(data);
 
     expect(spy).toHaveBeenCalled();
-    expect(spy).toHaveBeenCalledWith({
-      webhookUrl: 'webhookUrl',
-      content: 'chat message',
-    });
+    expect(spy).toHaveBeenCalledWith(data);
   });
-})
+});
