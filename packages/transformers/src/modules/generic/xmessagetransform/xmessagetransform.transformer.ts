@@ -18,30 +18,46 @@ export class XMessageTransform implements ITransformer {
             return xmsg;
         }
         const xmsgCopy = { ...xmsg };
-        const rawData: { replacements?: any } = this.config.rawData;
-        if (rawData.replacements) {
-            for (const key in rawData.replacements) {
-                if (Object.prototype.hasOwnProperty.call(rawData.replacements, key)) {
-                    const element = rawData.replacements[key];
+        const rawData: Array<Object> = this.config.rawData as Array<Object>;
+        
+            for (const key in rawData) {
+                if (Object.prototype.hasOwnProperty.call(rawData, key)) {
+                    const element: any = rawData[key];
                     if (key == 'text') {
                         this.resolvePlaceholders(element, xmsg);
                         set(xmsgCopy, 'payload.text', element.value);
                     }
                     else if (key == 'media') {
                         this.resolvePlaceholders(element, xmsg);
-                        set(xmsgCopy, 'payload.media', element.value);
+                        set(xmsgCopy, 'payload.media.url', element.value);
+                        set(xmsgCopy, 'payload.media.mediaCategory', element.mediaCategory);
+                        set(xmsgCopy, 'payload.media.size', element.size);  
+                        set(xmsgCopy, 'payload.media.caption', element.caption);
+                        set(xmsgCopy, 'payload.media.mimeType', element.mimeType);
 
                     }
                     else if (key == 'contactCard') {
                         this.resolvePlaceholders(element, xmsg);
+                        set(xmsgCopy, 'payload.contactCard.header', element.header);
+                        set(xmsgCopy, 'payload.contactCard.footer', element.footer);
+                       
+                        const valueArray = JSON.parse(element.value);
+                        for (let i = 0; i < valueArray.length; i++) {
+                            set(xmsgCopy, `payload.contactCard.content.cells[${i}].title`, valueArray[i]);
+                            set(xmsgCopy, `payload.contactCard.content.cells[${i}].description`, valueArray[i]);
+                        }
                         
-                        set(xmsgCopy, 'payload.contactCard', element.value);
+                        
 
                     }
                     else if (key == 'buttonChoices') {
                         this.resolvePlaceholders(element, xmsg);
-                        
-                        set(xmsgCopy, 'payload.buttonChoices', element.value);
+                        set(xmsgCopy, 'payload.buttonChoices.isSearchable', element.isSearchable);
+                        const valueArray = JSON.parse(element.value);
+                        for (let i = 0; i < valueArray.length; i++) {
+                            set(xmsgCopy, `payload.buttonChoices.choices[${i}]choices[${i}].key`, valueArray[i]);
+                            set(xmsgCopy, `payload.buttonChoices.choices[${i}].text`, valueArray[i]);
+                        }
 
                     }
                     else {
@@ -49,7 +65,7 @@ export class XMessageTransform implements ITransformer {
                         return xmsg;
                     }
                 }
-            }
+            
         }
 
         return xmsgCopy;

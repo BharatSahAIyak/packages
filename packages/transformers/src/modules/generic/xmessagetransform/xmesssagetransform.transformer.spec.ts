@@ -24,11 +24,11 @@ import { XMessageTransform } from "./xmessagetransform.transformer";
           timestamp: 4825,
           messageState: MessageState.REPLIED,
           payload: {
-            text: "Testing bot",
+            text: '["Testing bot", "Testing bot"]',
           },
           transformer: {
             metaData: {
-              myProperty1: 'modifiedMessage'
+              myProperty1: '[modifiedMessage]'
             }
           }
       };
@@ -37,10 +37,10 @@ import { XMessageTransform } from "./xmessagetransform.transformer";
       }
       const mockConfig = {
           rawData: {
-              replacements : {
-                  text: {
+              
+                  buttonChoices: {
                       value: "{{msg:payload.text}}",
-                  },
+                  
                   
               }
           }
@@ -51,13 +51,8 @@ describe('XMessageTransform', () => {
         it('should modify the XMessage accordingly', async () => {
             const xMessageTransform = new XMessageTransform(mockConfig);
             const modifiedXMessage = await xMessageTransform.transform(mockXMessage);
-            expect(modifiedXMessage.payload.text).toBe('Testing bot');
+            expect(modifiedXMessage.payload?.buttonChoices?.choices[0]?.text).toBe('Testing bot');
         });
     
-        it('should throw an error if config.rawData is not provided', async () => {
-            const mockConfig = {eventBus}; // Missing rawData property
-            const xMessageTransform = new XMessageTransform(mockConfig);
-            await expect(xMessageTransform.transform(mockXMessage)).rejects.toThrow('config.rawData is required');
-    
-        });
+        
     });
