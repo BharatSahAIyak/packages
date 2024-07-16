@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-adapters-discord",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A discord wrapper for @samagra-x/uci-adapters-factory",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
