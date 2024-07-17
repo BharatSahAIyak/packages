@@ -1,38 +1,98 @@
 {
-    "name": "LLM Transformer",
-    "class": "GenericTransformer",
+    "label": "LLM Transformer",
     "type": "LLM",
-    "description": "A general LLM model based transformer.",
-    "config": {
-        "required": {
-            "APIKey": "string",
-            "model": "string"
+    "class": "GenericTransformer",
+    "description": "A node useful for LLM model integration.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+        {
+            "label": "API Key",
+            "name": "APIKey",
+            "type": "string",
+            "optional": false
         },
-        "optional": {
-            "prompt": "string",
-            "corpusPrompt": "string",
-            "temperature": "number",
-            "enableStream": "boolean",
-            "outputLanguage": "string"
+        {
+            "label": "Model",
+            "name": "model",
+            "type": "string",
+            "optional": true
         },
-        "conditional": {
-            "outboundURL": {
-                "type": "string",
-                "ifPresent": [ "enableStream" ]
-            },
-            "bhashiniUserId": {
-                "type": "string",
-                "ifPresent": [  ]
-            },
-            "bhashiniAPIKey": {
-                "type": "string",
-                "ifPresent": [  ]
-            },
-            "bhashiniURL": {
-                "type": "string",
-                "ifPresent": [  ]
-            }
+        {
+            "label": "Prompt",
+            "name": "prompt",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Corpus Prompt",
+            "name": "corpusPrompt",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Temperature",
+            "name": "temperature",
+            "type": "number",
+            "optional": true
+        },
+        {
+            "label": "Enable Streaming",
+            "name": "enableStream",
+            "type": "boolean",
+            "optional": true
+        },
+        {
+            "label": "Outbound URL",
+            "name": "outboundURL",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Output Language",
+            "name": "outputLanguage",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Bhashini User ID",
+            "name": "bhashiniUserId",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Bhashini API Key",
+            "name": "bhashiniAPIKey",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Bhashini URL",
+            "name": "bhashiniURL",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Provider",
+            "name": "provider",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Language Provider",
+            "name": "languageProvider",
+            "type": "string",
+            "optional": true
         }
-    },
-    "version": "0.0.1"
+    ],
+    "outputs": [
+        {
+            "label": "On Success",
+            "name": "onSuccess"
+        },
+        {
+            "label": "On Error",
+            "name": "onError"
+        }
+    ]
 }

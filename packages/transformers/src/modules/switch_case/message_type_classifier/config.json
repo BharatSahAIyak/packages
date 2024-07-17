@@ -1,12 +1,10 @@
 {
-    "name": "Message Type Classifier",
-    "class": "SwitchCaseTransformer",
+    "label": "Message Type Classifier",
     "type": "MESSAGE_TYPE_CLASSIFIER",
-    "description": "A transformer which classifies an input into a label based on the `MessageType` parameter.",
-    "config": {
-        "required": { },
-        "optional": { },
-        "conditional": { }
-    },
-    "version": "0.0.1"
+    "class": "SwitchCaseTransformer",
+    "description": "A transformer used to classify the type of payload.",
+    "version": 1,
+    "outputType": "dynamic",
+    "inputs": [ ],
+    "outputs": [ ]
 }

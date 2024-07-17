@@ -1,17 +1,44 @@
 {
-    "name": "Query Cache Transformer",
-    "class": "IfElseTransformer",
+    "label": "Query Cache Transformer",
     "type": "QUERY_CACHE",
-    "description": "A transformer capable of retrieving cached response for a query from an API.",
-    "config": {
-        "required": {
-            "url": "string",
-            "query": "string",
-            "threshold": "number",
-            "persist": "Boolean"
+    "class": "IfElseTransformer",
+    "description": "A transformer capable caching query responses.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+        {
+            "label": "URL",
+            "name": "url",
+            "type": "string",
+            "optional": false
         },
-        "optional": { },
-        "conditional": { }
-    },
-    "version": "0.0.1"
+        {
+            "label": "Query",
+            "name": "query",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Threshold",
+            "name": "threshold",
+            "type": "number",
+            "optional": true
+        },
+        {
+            "label": "Persist",
+            "name": "persist",
+            "type": "boolean",
+            "optional": true
+        }
+    ],
+    "outputs": [
+        {
+            "label": "Hit",
+            "name": "if"
+        },
+        {
+            "label": "Miss",
+            "name": "else"
+        }
+    ]
 }

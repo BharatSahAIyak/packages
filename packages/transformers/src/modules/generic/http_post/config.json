@@ -1,17 +1,38 @@
 {
-    "name": "HTTP POST Transformer",
-    "class": "GenericTransformer",
+    "label": "HTTP POST Transformer",
     "type": "HTTP_POST",
+    "class": "GenericTransformer",
     "description": "A transformer capable of making HTTP POST request.",
-    "config": {
-        "required": {
-            "url": "string"
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+        {
+            "label": "Url",
+            "name": "url",
+            "type": "string",
+            "optional": true
         },
-        "optional": {
-            "headers": "json",
-            "body": "json"
+        {
+            "label": "Headers",
+            "name": "headers",
+            "type": "json",
+            "optional": true
         },
-        "conditional": { }
-    },
-    "version": "0.0.1"
+        {
+            "label": "Body",
+            "name": "body",
+            "type": "json",
+            "optional": true
+        }
+    ],
+    "outputs": [
+        {
+            "label": "On Success",
+            "name": "onSuccess"
+        },
+        {
+            "label": "On Error",
+            "name": "onError"
+        }
+    ]
 }

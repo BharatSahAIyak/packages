@@ -1,15 +1,32 @@
 {
-    "name": "Neural Coreference",
-    "class": "GenericTransformer",
+    "label": "Neural Coreference",
     "type": "NEURAL_COREFERENCE",
-    "description": "A transformer to add coreferenced context.",
-    "config": {
-        "required": {
-            "prompt": "string",
-            "APIKey": "string"
+    "class": "GenericTransformer",
+    "description": "A transformer capable of modifying payload based on coreferenced text.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+        {
+            "label": "Prompt",
+            "name": "prompt",
+            "type": "string",
+            "optional": false
         },
-        "optional": { },
-        "conditional": { }
-    },
-    "version": "0.0.1"
+        {
+            "label": "API Key",
+            "name": "APIKey",
+            "type": "string",
+            "optional": false
+        }
+    ],
+    "outputs": [
+        {
+            "label": "On Success",
+            "name": "onSuccess"
+        },
+        {
+            "label": "On Error",
+            "name": "onError"
+        }
+    ]
 }

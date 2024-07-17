@@ -1,17 +1,44 @@
 {
-    "name": "HTTP GET Transformer",
-    "class": "GenericTransformer",
+    "label": "HTTP GET Transformer",
     "type": "HTTP_GET",
+    "class": "GenericTransformer",
     "description": "A transformer capable of making HTTP GET request.",
-    "config": {
-        "required": {
-            "url": "string"
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+        {
+            "label": "Url",
+            "name": "url",
+            "type": "string",
+            "optional": true
         },
-        "optional": {
-            "headers": "json",
-            "query": "string"
+        {
+            "label": "Query",
+            "name": "query",
+            "type": "string",
+            "optional": true
         },
-        "conditional": { }
-    },
-    "version": "0.0.1"
+        {
+            "label": "Query JSON",
+            "name": "queryJson",
+            "type": "json",
+            "optional": true
+        },
+        {
+            "label": "Headers",
+            "name": "headers",
+            "type": "json",
+            "optional": true
+        }
+    ],
+    "outputs": [
+        {
+            "label": "On Success",
+            "name": "onSuccess"
+        },
+        {
+            "label": "On Error",
+            "name": "onError"
+        }
+    ]
 }

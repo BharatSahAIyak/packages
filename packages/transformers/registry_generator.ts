@@ -6,24 +6,32 @@ import { TransformerType } from './src/modules/common/transformer.types';
 const transformerClassEnum = z.nativeEnum(TransformerClass);
 const transformerTypeEnum = z.nativeEnum(TransformerType);
 
+enum ConfigType {
+    STRING = 'string',
+    JSON = 'json',
+    IDE = 'ide',
+    NUMBER = 'number',
+    BOOLEAN = 'boolean',
+}
+
 const transformerSpec = z.object({
-    name: z.string().min(1),
-    class: transformerClassEnum,
+    label: z.string(),
     type: transformerTypeEnum,
-    description: z.string().min(1),
-    config: z.object({
-        required: z.record(z.string().min(1), z.string().min(1)),
-        optional: z.record(z.string().min(1), z.string().min(1)),
-        conditional: z.record(
-            z.string().min(1),
-            z.object({
-                type: z.string().min(1),
-                ifAbsent: z.string().min(1).array().optional(),
-                ifPresent: z.string().min(1).array().optional(),
-            }),
-        ),
-    }),
-    version: z.string(),
+    class: transformerClassEnum,
+    description: z.optional(z.string()),
+    version: z.number(),
+    outputType: z.enum(['static', 'dynamic']),
+    inputs: z.array(z.object({
+        label: z.string(),
+        name: z.string(),
+        type: z.nativeEnum(ConfigType),
+        optional: z.boolean(),
+        rows: z.optional(z.number()),
+    })),
+    outputs: z.array(z.object({
+        label: z.string(),
+        name: z.string(),
+    })),
 });
 
 const generator = (parent: string) => {
@@ -60,7 +68,7 @@ const generator = (parent: string) => {
             })
         );
     });
-    configs.sort((t1, t2) => t1.name.localeCompare(t2.name));
+    configs.sort((t1, t2) => t1.label.localeCompare(t2.label));
     console.log('\nWriting data to registy.json...');
     writeFileSync('registry.json', JSON.stringify(configs, null, 2));
     appendFileSync('registry.json', '\n');

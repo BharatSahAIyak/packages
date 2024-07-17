@@ -1,27 +1,70 @@
 {
-    "name": "Label Classifier",
-    "class": "SwitchCaseTransformer",
+    "label": "Label Classifier",
     "type": "LABEL_CLASSIFIER",
-    "description": "A transformer which classifies an input into a label using an external API.",
-    "config": {
-        "required": {
-            "url": "string"
+    "class": "SwitchCaseTransformer",
+    "description": "A transformer used to classify a given text to a context label.",
+    "version": 1,
+    "outputType": "dynamic",
+    "inputs": [
+        {
+            "label": "Url",
+            "name": "url",
+            "type": "string",
+            "optional": false
         },
-        "optional": {
-            "headers": "json",
-            "suppressedLabels": "string[]",
-            "existingLabel": "string",
-            "suppressionThreshold": "number",
-            "supersedeThreshold": "number",
-            "minimumThreshold": "number",
-            "persistLabel": "boolean"
+        {
+            "label": "Prompt",
+            "name": "prompt",
+            "type": "string",
+            "optional": true
         },
-        "conditional": {
-            "prompt": {
-                "type": "string",
-                "ifAbsent": [ "XMessage.payload.text" ]
-            }
+        {
+            "label": "Headers",
+            "name": "headers",
+            "type": "json",
+            "optional": true
+        },
+        {
+            "label": "Supressed Labels",
+            "name": "suppressedLabels",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Suppression Threshold",
+            "name": "suppressionThreshold",
+            "type": "number",
+            "optional": true
+        },
+        {
+            "label": "Existing Label",
+            "name": "existingLabel",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Supersede Threshold",
+            "name": "supersedeThreshold",
+            "type": "number",
+            "optional": true
+        },
+        {
+            "label": "Persist Label",
+            "name": "persistLabel",
+            "type": "boolean",
+            "optional": true
+        },
+        {
+            "label": "Minimum Threshold",
+            "name": "minimumThreshold",
+            "type": "number",
+            "optional": true
         }
-    },
-    "version": "0.0.1"
+    ],
+    "outputs": [
+        {
+            "label": "Default",
+            "name": "default"
+        }
+    ]
 }

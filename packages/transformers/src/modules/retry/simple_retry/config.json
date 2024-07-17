@@ -1,15 +1,32 @@
 {
-    "name": "Simple Retry",
-    "class": "RetryTransformer",
+    "label": "Simple Retry",
     "type": "SIMPLE_RETRY",
-    "description": "A transformer which can be used to add retry mechanism.",
-    "config": {
-        "required": { },
-        "optional": {
-            "retries": "number",
-            "delay": "number"
+    "class": "RetryTransformer",
+    "description": "A transformer used to retry a flow.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+        {
+            "label": "Retries",
+            "name": "retries",
+            "type": "number",
+            "optional": true
         },
-        "conditional": { }
-    },
-    "version": "0.0.1"
+        {
+            "label": "Delay",
+            "name": "delay",
+            "type": "number",
+            "optional": true
+        }
+    ],
+    "outputs": [
+        {
+            "label": "Retry",
+            "name": "retry"
+        },
+        {
+            "label": "Error",
+            "name": "error"
+        }
+    ]
 }

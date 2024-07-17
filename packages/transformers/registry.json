@@ -1,298 +1,712 @@
 [
   {
-    "name": "Code Runner Transformer",
-    "class": "GenericTransformer",
+    "label": "Code Runner Transformer",
     "type": "CODE_RUNNER",
-    "description": "A code runner capable of running custom JS code.",
-    "config": {
-      "required": {
-        "code": "string"
+    "class": "GenericTransformer",
+    "description": "A node capable of executing arbitary code in isolated environment",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "code",
+        "name": "code",
+        "type": "ide",
+        "optional": false,
+        "rows": 2
+      }
+    ],
+    "outputs": [
+      {
+        "label": "On Success",
+        "name": "onSuccess"
       },
-      "optional": {},
-      "conditional": {}
-    },
-    "version": "0.0.1"
+      {
+        "label": "On Error",
+        "name": "onError"
+      }
+    ]
   },
   {
-    "name": "Document Retriever",
-    "class": "IfElseTransformer",
+    "label": "Document Retriever",
     "type": "DOC_RETRIEVER",
-    "description": "A transformer that retrieves documents for adding external context.",
-    "config": {
-      "required": {
-        "url": "string",
-        "documentIds": "string"
+    "class": "IfElseTransformer",
+    "description": "A transformer capable retrieving similar document chunks.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "URL",
+        "name": "url",
+        "type": "string",
+        "optional": false
       },
-      "optional": {
-        "topK": "string",
-        "staticNoContentResponse": "string"
+      {
+        "label": "Document IDs",
+        "name": "documentIds",
+        "type": "string",
+        "optional": true
       },
-      "conditional": {}
-    },
-    "version": "0.0.1"
+      {
+        "label": "Top K",
+        "name": "topK",
+        "type": "number",
+        "optional": true
+      },
+      {
+        "label": "Threshold",
+        "name": "threshold",
+        "type": "number",
+        "optional": true
+      },
+      {
+        "label": "Static No Content Response",
+        "name": "staticNoContentResponse",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Search All Docs",
+        "name": "searchAll",
+        "type": "boolean",
+        "optional": true
+      },
+      {
+        "label": "Logic",
+        "name": "logic",
+        "type": "string",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "If",
+        "name": "if"
+      },
+      {
+        "label": "Else",
+        "name": "else"
+      }
+    ]
   },
   {
-    "name": "Field Setter Transformer",
-    "class": "GenericTransformer",
+    "label": "Field Setter Transformer",
     "type": "FIELD_SETTER",
+    "class": "GenericTransformer",
     "description": "A field setter that can set XMessage fields from user history or current XMessage.",
-    "config": {
-      "required": {
-        "setters": "json"
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "Setters",
+        "name": "setters",
+        "type": "json",
+        "optional": false
+      }
+    ],
+    "outputs": [
+      {
+        "label": "On Success",
+        "name": "onSuccess"
       },
-      "optional": {},
-      "conditional": {}
-    },
-    "version": "0.0.1"
+      {
+        "label": "On Error",
+        "name": "onError"
+      }
+    ]
   },
   {
-    "name": "HTTP GET Transformer",
-    "class": "GenericTransformer",
+    "label": "HTTP GET Transformer",
     "type": "HTTP_GET",
+    "class": "GenericTransformer",
     "description": "A transformer capable of making HTTP GET request.",
-    "config": {
-      "required": {
-        "url": "string"
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "Url",
+        "name": "url",
+        "type": "string",
+        "optional": true
       },
-      "optional": {
-        "headers": "json",
-        "query": "string"
+      {
+        "label": "Query",
+        "name": "query",
+        "type": "string",
+        "optional": true
       },
-      "conditional": {}
-    },
-    "version": "0.0.1"
+      {
+        "label": "Query JSON",
+        "name": "queryJson",
+        "type": "json",
+        "optional": true
+      },
+      {
+        "label": "Headers",
+        "name": "headers",
+        "type": "json",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "On Success",
+        "name": "onSuccess"
+      },
+      {
+        "label": "On Error",
+        "name": "onError"
+      }
+    ]
   },
   {
-    "name": "HTTP POST Transformer",
-    "class": "GenericTransformer",
+    "label": "HTTP POST Transformer",
     "type": "HTTP_POST",
+    "class": "GenericTransformer",
     "description": "A transformer capable of making HTTP POST request.",
-    "config": {
-      "required": {
-        "url": "string"
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "Url",
+        "name": "url",
+        "type": "string",
+        "optional": true
       },
-      "optional": {
-        "headers": "json",
-        "body": "json"
+      {
+        "label": "Headers",
+        "name": "headers",
+        "type": "json",
+        "optional": true
       },
-      "conditional": {}
-    },
-    "version": "0.0.1"
+      {
+        "label": "Body",
+        "name": "body",
+        "type": "json",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "On Success",
+        "name": "onSuccess"
+      },
+      {
+        "label": "On Error",
+        "name": "onError"
+      }
+    ]
   },
   {
-    "name": "Label Classifier",
-    "class": "SwitchCaseTransformer",
+    "label": "Label Classifier",
     "type": "LABEL_CLASSIFIER",
-    "description": "A transformer which classifies an input into a label using an external API.",
-    "config": {
-      "required": {
-        "url": "string"
-      },
-      "optional": {
-        "headers": "json",
-        "suppressedLabels": "string[]",
-        "existingLabel": "string",
-        "suppressionThreshold": "number",
-        "supersedeThreshold": "number",
-        "minimumThreshold": "number",
-        "persistLabel": "boolean"
-      },
-      "conditional": {
-        "prompt": {
-          "type": "string",
-          "ifAbsent": [
-            "XMessage.payload.text"
-          ]
-        }
-      }
-    },
-    "version": "0.0.1"
-  },
-  {
-    "name": "LLM Transformer",
-    "class": "GenericTransformer",
-    "type": "LLM",
-    "description": "A general LLM model based transformer.",
-    "config": {
-      "required": {
-        "APIKey": "string",
-        "model": "string"
-      },
-      "optional": {
-        "prompt": "string",
-        "corpusPrompt": "string",
-        "temperature": "number",
-        "enableStream": "boolean",
-        "outputLanguage": "string"
-      },
-      "conditional": {
-        "outboundURL": {
-          "type": "string",
-          "ifPresent": [
-            "enableStream"
-          ]
-        },
-        "bhashiniUserId": {
-          "type": "string",
-          "ifPresent": []
-        },
-        "bhashiniAPIKey": {
-          "type": "string",
-          "ifPresent": []
-        },
-        "bhashiniURL": {
-          "type": "string",
-          "ifPresent": []
-        }
-      }
-    },
-    "version": "0.0.1"
-  },
-  {
-    "name": "Message Type Classifier",
     "class": "SwitchCaseTransformer",
+    "description": "A transformer used to classify a given text to a context label.",
+    "version": 1,
+    "outputType": "dynamic",
+    "inputs": [
+      {
+        "label": "Url",
+        "name": "url",
+        "type": "string",
+        "optional": false
+      },
+      {
+        "label": "Prompt",
+        "name": "prompt",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Headers",
+        "name": "headers",
+        "type": "json",
+        "optional": true
+      },
+      {
+        "label": "Supressed Labels",
+        "name": "suppressedLabels",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Suppression Threshold",
+        "name": "suppressionThreshold",
+        "type": "number",
+        "optional": true
+      },
+      {
+        "label": "Existing Label",
+        "name": "existingLabel",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Supersede Threshold",
+        "name": "supersedeThreshold",
+        "type": "number",
+        "optional": true
+      },
+      {
+        "label": "Persist Label",
+        "name": "persistLabel",
+        "type": "boolean",
+        "optional": true
+      },
+      {
+        "label": "Minimum Threshold",
+        "name": "minimumThreshold",
+        "type": "number",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "Default",
+        "name": "default"
+      }
+    ]
+  },
+  {
+    "label": "LLM Transformer",
+    "type": "LLM",
+    "class": "GenericTransformer",
+    "description": "A node useful for LLM model integration.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "API Key",
+        "name": "APIKey",
+        "type": "string",
+        "optional": false
+      },
+      {
+        "label": "Model",
+        "name": "model",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Prompt",
+        "name": "prompt",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Corpus Prompt",
+        "name": "corpusPrompt",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Temperature",
+        "name": "temperature",
+        "type": "number",
+        "optional": true
+      },
+      {
+        "label": "Enable Streaming",
+        "name": "enableStream",
+        "type": "boolean",
+        "optional": true
+      },
+      {
+        "label": "Outbound URL",
+        "name": "outboundURL",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Output Language",
+        "name": "outputLanguage",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Bhashini User ID",
+        "name": "bhashiniUserId",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Bhashini API Key",
+        "name": "bhashiniAPIKey",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Bhashini URL",
+        "name": "bhashiniURL",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Provider",
+        "name": "provider",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Language Provider",
+        "name": "languageProvider",
+        "type": "string",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "On Success",
+        "name": "onSuccess"
+      },
+      {
+        "label": "On Error",
+        "name": "onError"
+      }
+    ]
+  },
+  {
+    "label": "Message Type Classifier",
     "type": "MESSAGE_TYPE_CLASSIFIER",
-    "description": "A transformer which classifies an input into a label based on the `MessageType` parameter.",
-    "config": {
-      "required": {},
-      "optional": {},
-      "conditional": {}
-    },
-    "version": "0.0.1"
+    "class": "SwitchCaseTransformer",
+    "description": "A transformer used to classify the type of payload.",
+    "version": 1,
+    "outputType": "dynamic",
+    "inputs": [],
+    "outputs": []
   },
   {
-    "name": "Neural Coreference",
-    "class": "GenericTransformer",
+    "label": "Neural Coreference",
     "type": "NEURAL_COREFERENCE",
-    "description": "A transformer to add coreferenced context.",
-    "config": {
-      "required": {
-        "prompt": "string",
-        "APIKey": "string"
+    "class": "GenericTransformer",
+    "description": "A transformer capable of modifying payload based on coreferenced text.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "Prompt",
+        "name": "prompt",
+        "type": "string",
+        "optional": false
       },
-      "optional": {},
-      "conditional": {}
-    },
-    "version": "0.0.1"
+      {
+        "label": "API Key",
+        "name": "APIKey",
+        "type": "string",
+        "optional": false
+      }
+    ],
+    "outputs": [
+      {
+        "label": "On Success",
+        "name": "onSuccess"
+      },
+      {
+        "label": "On Error",
+        "name": "onError"
+      }
+    ]
   },
   {
-    "name": "Query Cache Transformer",
-    "class": "IfElseTransformer",
+    "label": "Query Cache Transformer",
     "type": "QUERY_CACHE",
-    "description": "A transformer capable of retrieving cached response for a query from an API.",
-    "config": {
-      "required": {
-        "url": "string",
-        "query": "string",
-        "threshold": "number",
-        "persist": "Boolean"
-      },
-      "optional": {},
-      "conditional": {}
-    },
-    "version": "0.0.1"
-  },
-  {
-    "name": "Random Binary",
     "class": "IfElseTransformer",
+    "description": "A transformer capable caching query responses.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "URL",
+        "name": "url",
+        "type": "string",
+        "optional": false
+      },
+      {
+        "label": "Query",
+        "name": "query",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Threshold",
+        "name": "threshold",
+        "type": "number",
+        "optional": true
+      },
+      {
+        "label": "Persist",
+        "name": "persist",
+        "type": "boolean",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "Hit",
+        "name": "if"
+      },
+      {
+        "label": "Miss",
+        "name": "else"
+      }
+    ]
+  },
+  {
+    "label": "Random Binary",
     "type": "RANDOM_BINARY",
-    "description": "A transformer that randomly outputs a binary state.",
-    "config": {
-      "required": {},
-      "optional": {},
-      "conditional": {}
-    },
-    "version": "0.0.1"
+    "class": "IfElseTransformer",
+    "description": "A transformer that randomly generates an output state.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [],
+    "outputs": [
+      {
+        "label": "If",
+        "name": "if"
+      },
+      {
+        "label": "Else",
+        "name": "else"
+      }
+    ]
   },
   {
-    "name": "Simple Retry",
-    "class": "RetryTransformer",
+    "label": "Simple Retry",
     "type": "SIMPLE_RETRY",
-    "description": "A transformer which can be used to add retry mechanism.",
-    "config": {
-      "required": {},
-      "optional": {
-        "retries": "number",
-        "delay": "number"
+    "class": "RetryTransformer",
+    "description": "A transformer used to retry a flow.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "Retries",
+        "name": "retries",
+        "type": "number",
+        "optional": true
       },
-      "conditional": {}
-    },
-    "version": "0.0.1"
+      {
+        "label": "Delay",
+        "name": "delay",
+        "type": "number",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "Retry",
+        "name": "retry"
+      },
+      {
+        "label": "Error",
+        "name": "error"
+      }
+    ]
   },
   {
-    "name": "Speech To Text",
-    "class": "GenericTransformer",
-    "type": "SPEECH_TO_TEXT",
-    "description": "Converts an audio file provided by a URL into text",
-    "config": {
-      "required": {
-        "baseUrl": "string"
-      },
-      "optional": {
-        "language": "string",
-        "spellCheck": "string",
-        "persist": "boolean"
-      },
-      "conditional": {}
-    },
-    "version": "0.0.1"
-  },
-  {
-    "name": "SQL LLM Transformer",
-    "class": "GenericTransformer",
+    "label": "SQL LLM Transformer",
     "type": "SQLLLM",
-    "description": "A code runner capable of running custom JS code.",
-    "config": {
-      "required": {
-        "APIKey": "string",
-        "model": "string",
-        "xlsxIds": "string[]",
-        "outboundURL": "string",
-        "outputLanguage": "string",
-        "excelParserURL": "string",
-        "bhashiniUserId": "string",
-        "bhashiniAPIKey": "string",
-        "bhashiniURL": "string"
-      },
-      "optional": {
-        "prompt": "string",
-        "temperature": "number"
-      },
-      "conditional": {}
-    },
-    "version": "0.0.1"
-  },
-  {
-    "name": "Translate Transformer",
     "class": "GenericTransformer",
-    "type": "TRANSLATE",
-    "description": "A code runner capable of running custom JS code.",
-    "config": {
-      "required": {
-        "provider": "string",
-        "inputLanguage": "string",
-        "outputLanguage": "string",
-        "bhashiniUserId": "string",
-        "bhashiniAPIKey": "string",
-        "bhashiniURL": "string"
+    "description": "A transformer capable of generating SQL queries based on prompt.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "API Key",
+        "name": "APIKey",
+        "type": "string",
+        "optional": false
       },
-      "optional": {},
-      "conditional": {}
-    },
-    "version": "0.0.1"
+      {
+        "label": "Model",
+        "name": "model",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Xlsx Ids",
+        "name": "xlsxIds",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Prompt",
+        "name": "prompt",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Excel Parser URL",
+        "name": "excelParserURL",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Temperature",
+        "name": "temperature",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Outbound URL",
+        "name": "outboundURL",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Output Language",
+        "name": "outputLanguage",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Bhashini User ID",
+        "name": "bhashiniUserId",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Bhashini API Key",
+        "name": "bhashiniAPIKey",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Bhashini URL",
+        "name": "bhashiniURL",
+        "type": "string",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "On Success",
+        "name": "onSuccess"
+      },
+      {
+        "label": "On Error",
+        "name": "onError"
+      }
+    ]
   },
   {
-    "name": "User Feedback Loop",
-    "class": "StateRestoreTransformer",
-    "type": "USER_FEEDBACK_LOOP",
-    "description": "A transformer which restores state to a specific node after sending a message to user.",
-    "config": {
-      "required": {},
-      "optional": {
-        "prompt": "string"
+    "label": "STT Transformer",
+    "type": "SPEECH_TO_TEXT",
+    "class": "GenericTransformer",
+    "description": "A transformer capable of converting speech to text.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "Base URL",
+        "name": "baseUrl",
+        "type": "string",
+        "optional": false
       },
-      "conditional": {}
-    },
-    "version": "0.0.1"
+      {
+        "label": "Language",
+        "name": "language",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Spell Check",
+        "name": "spellCheck",
+        "type": "boolean",
+        "optional": true
+      },
+      {
+        "label": "Persist Result",
+        "name": "persist",
+        "type": "boolean",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "On Success",
+        "name": "onSuccess"
+      },
+      {
+        "label": "On Error",
+        "name": "onError"
+      }
+    ]
+  },
+  {
+    "label": "Translate Transformer",
+    "type": "TRANSLATE",
+    "class": "GenericTransformer",
+    "description": "A transformer capable of translating text from one language to another.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "Provider",
+        "name": "provider",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Input Language",
+        "name": "inputLanguage",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Output Language",
+        "name": "outputLanguage",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Bhashini User ID",
+        "name": "bhashiniUserId",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Bhashini API Key",
+        "name": "bhashiniAPIKey",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Bhashini URL",
+        "name": "bhashiniURL",
+        "type": "string",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "On Success",
+        "name": "onSuccess"
+      },
+      {
+        "label": "On Error",
+        "name": "onError"
+      }
+    ]
+  },
+  {
+    "label": "User Feedback Loop",
+    "type": "USER_FEEDBACK_LOOP",
+    "class": "StateRestoreTransformer",
+    "description": "A transformer used to send a given prompt to user and wait for feedback.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "Prompt",
+        "name": "prompt",
+        "type": "string",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "Restore State",
+        "name": "restoreState"
+      }
+    ]
   }
 ]

@@ -1,18 +1,62 @@
 {
-    "name": "Document Retriever",
-    "class": "IfElseTransformer",
+    "label": "Document Retriever",
     "type": "DOC_RETRIEVER",
-    "description": "A transformer that retrieves documents for adding external context.",
-    "config": {
-        "required": {
-            "url": "string",
-            "documentIds": "string"
+    "class": "IfElseTransformer",
+    "description": "A transformer capable retrieving similar document chunks.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+        {
+            "label": "URL",
+            "name": "url",
+            "type": "string",
+            "optional": false
         },
-        "optional": {
-            "topK": "string",
-            "staticNoContentResponse": "string"
+        {
+            "label": "Document IDs",
+            "name": "documentIds",
+            "type": "string",
+            "optional": true
         },
-        "conditional": { }
-    },
-    "version": "0.0.1"
+        {
+            "label": "Top K",
+            "name": "topK",
+            "type": "number",
+            "optional": true
+        },
+        {
+            "label": "Threshold",
+            "name": "threshold",
+            "type": "number",
+            "optional": true
+        },
+        {
+            "label": "Static No Content Response",
+            "name": "staticNoContentResponse",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Search All Docs",
+            "name": "searchAll",
+            "type": "boolean",
+            "optional": true
+        },
+        {
+            "label": "Logic",
+            "name": "logic",
+            "type": "string",
+            "optional": true
+        }
+    ],
+    "outputs": [
+        {
+            "label": "If",
+            "name": "if"
+        },
+        {
+            "label": "Else",
+            "name": "else"
+        }
+    ]
 }

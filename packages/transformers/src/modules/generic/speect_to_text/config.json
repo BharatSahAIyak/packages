@@ -1,18 +1,44 @@
 {
-    "name": "Speech To Text",
-    "class": "GenericTransformer",
-    "type": "SPEECH_TO_TEXT",
-    "description": "Converts an audio file provided by a URL into text",
-    "config": {
-      "required": {
-        "baseUrl": "string"
+  "label": "STT Transformer",
+  "type": "SPEECH_TO_TEXT",
+  "class": "GenericTransformer",
+  "description": "A transformer capable of converting speech to text.",
+  "version": 1,
+  "outputType": "static",
+  "inputs": [
+      {
+          "label": "Base URL",
+          "name": "baseUrl",
+          "type": "string",
+          "optional": false
       },
-      "optional": {
-        "language": "string",
-        "spellCheck": "string",
-        "persist": "boolean"
+      {
+          "label": "Language",
+          "name": "language",
+          "type": "string",
+          "optional": true
       },
-      "conditional": {}
-    },
-    "version": "0.0.1"
-  }
+      {
+        "label": "Spell Check",
+        "name": "spellCheck",
+        "type": "boolean",
+        "optional": true
+      },
+      {
+        "label": "Persist Result",
+        "name": "persist",
+        "type": "boolean",
+        "optional": true
+      }
+  ],
+  "outputs": [
+      {
+          "label": "On Success",
+          "name": "onSuccess"
+      },
+      {
+          "label": "On Error",
+          "name": "onError"
+      }
+  ]
+}

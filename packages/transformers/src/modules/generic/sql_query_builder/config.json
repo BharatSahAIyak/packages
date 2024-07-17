@@ -1,25 +1,86 @@
 {
-    "name": "SQL LLM Transformer",
-    "class": "GenericTransformer",
+    "label": "SQL LLM Transformer",
     "type": "SQLLLM",
-    "description": "A code runner capable of running custom JS code.",
-    "config": {
-        "required": {
-            "APIKey": "string",
-            "model": "string",
-            "xlsxIds": "string[]",
-            "outboundURL": "string",
-            "outputLanguage": "string",
-            "excelParserURL": "string",
-            "bhashiniUserId": "string",
-            "bhashiniAPIKey": "string",
-            "bhashiniURL": "string"
+    "class": "GenericTransformer",
+    "description": "A transformer capable of generating SQL queries based on prompt.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+        {
+            "label": "API Key",
+            "name": "APIKey",
+            "type": "string",
+            "optional": false
         },
-        "optional": {
-            "prompt": "string",
-            "temperature": "number"
+        {
+            "label": "Model",
+            "name": "model",
+            "type": "string",
+            "optional": true
         },
-        "conditional": { }
-    },
-    "version": "0.0.1"
+        {
+            "label": "Xlsx Ids",
+            "name": "xlsxIds",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Prompt",
+            "name": "prompt",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Excel Parser URL",
+            "name": "excelParserURL",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Temperature",
+            "name": "temperature",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Outbound URL",
+            "name": "outboundURL",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Output Language",
+            "name": "outputLanguage",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Bhashini User ID",
+            "name": "bhashiniUserId",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Bhashini API Key",
+            "name": "bhashiniAPIKey",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "Bhashini URL",
+            "name": "bhashiniURL",
+            "type": "string",
+            "optional": true
+        }
+    ],
+    "outputs": [
+        {
+            "label": "On Success",
+            "name": "onSuccess"
+        },
+        {
+            "label": "On Error",
+            "name": "onError"
+        }
+    ]
 }

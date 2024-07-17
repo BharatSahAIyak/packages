@@ -1,14 +1,22 @@
 {
-    "name": "User Feedback Loop",
-    "class": "StateRestoreTransformer",
+    "label": "User Feedback Loop",
     "type": "USER_FEEDBACK_LOOP",
-    "description": "A transformer which restores state to a specific node after sending a message to user.",
-    "config": {
-        "required": { },
-        "optional": {
-            "prompt": "string"
-        },
-        "conditional": { }
-    },
-    "version": "0.0.1"
+    "class": "StateRestoreTransformer",
+    "description": "A transformer used to send a given prompt to user and wait for feedback.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+        {
+            "label": "Prompt",
+            "name": "prompt",
+            "type": "string",
+            "optional": true
+        }
+    ],
+    "outputs": [
+        {
+            "label": "Restore State",
+            "name": "restoreState"
+        }
+    ]
 }

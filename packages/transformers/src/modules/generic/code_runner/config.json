@@ -1,14 +1,27 @@
 {
-    "name": "Code Runner Transformer",
-    "class": "GenericTransformer",
+    "label": "Code Runner Transformer",
     "type": "CODE_RUNNER",
-    "description": "A code runner capable of running custom JS code.",
-    "config": {
-        "required": {
-            "code": "string"
+    "class": "GenericTransformer",
+    "description": "A node capable of executing arbitary code in isolated environment",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+        {
+            "label": "code",
+            "name": "code",
+            "type": "ide",
+            "optional": false,
+            "rows": 2
+        }
+    ],
+    "outputs": [
+        {
+            "label": "On Success",
+            "name": "onSuccess"
         },
-        "optional": { },
-        "conditional": { }
-    },
-    "version": "0.0.1"
+        {
+            "label": "On Error",
+            "name": "onError"
+        }
+    ]
 }
