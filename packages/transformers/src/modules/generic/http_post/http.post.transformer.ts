@@ -1,6 +1,7 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
 import { Events } from "@samagra-x/uci-side-effects";
+import { TelemetryLogger } from "../../common/telemetry";
 
 export class HttpPostTransformer implements ITransformer {
 
@@ -9,10 +10,11 @@ export class HttpPostTransformer implements ITransformer {
     ///     headers: Headers for request. If not provided, `XMessage.transformer.metaData.httpHeaders` will be used. (optional).
     ///     body: Body for the HTTP POST request. If not provided, `XMessage.transformer.metaData.httpBody` will be used. (optional)
     constructor(readonly config: Record<string, any>) { }
+    private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = Date.now();
-        this.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
         console.log("HTTP POST transformer called.");
 
         this.config.url = this.config.url ?? xmsg.transformer?.metaData?.httpUrl;
@@ -25,7 +27,7 @@ export class HttpPostTransformer implements ITransformer {
         console.log("HTTP POST headers -", new Headers(this.config.headers))
 
         if (!this.config.url) {
-            this.sendErrorTelemetry(xmsg, '`url` not defined in HTTP_POST transformer');
+            this.telemetryLogger.sendErrorTelemetry(xmsg, '`url` not defined in HTTP_POST transformer');
             throw new Error('`url` not defined in HTTP_POST transformer');
         }
         await fetch(this.config.url, {
@@ -35,7 +37,7 @@ export class HttpPostTransformer implements ITransformer {
         })
         .then(resp => {
             if (!resp.ok) {
-                this.sendErrorTelemetry(xmsg, `Request failed with code: ${resp.status}`);
+                this.telemetryLogger.sendErrorTelemetry(xmsg, `Request failed with code: ${resp.status}`);
                 throw new Error(`Request failed with code: ${resp.status}`);
             } else {
                 const contentType = resp.headers.get('content-type');
@@ -56,34 +58,11 @@ export class HttpPostTransformer implements ITransformer {
             xmsg.transformer.metaData!.httpResponse = resp;
         })
         .catch((ex) => {
-            this.sendErrorTelemetry(xmsg, `POST request failed. Reason: ${ex}`);
+            this.telemetryLogger.sendErrorTelemetry(xmsg, `POST request failed. Reason: ${ex}`);
             console.error(`POST request failed. Reason: ${ex}`);
             throw ex;
         });
-        this.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
         return xmsg;
-    }
-
-    private async sendErrorTelemetry(xmsg: XMessage, error: string) {
-        const xmgCopy = {...xmsg};
-        xmgCopy.transformer!.metaData!.errorString = error;
-        this.config.eventBus.pushEvent({
-          eventName: Events.CUSTOM_TELEMETRY_EVENT_ERROR,
-          transformerId: this.config.transformerId,
-          eventData: xmgCopy,
-          timestamp: Date.now(),
-        })
-    }
-
-    private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number) {
-        const xmgCopy = {...xmsg};
-        xmgCopy.transformer!.metaData!.telemetryLog = log;
-        xmgCopy.transformer!.metaData!.stateExecutionTime = Date.now() - startTime;
-        this.config.eventBus.pushEvent({
-          eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
-          transformerId: this.config.transformerId,
-          eventData: xmgCopy,
-          timestamp: Date.now(),
-        })
     }
 }

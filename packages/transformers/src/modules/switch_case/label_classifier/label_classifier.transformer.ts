@@ -2,10 +2,9 @@ import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
 import { HttpPostTransformer } from "../../generic";
 import { Events } from "@samagra-x/uci-side-effects";
+import { TelemetryLogger } from "../../common/telemetry";
 
 export class LabelClassifierTransformer implements ITransformer{
-
-    readonly config: Record<string, any>;
 
     /// Accepted config properties:
     ///     url: string:  Url of the endpoint
@@ -19,13 +18,13 @@ export class LabelClassifierTransformer implements ITransformer{
     ///     minimumThreshold: number: If provided, a label must reach this threshold score to be considered for final result. Default is 0. (optional)
     ///
     ///     Note: `existingLabel` can also be passed in XMessage `metaData.existingLabel`.
-    constructor(config: Record<string, any>) {
-        this.config = config;
-    }
+    constructor(private readonly config: Record<string, any>){ }
+
+    private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = Date.now();
-        this.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER : ${this.config.transformerId} started`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER : ${this.config.transformerId} started`, startTime);
         if (!xmsg.transformer) {
             xmsg.transformer = {
                 metaData: {}
@@ -79,37 +78,15 @@ export class LabelClassifierTransformer implements ITransformer{
             if (this.config.persistLabel) {
                 xmsg.transformer!.metaData!.existingLabel = xmsg.transformer!.metaData!.state;
             }
-            this.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER generated state: ${xmsg.transformer!.metaData!.state}`, startTime);
+            this.telemetryLogger.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER generated state: ${xmsg.transformer!.metaData!.state}`, startTime);
             console.log(`LABEL_CLASSIFIER generated state: ${xmsg.transformer!.metaData!.state}`);
         })
         .catch((err) => {
-            this.sendErrorTelemetry(xmsg, `LabelClassifier failed with error: ${err}`);
+            this.telemetryLogger.sendErrorTelemetry(xmsg, `LabelClassifier failed with error: ${err}`);
             console.error(`LabelClassifier failed with error: ${err}`);
             throw err;
         });
         return xmsg;
     }
 
-    private async sendErrorTelemetry(xmsg: XMessage, error: string) {
-        const xmgCopy = {...xmsg};
-        xmgCopy.transformer!.metaData!.errorString = error;
-        this.config.eventBus.pushEvent({
-          eventName: Events.CUSTOM_TELEMETRY_EVENT_ERROR,
-          transformerId: this.config.transformerId,
-          eventData: xmgCopy,
-          timestamp: Date.now(),
-        })
-    }
-
-    private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number) {
-        const xmgCopy = {...xmsg};
-        xmgCopy.transformer!.metaData!.telemetryLog = log;
-        xmgCopy.transformer!.metaData!.stateExecutionTime = Date.now() - startTime;
-        this.config.eventBus.pushEvent({
-          eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
-          transformerId: this.config.transformerId,
-          eventData: xmgCopy,
-          timestamp: Date.now(),
-        })
-    }
 }
