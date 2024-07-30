@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import { ITransformer } from "../../common";
 import getBhashiniConfig from '../translate/bhashini/bhashini.getConfig';
 import computeBhashini from "../translate/bhashini/bhashini.compute";
+import { TelemetryLogger } from "../../common/telemetry";
 
 export class SQLLLMTransformer implements ITransformer {
 
@@ -20,9 +21,11 @@ export class SQLLLMTransformer implements ITransformer {
     ///     prompt: LLM prompt. (optional)
     ///     temperature: The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. (default: `0`)
     constructor(readonly config: Record<string, any>) { }
+    private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log("SQLLLMTransformer transformer called.");
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Date.now());
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length){
             xmsg.transformer = {
                 ...xmsg.transformer,
@@ -33,9 +36,11 @@ export class SQLLLMTransformer implements ITransformer {
             };
         }
         if (!this.config.model) {
+            this.telemetryLogger.sendErrorTelemetry(xmsg, '`model` not defined in SQLLLM transformer');
             throw new Error('`model` not defined in SQLLLM transformer');
         }
         if (!this.config.APIKey) {
+            this.telemetryLogger.sendErrorTelemetry(xmsg, '`APIKey` not defined in SQLLLM transformer');
             throw new Error('`APIKey` not defined in SQLLLM transformer');
         }
         if (!this.config.temperature) {
@@ -46,22 +51,28 @@ export class SQLLLMTransformer implements ITransformer {
         }
         if(this.config.outputLanguage!='en') {
             if (!this.config.bhashiniUserId) {
+                this.telemetryLogger.sendErrorTelemetry(xmsg, '`bhashiniUserId` not defined in SQLLLM transformer');
                 throw new Error('`bhashiniUserId` not defined in SQLLLM transformer');
             }
             if (!this.config.bhashiniAPIKey) {
+                this.telemetryLogger.sendErrorTelemetry(xmsg, '`bhashiniAPIKey` not defined in SQLLLM transformer');
                 throw new Error('`bhashiniAPIKey` not defined in SQLLLM transformer');
             }
             if (!this.config.bhashiniURL) {
+                this.telemetryLogger.sendErrorTelemetry(xmsg, '`bhashiniURL` not defined in SQLLLM transformer');
                 throw new Error('`bhashiniURL` not defined in SQLLLM transformer');
             }
         }
         if (!xmsg.payload.text) {
+            this.telemetryLogger.sendErrorTelemetry(xmsg, '`xmsg.payload.text` not defined in SQLLLM transformer');
             throw new Error('`xmsg.payload.text` not defined in SQLLLM transformer');
         }
         if (!this.config.excelParserURL) {
+            this.telemetryLogger.sendErrorTelemetry(xmsg, '`excelParserURL` not defined in SQLLLM transformer');
             throw new Error('`excelParserURL` not defined in SQLLLM transformer');
         }
         if (!(this.config.xlsxIds && this.config.xlsxIds.length)) {
+            this.telemetryLogger.sendErrorTelemetry(xmsg, '`xlsxIds` not defined in SQLLLM transformer');
             throw new Error('`xlsxIds` not defined in SQLLLM transformer');
         }
         console.log(this.config.xlsxIds)
@@ -81,6 +92,7 @@ export class SQLLLMTransformer implements ITransformer {
             sql = await fetch(sqlResponse.data.url)
             sql = await sql.text()
         } else {
+            this.telemetryLogger.sendErrorTelemetry(xmsg, `${sqlResponse.error} in SQLLLM transformer`);
             throw new Error(`${sqlResponse.error} in SQLLLM transformer`);
         }
         let prompt: any = [
@@ -102,6 +114,7 @@ export class SQLLLMTransformer implements ITransformer {
             messages: prompt,
             temperature: this.config.temperature || 0
         }).catch((ex) => {
+            this.telemetryLogger.sendErrorTelemetry(xmsg, `SQLLLM failed. Reason: ${ex}`);
             console.error(`SQLLLM failed. Reason: ${ex}`);
             throw ex;
         });
@@ -124,6 +137,7 @@ export class SQLLLMTransformer implements ITransformer {
         if(!sqlResult.error) {
             sqlResult = sqlResult.data
         } else {
+            this.telemetryLogger.sendErrorTelemetry(xmsg, `${sqlResult.error} in SQLLLM transformer`);
             throw new Error(`${sqlResult.error} in SQLLLM transformer`);
         }
 
@@ -161,6 +175,7 @@ export class SQLLLMTransformer implements ITransformer {
         }
         console.log("xmsg",xmsg)
         await this.sendMessage(xmsg)
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Date.now());
         return xmsg;
     }
 

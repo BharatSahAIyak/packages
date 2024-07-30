@@ -2,6 +2,7 @@ import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
 import get from 'lodash/get';
 import set from 'lodash/set';
+import { TelemetryLogger } from "../../common/telemetry";
 
 export class FieldSetterTransformer implements ITransformer {
 
@@ -17,8 +18,11 @@ export class FieldSetterTransformer implements ITransformer {
         readonly config: Record<string, any>,
     ) { }
 
+    private readonly telemetryLogger = new TelemetryLogger(this.config);
+
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log("Field Setter called.");
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Date.now());
         if (!this.config.setters) {
             throw new Error('`config.setters` is a required parameter!');
         }
@@ -33,6 +37,7 @@ export class FieldSetterTransformer implements ITransformer {
                 set(xmsgCopy, entry[0], this.getResolvedValue(entry[1], xmsg));
             }
         });
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Date.now());
         return xmsgCopy;
     }
 

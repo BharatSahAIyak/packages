@@ -1,10 +1,11 @@
 import { MessageMedia, XMessage } from "@samagra-x/xmessage";
 import axios, { AxiosResponse } from "axios";
 import { ITransformer } from "../../common/transformer.interface";
+import { TelemetryLogger } from "../../common/telemetry";
 var FormData = require('form-data');
 
 export class SpeechToTextTransformer implements ITransformer {
-
+  private readonly telemetryLogger: TelemetryLogger;
   /// Accepted config properties for SpeechToTextTransformer:
   /// baseUrl: Base URL of the speech-to-text service endpoint. This is a required property.
   /// language: Language code specifying the language of the audio input. Defaults to 'en' if not provided. (optional)
@@ -15,6 +16,7 @@ export class SpeechToTextTransformer implements ITransformer {
     this.language = config.language || "en";
     this.spellCheck = config.spellCheck ?? false;
     this.persist = config.persist ?? false;
+    this.telemetryLogger = new TelemetryLogger(config);
   }
 
   private readonly baseUrl: string;
@@ -23,9 +25,11 @@ export class SpeechToTextTransformer implements ITransformer {
   private readonly persist: boolean;
 
   async transform(xmsg: XMessage): Promise<XMessage> {
+      this.telemetryLogger.sendLogTelemetry(xmsg, `${this.constructor.name} started!`, Date.now());
       const media : MessageMedia[] | undefined = xmsg.payload?.media;
 
       if (!this.baseUrl) {
+        this.telemetryLogger.sendErrorTelemetry(xmsg, 'baseUrl must be provided!');
         throw new Error("`baseUrl` is a required config!");
       }
       if (!media || media.length === 0 || !media[0].url || !(media[0].url.length > 0)) {
@@ -48,11 +52,14 @@ export class SpeechToTextTransformer implements ITransformer {
           },
         });
       } catch (error) {
+        this.telemetryLogger.sendErrorTelemetry(xmsg, `Failed to extract text from speech. Reason: ${error}`);
         console.error('Error:', error);
         if (axios.isAxiosError(error)) {
+          this.telemetryLogger.sendErrorTelemetry(xmsg, `Axios Error: ${error.response?.data}`);
           console.error('Axios Error:', error.response?.data);
         } else {
           const unknownError = error as Error;
+          this.telemetryLogger.sendErrorTelemetry(xmsg, `Generic Error: ${unknownError.message}`);
           console.error('Generic Error:', unknownError.message);
         }
       }
@@ -70,7 +77,7 @@ export class SpeechToTextTransformer implements ITransformer {
       if (this.persist) {
         xmsg.payload.text = speechToTextData;
       }
-
+      this.telemetryLogger.sendLogTelemetry(xmsg, `${this.constructor.name} finished!`, Date.now());
       return xmsg;
   }
 }
