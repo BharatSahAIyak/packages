@@ -1,17 +1,27 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { SimpleRetryTransformer } from "./simple_retry.transformer";
+import { TelemetryLogger } from "../../common/telemetry";
 
 describe('SimpleRetryTransformer', () => {
     let transformer: SimpleRetryTransformer;
     let xmsg: XMessage;
+    let mockEventBus = { pushEvent: jest.fn() };
+    let mockConfig = { eventBus: mockEventBus, transformerId: 'simple-retry-transformer' }
+    let mockLogger = { sendErrorTelemetry: jest.fn(), sendLogTelemetry: jest.fn() };
+    jest.spyOn(TelemetryLogger.prototype, 'sendErrorTelemetry').mockImplementation(mockLogger.sendErrorTelemetry);
+    jest.spyOn(TelemetryLogger.prototype, 'sendLogTelemetry').mockImplementation(mockLogger.sendLogTelemetry);
 
     beforeEach(() => {
-        transformer = new SimpleRetryTransformer({ retries: 3, delay: 1000 });
+        transformer = new SimpleRetryTransformer({ retries: 3, delay: 1000, ...mockConfig });
         xmsg = {
             transformer: {
                 metaData: {}
             }
         } as XMessage;
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
     const mockDelay = async () => {
@@ -72,4 +82,9 @@ describe('SimpleRetryTransformer', () => {
         expect(end - start).toBeGreaterThanOrEqual(0); 
     });
 
+    it('should send telemetry log events', async () => {
+        const trasformer = new SimpleRetryTransformer({ retries: 3 });
+        await trasformer.transform(xmsg);
+        expect(mockLogger.sendLogTelemetry).toHaveBeenCalled();
+    })
 });

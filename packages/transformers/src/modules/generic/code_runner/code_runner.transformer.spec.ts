@@ -28,9 +28,7 @@ import { CodeRunnerTransformer } from "./code_runner.transformer";
             metaData: {}
           }
       };
-      const eventBus = {
-        pushEvent: (event: any) => {}
-      }
+      const eventBus =  { pushEvent: jest.fn() };
       const mockConfig = {
           code: `
               const msg = JSON.parse($0);

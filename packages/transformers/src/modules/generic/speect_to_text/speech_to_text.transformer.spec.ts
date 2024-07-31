@@ -7,8 +7,16 @@ import {
 import axios from "axios";
 import { SpeechToTextTransformer } from "./speech_to_text.transformer";
 import FormData from "form-data";
+import { TelemetryLogger } from "../../common/telemetry";
 
 describe("SpeechToTextTransformer", () => {
+  let mockEvent = { pushEvent: jest.fn() };
+  let mockConfig = { eventBus: mockEvent, transformerId: "speech-to-text-transformer" };
+  // let mockLogger = { sendErrorTelemetry: jest.fn(), sendLogTelemetry: jest.fn() };
+  // jest.spyOn(TelemetryLogger.prototype, "sendErrorTelemetry").mockImplementation(mockLogger.sendErrorTelemetry);
+  // jest.spyOn(TelemetryLogger.prototype, "sendLogTelemetry").mockImplementation(mockLogger.sendLogTelemetry);
+
+
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -27,6 +35,10 @@ describe("SpeechToTextTransformer", () => {
         userID: "admin",
         bot: true,
         meta: new Map(Object.entries({ botMobileNumber: "919999999999" })),
+      },
+      transformer: {
+        metaData: {
+        },
       },
       channelURI: "",
       providerURI: "",
@@ -58,6 +70,7 @@ describe("SpeechToTextTransformer", () => {
     const transformer = new SpeechToTextTransformer({
       baseUrl: "http://mockbaseurl",
       language: "en",
+      ...mockConfig,
     });
 
     const transformedMessage = await transformer.transform(mockXMessage);
@@ -92,6 +105,10 @@ describe("SpeechToTextTransformer", () => {
         bot: true,
         meta: new Map(Object.entries({ botMobileNumber: "919999999999" })),
       },
+      transformer: {
+        metaData: {
+        },
+      },
       channelURI: "",
       providerURI: "",
       timestamp: 4825,
@@ -104,6 +121,7 @@ describe("SpeechToTextTransformer", () => {
     const transformer = new SpeechToTextTransformer({
       baseUrl: "http://mockbaseurl",
       language: "en",
+      ...mockConfig,
     });
 
     await expect(transformer.transform(mockXMessage)).rejects.toThrow(
@@ -125,6 +143,10 @@ describe("SpeechToTextTransformer", () => {
         userID: "admin",
         bot: true,
         meta: new Map(Object.entries({ botMobileNumber: "919999999999" })),
+      },
+      transformer: {
+        metaData: {
+        }
       },
       channelURI: "",
       providerURI: "",
@@ -154,6 +176,7 @@ describe("SpeechToTextTransformer", () => {
     const transformer = new SpeechToTextTransformer({
       baseUrl: "http://mockbaseurl",
       language: "en",
+      ...mockConfig,
     });
 
     const transformedMessage = await transformer.transform(mockXMessage);
@@ -175,6 +198,11 @@ describe("SpeechToTextTransformer", () => {
         userID: "admin",
         bot: true,
         meta: new Map(Object.entries({ botMobileNumber: "919999999999" })),
+      },
+      transformer: {
+        metaData: {
+          
+        },
       },
       channelURI: "",
       providerURI: "",
@@ -207,6 +235,7 @@ describe("SpeechToTextTransformer", () => {
       baseUrl: "http://mockbaseurl",
       language: "en",
       persist: true,
+      ...mockConfig,
     });
 
     const transformedMessage = await transformer.transform(mockXMessage);

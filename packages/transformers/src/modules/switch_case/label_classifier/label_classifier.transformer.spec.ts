@@ -8,7 +8,7 @@ const mockHttpResponse = [
 ];
 
 const eventBus = {
-    pushEvent: (event: any) => {}
+    pushEvent: jest.fn()
 }
 
 const xmsg = {

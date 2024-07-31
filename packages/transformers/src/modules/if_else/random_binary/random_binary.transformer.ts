@@ -9,12 +9,12 @@ export class RandomBinaryTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log("RANDOM_BINARY transformer called.");
-        this.telemertyLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Date.now());
         if (!xmsg.transformer) {
             xmsg.transformer = {
                 metaData: {}
             }
         }
+        this.telemertyLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Date.now());
         xmsg.transformer.metaData!.state = Math.random() > 0.5 ? 'if' : 'else';
         this.telemertyLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Date.now());
         return xmsg;

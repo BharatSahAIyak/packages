@@ -25,7 +25,6 @@ export class SpeechToTextTransformer implements ITransformer {
   private readonly persist: boolean;
 
   async transform(xmsg: XMessage): Promise<XMessage> {
-      this.telemetryLogger.sendLogTelemetry(xmsg, `${this.constructor.name} started!`, Date.now());
       const media : MessageMedia[] | undefined = xmsg.payload?.media;
 
       if (!this.baseUrl) {

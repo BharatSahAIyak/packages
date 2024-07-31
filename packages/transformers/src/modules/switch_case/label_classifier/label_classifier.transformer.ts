@@ -18,7 +18,7 @@ export class LabelClassifierTransformer implements ITransformer{
     ///     minimumThreshold: number: If provided, a label must reach this threshold score to be considered for final result. Default is 0. (optional)
     ///
     ///     Note: `existingLabel` can also be passed in XMessage `metaData.existingLabel`.
-    constructor(private readonly config: Record<string, any>){ }
+    constructor(public readonly config: Record<string, any>){ }
 
     private readonly telemetryLogger = new TelemetryLogger(this.config);
 

@@ -4,9 +4,11 @@ import { UserFeedbackLoopTransformer } from "./user_feedback_loop_transformer";
 describe('UserFeedbackLoopTransformer', () => {
     let transformer: UserFeedbackLoopTransformer;
     let xmsg: XMessage;
+    let mockEvent = { pushEvent: jest.fn() };
+    let mockConfig = { eventBus: mockEvent, transformerId: "user-feedback-loop-transformer" };
 
     beforeEach(() => {
-        transformer = new UserFeedbackLoopTransformer({ restoreState: 'previous_state' });
+        transformer = new UserFeedbackLoopTransformer({ restoreState: 'previous_state',...mockConfig });
         xmsg = {
             payload: {},
             transformer: {
@@ -18,19 +20,19 @@ describe('UserFeedbackLoopTransformer', () => {
     it('should set the restore state and prompt if provided', async () => {
         const prompt = 'Please provide your feedback';
         const restoreState = 'previous_state';
-        const transformerWithPrompt = new UserFeedbackLoopTransformer({ restoreState, prompt });
+        const transformerWithPrompt = new UserFeedbackLoopTransformer({ restoreState, prompt, ...mockConfig });
         const result = await transformerWithPrompt.transform(xmsg);
         expect(result.transformer?.metaData!.restoreState).toBe(restoreState);
         expect(result.payload!.text).toBe(prompt);
     });
 
     it('should throw an error if prompt is not provided and payload text is not present', async () => {
-        const transformerWithoutPrompt = new UserFeedbackLoopTransformer({ restoreState: 'previous_state' });
+        const transformerWithoutPrompt = new UserFeedbackLoopTransformer({ restoreState: 'previous_state', ...mockConfig });
         await expect(transformerWithoutPrompt.transform(xmsg)).rejects.toThrow('prompt or `XMessage.payload.text` is required!');
     });
 
     it('should throw an error if restoreState is not provided', async () => {
-        const transformerWithoutRestoreState = new UserFeedbackLoopTransformer({ prompt: 'Please provide your feedback' });
+        const transformerWithoutRestoreState = new UserFeedbackLoopTransformer({ prompt: 'Please provide your feedback', ...mockConfig });
         await expect(transformerWithoutRestoreState.transform(xmsg)).rejects.toThrow('restoreState is required!');
     });
 
