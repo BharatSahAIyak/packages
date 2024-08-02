@@ -5,7 +5,7 @@ import { TelemetryLogger } from "../../common/telemetry";
 export class RandomBinaryTransformer implements ITransformer {
 
     constructor(readonly config: Record<string, any>) { }
-    private readonly telemertyLogger = new TelemetryLogger(this.config);
+    private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log("RANDOM_BINARY transformer called.");
