@@ -14,7 +14,6 @@ export class SimpleRetryTransformer implements ITransformer {
     async transform(xmsg: XMessage): Promise<XMessage> {
         this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Date.now());
         if (!xmsg.transformer) {
-            this.telemetryLogger.sendLogTelemetry(xmsg, 'Transformer metadata not found. Creating new metadata.', Date.now());
             xmsg.transformer = {
                 metaData: {},
             }

@@ -12,10 +12,6 @@ import { TelemetryLogger } from "../../common/telemetry";
 describe("SpeechToTextTransformer", () => {
   let mockEvent = { pushEvent: jest.fn() };
   let mockConfig = { eventBus: mockEvent, transformerId: "speech-to-text-transformer" };
-  // let mockLogger = { sendErrorTelemetry: jest.fn(), sendLogTelemetry: jest.fn() };
-  // jest.spyOn(TelemetryLogger.prototype, "sendErrorTelemetry").mockImplementation(mockLogger.sendErrorTelemetry);
-  // jest.spyOn(TelemetryLogger.prototype, "sendLogTelemetry").mockImplementation(mockLogger.sendLogTelemetry);
-
 
   afterEach(() => {
     jest.clearAllMocks();

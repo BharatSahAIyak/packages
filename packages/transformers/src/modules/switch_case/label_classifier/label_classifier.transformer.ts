@@ -6,6 +6,8 @@ import { TelemetryLogger } from "../../common/telemetry";
 
 export class LabelClassifierTransformer implements ITransformer{
 
+    config: Record<string, any>;
+    private readonly telemetryLogger: TelemetryLogger;
     /// Accepted config properties:
     ///     url: string:  Url of the endpoint
     ///     prompt: string: The prompt to classify. Required if `XMessage.payload.text` is undefined. The `XMessage.payload.text` takes precedence over `prompt` if provided.
@@ -18,9 +20,12 @@ export class LabelClassifierTransformer implements ITransformer{
     ///     minimumThreshold: number: If provided, a label must reach this threshold score to be considered for final result. Default is 0. (optional)
     ///
     ///     Note: `existingLabel` can also be passed in XMessage `metaData.existingLabel`.
-    constructor(public readonly config: Record<string, any>){ }
+    constructor(config: Record<string, any>){ 
+        this.config = config;
+        this.telemetryLogger = new TelemetryLogger(this.config);
+    }
 
-    private readonly telemetryLogger = new TelemetryLogger(this.config);
+    
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = Date.now();
