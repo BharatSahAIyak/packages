@@ -470,6 +470,35 @@
     ]
   },
   {
+    "label": "Schedule Transformer",
+    "type": "SCHEDULE_TRANSFORMER",
+    "class": "StateRestoreTransformer",
+    "description": "A transformer used to set a timer for scheduled actions and manage state transitions based on timing.",
+    "version": 1,
+    "outputType": "dynamic",
+    "inputs": [
+      {
+        "label": "Timer Duration",
+        "name": "timerDuration",
+        "type": "string",
+        "optional": false
+      },
+      {
+        "label": "Immediate Restore",
+        "name": "immediateRestore",
+        "type": "boolean",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "Next State",
+        "name": "nextState",
+        "type": "string"
+      }
+    ]
+  },
+  {
     "label": "Simple Retry",
     "type": "SIMPLE_RETRY",
     "class": "RetryTransformer",

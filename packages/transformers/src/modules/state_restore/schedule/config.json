@@ -1,0 +1,31 @@
+{
+    "label": "Schedule Transformer",
+    "type": "SCHEDULE",
+    "class": "ScheduleTransformer",
+    "description": "A transformer that sets a global timer, clears and resets the timer if a new message arrives before it completes, and optionally restores state.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+        {
+            "label": "Timer Duration",
+            "name": "timerDuration",
+            "type": "number",
+            "description": "The duration of the timer in milliseconds.",
+            "optional": false
+        },
+        {
+            "label": "Immediate Restore",
+            "name": "immediateRestore",
+            "type": "boolean",
+            "description": "A flag indicating whether to restore the state immediately after clearing the timer.",
+            "optional": true
+        }
+    ],
+    "outputs": [
+        {
+            "label": "Restore State",
+            "name": "restoreState",
+            "description": "The state to restore to if immediateRestore is enabled."
+        }
+    ]
+}
