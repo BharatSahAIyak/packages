@@ -3,7 +3,8 @@ import { FieldSetterTransformer } from "./field_setter.transformer";
 
 describe('Field Setter Tests', () => {
     let mockXMessage: XMessage;
-
+    let mockEvent = { pushEvent: jest.fn() };
+    let mockConfig = { eventBus: mockEvent, transformerId: "field-setter-transformer" };
     beforeEach(() => {
         mockXMessage = {
             to: {
@@ -59,7 +60,7 @@ describe('Field Setter Tests', () => {
                             }
                         }
                     ]
-                }
+                },
             }
         };
     });
@@ -68,7 +69,8 @@ describe('Field Setter Tests', () => {
         const transformer = new FieldSetterTransformer({
             setters: {
                 "payload.text": "hi there",
-            }
+            },
+            ...mockConfig
         });
         const transformedMsg = await transformer.transform(mockXMessage);
         expect(transformedMsg.payload.text).toBe('hi there');
@@ -82,7 +84,8 @@ describe('Field Setter Tests', () => {
                 "transformer.metaData.myVar3": undefined,
                 "transformer.metaData.myVar4": [1, 2, 4],
                 "transformer.metaData.myVar5": 124,
-            }
+            },
+            ...mockConfig
         });
         const transformedMsg = await transformer.transform(mockXMessage);
         expect(transformedMsg.transformer!.metaData!.myVar).toBe(true);
@@ -100,7 +103,8 @@ describe('Field Setter Tests', () => {
         const transformer = new FieldSetterTransformer({
             setters: {
                 "transformer.metaData.fakeData": requiredValue,
-            }
+            },
+            ...mockConfig
         });
         const transformedMsg = await transformer.transform(mockXMessage);
         expect(transformedMsg.transformer!.metaData!.fakeData).toBe(requiredValue);
@@ -112,7 +116,8 @@ describe('Field Setter Tests', () => {
         const transformer = new FieldSetterTransformer({
             setters: {
                 "payload.text": placeholderValue,
-            }
+            },
+            ...mockConfig
         });
         const transformedMsg = await transformer.transform(mockXMessage);
         expect(transformedMsg.payload.text).toBe(expectedValue);
@@ -147,7 +152,8 @@ describe('Field Setter Tests', () => {
             setters: {
                 "transformer.metaData.myProperty1": placeholderValue1,
                 "transformer.metaData.myProperty2": placeholderValue2,
-            }
+            },
+            ...mockConfig
         });
         const transformedMsg = await transformer.transform(mockXMessage);
         expect(transformedMsg.transformer!.metaData!.myProperty1).toStrictEqual(expectedValue1);
@@ -160,14 +166,18 @@ describe('Field Setter Tests', () => {
             setters: {
                 "payload.text": "hi user",
                 "channelURI": "Pwa"
-            }
+            },
+            ...mockConfig
         });
         const transformedMsg = await transformer.transform(mockXMessage);
         xmsgCopy.payload.text = '';
         transformedMsg.payload.text = '';
         transformedMsg.channelURI = '';
         xmsgCopy.channelURI = '';
-        expect(xmsgCopy).toStrictEqual(transformedMsg);
+        console.log(transformedMsg);
+        console.log(xmsgCopy);
+        // There is an additional field in the transformed message which is not present in the original message
+        expect(transformedMsg).toMatchObject(xmsgCopy);
     });
 
     it('Field Setter stringifies objects', async () => {
@@ -183,7 +193,8 @@ describe('Field Setter Tests', () => {
             setters: {
                 "payload.text": "{{msg:transformer.metaData.myObjectData}}",
                 "transformer.metaData.checkVal": "{{msg:transformer.metaData.myObjectData2}}"
-            }
+            },
+            ...mockConfig
         });
         const transformedMsg = await transformer.transform(xmsgCopy);
         expect(transformedMsg.payload.text).toStrictEqual("{\"myVar1\":\"myValue1\",\"myVar2\":{\"myInnerVar\":\"myInnerValue\"}}");

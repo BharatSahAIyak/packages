@@ -4,6 +4,7 @@ import getBhashiniConfig from "./bhashini/bhashini.getConfig";
 import computeBhashini from "./bhashini/bhashini.compute";
 import computeAzure from "./azure/azure.compute";
 import { Events } from "@samagra-x/uci-side-effects";
+import { TelemetryLogger } from "../../common/telemetry";
 
 export class TranslateTransformer implements ITransformer {
 
@@ -15,6 +16,7 @@ export class TranslateTransformer implements ITransformer {
     ///     bhashiniAPIKey: API key for bhashini (required if provider is set to bhashini)
     ///     bhashiniURL: Base url for bhashini (required if provider is set to bhashini)
     constructor(readonly config: Record<string, any>) { }
+    private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
       let startTime = Date.now();
@@ -24,18 +26,18 @@ export class TranslateTransformer implements ITransformer {
       if (!this.config.outputLanguage) {
         this.config.inputLanguage = xmsg?.transformer?.metaData?.outputLanguage || 'en';
       }
-      this.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} started!`, startTime);
+      this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} started!`, startTime);
       if (!xmsg.transformer) {
           xmsg.transformer = {
               metaData: {}
           };
       }
       if (!this.config.provider) {
-        this.sendErrorTelemetry(xmsg, '`provider` not defined in TRANSLATE transformer');
+        this.telemetryLogger.sendErrorTelemetry(xmsg, '`provider` not defined in TRANSLATE transformer');
         throw new Error('`provider` not defined in TRANSLATE transformer');
       }
       if(!xmsg?.payload?.text){
-        this.sendErrorTelemetry(xmsg, '`input payload` not defined in TRANSLATE transformer');
+        this.telemetryLogger.sendErrorTelemetry(xmsg, '`input payload` not defined in TRANSLATE transformer');
         throw new Error('`input payload` not defined in TRANSLATE transformer');
       }
       console.log("TRANSLATE transformer called.", this.config.inputLanguage, this.config.outputLanguage);
@@ -44,7 +46,7 @@ export class TranslateTransformer implements ITransformer {
       }
       if(this.config.provider.toLowerCase()=='bhashini') {
         if (!this.config.bhashiniUserId) {
-          this.sendErrorTelemetry(xmsg, '`bhashiniUserId` not defined in TRANSLATE transformer');
+          this.telemetryLogger.sendErrorTelemetry(xmsg, '`bhashiniUserId` not defined in TRANSLATE transformer');
           throw new Error('`bhashiniUserId` not defined in TRANSLATE transformer');
         }
         if (!this.config.bhashiniAPIKey) {
@@ -79,7 +81,7 @@ export class TranslateTransformer implements ITransformer {
             transalatedQuery: xmsg.payload.text
         }
       }
-      this.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} finished!`, startTime);
+      this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} finished!`, startTime);
       return xmsg;
     }
 
@@ -162,28 +164,5 @@ export class TranslateTransformer implements ITransformer {
           error: error
         }
       }
-  }
-  
-  private async sendErrorTelemetry(xmsg: XMessage, error: string) {
-    const xmgCopy = {...xmsg};
-    xmgCopy.transformer!.metaData!.errorString = error;
-    this.config.eventBus.pushEvent({
-      eventName: Events.CUSTOM_TELEMETRY_EVENT_ERROR,
-      transformerId: this.config.transformerId,
-      eventData: xmgCopy,
-      timestamp: Date.now(),
-    })
-  }
-
-  private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number) {
-    const xmgCopy = {...xmsg};
-    xmgCopy.transformer!.metaData!.telemetryLog = log;
-    xmgCopy.transformer!.metaData!.stateExecutionTime = Date.now() - startTime;
-    this.config.eventBus.pushEvent({
-      eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
-      transformerId: this.config.transformerId,
-      eventData: xmgCopy,
-      timestamp: Date.now(),
-    })
   }
 }

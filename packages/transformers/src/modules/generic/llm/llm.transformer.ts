@@ -10,6 +10,7 @@ import { serviceContextFromDefaults, Groq } from "llamaindex";
 import OpenAI from "openai";
 import { Events } from "@samagra-x/uci-side-effects";
 import {v4 as uuid4} from 'uuid';
+import { TelemetryLogger } from "../../common/telemetry";
 
 export class LLMTransformer implements ITransformer {
 
@@ -29,11 +30,12 @@ export class LLMTransformer implements ITransformer {
     ///     enableStream: boolean which allowes user to get streaming responses if enabled. By default this is set to `false`. (optional)
     ///     outputLanguage: Stream output language. Defaults to 'en'. (optional)
     constructor(readonly config: Record<string, any>) { }
+    private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     // TODO: use TRANSLATE transformer directly instead of repeating code
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = Date.now();
-        this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM Started`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM Started`, startTime);
         console.log("LLM transformer called.");
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length){
             xmsg.transformer = {
@@ -45,11 +47,11 @@ export class LLMTransformer implements ITransformer {
             };
         }
         if (!this.config.model) {
-            this.sendErrorTelemetry(xmsg, '`model` not defined in LLM transformer');
+            this.telemetryLogger.sendErrorTelemetry(xmsg, '`model` not defined in LLM transformer');
             throw new Error('`model` not defined in LLM transformer');
         }
         if (!this.config.APIKey) {
-            this.sendErrorTelemetry(xmsg, '`APIKey` not defined in LLM transformer');
+            this.telemetryLogger.sendErrorTelemetry(xmsg, '`APIKey` not defined in LLM transformer');
             throw new Error('`APIKey` not defined in LLM transformer');
         }
         //TODO: Fix this later.
@@ -62,20 +64,20 @@ export class LLMTransformer implements ITransformer {
         }
         if(this.config.outputLanguage!='en') {
             if (!this.config.bhashiniUserId) {
-                this.sendErrorTelemetry(xmsg, '`bhashiniUserId` not defined in TRANSLATE transformer');
+                this.telemetryLogger.sendErrorTelemetry(xmsg, '`bhashiniUserId` not defined in TRANSLATE transformer');
                 throw new Error('`bhashiniUserId` not defined in TRANSLATE transformer');
             }
             if (!this.config.bhashiniAPIKey) {
-                this.sendErrorTelemetry(xmsg, '`bhashiniAPIKey` not defined in TRANSLATE transformer');
+                this.telemetryLogger.sendErrorTelemetry(xmsg, '`bhashiniAPIKey` not defined in TRANSLATE transformer');
                 throw new Error('`bhashiniAPIKey` not defined in TRANSLATE transformer');
             }
             if (!this.config.bhashiniURL) {
-                this.sendErrorTelemetry(xmsg, '`bhashiniURL` not defined in TRANSLATE transformer');
+                this.telemetryLogger.sendErrorTelemetry(xmsg, '`bhashiniURL` not defined in TRANSLATE transformer');
                 throw new Error('`bhashiniURL` not defined in TRANSLATE transformer');
             }
         }
         if (!xmsg.payload.text) {
-            this.sendErrorTelemetry(xmsg, '`xmsg.payload.text` not defined in LLM transformer');
+            this.telemetryLogger.sendErrorTelemetry(xmsg, '`xmsg.payload.text` not defined in LLM transformer');
             throw new Error('`xmsg.payload.text` not defined in LLM transformer');
         }
         let expertContext = '';
@@ -203,7 +205,7 @@ export class LLMTransformer implements ITransformer {
                 }
             }
             xmsg.payload.media = media;
-            this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
+            this.telemetryLogger.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
             console.log("xmsg",xmsg);
         } else {
             this.switchFromTo(xmsg);
@@ -310,7 +312,7 @@ export class LLMTransformer implements ITransformer {
                 }
             }
             xmsg.messageId.Id = oldMessageId;
-            this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
+            this.telemetryLogger.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
             xmsg.messageId.Id = newMessageId;
             xmsg.transformer.metaData!.messageIdChanged = true;
         }
@@ -468,29 +470,6 @@ export class LLMTransformer implements ITransformer {
             error: error
           }
         }
-    }
-
-    private async sendErrorTelemetry(xmsg: XMessage, error: string) {
-        const xmgCopy = {...xmsg};
-        xmgCopy.transformer!.metaData!.errorString = error;
-        this.config.eventBus.pushEvent({
-          eventName: Events.CUSTOM_TELEMETRY_EVENT_ERROR,
-          transformerId: this.config.transformerId,
-          eventData: xmgCopy,
-          timestamp: Date.now(),
-        })
-    }
-
-    private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number) {
-        const xmgCopy = {...xmsg};
-        xmgCopy.transformer!.metaData!.telemetryLog = log;
-        xmgCopy.transformer!.metaData!.stateExecutionTime = Date.now() - startTime;
-        this.config.eventBus.pushEvent({
-          eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
-          transformerId: this.config.transformerId,
-          eventData: xmgCopy,
-          timestamp: Date.now(),
-        })
     }
 
     private switchFromTo(xmsg: XMessage): XMessage {

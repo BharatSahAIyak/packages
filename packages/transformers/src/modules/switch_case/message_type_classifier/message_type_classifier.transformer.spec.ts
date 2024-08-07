@@ -2,6 +2,8 @@ import { MessageState, MessageType, XMessage } from "@samagra-x/xmessage";
 import { MessageTypeClassifierTransformer } from "./message_type_classifier.transformer";
 
 describe("MessageTypeClassifierTransformer", () => {
+    let mockEvent = { pushEvent: jest.fn() };
+    let mockConfig = { eventBus: mockEvent, transformerId: "message-type-classifier-transformer" };
     describe("Transformer tests", () => {
         it("Should output correct message type", async () => {
             const msg: XMessage = {
@@ -24,7 +26,7 @@ describe("MessageTypeClassifierTransformer", () => {
                     metaData: {}
                 }
             }
-            const transformer = new MessageTypeClassifierTransformer({});
+            const transformer = new MessageTypeClassifierTransformer({...mockConfig});
             expect((await transformer.transform(msg)).transformer!.metaData!.state).toBe(MessageType.HSM);
             msg.messageType = MessageType.AUDIO;
             expect((await transformer.transform(msg)).transformer!.metaData!.state).toBe(MessageType.AUDIO);
@@ -51,7 +53,7 @@ describe("MessageTypeClassifierTransformer", () => {
                     metaData: {}
                 }
             };
-            const transformer = new MessageTypeClassifierTransformer({});
+            const transformer = new MessageTypeClassifierTransformer({...mockConfig});
             expect((await transformer.transform(msg)).transformer!.metaData!.state).toBe(MessageType.TEXT);
         });
     });

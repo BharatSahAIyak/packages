@@ -1,6 +1,7 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
 import { Events } from "@samagra-x/uci-side-effects";
+import { TelemetryLogger } from "../../common/telemetry";
 const ivm = require('isolated-vm');
 
 export class CodeRunnerTransformer implements ITransformer {
@@ -14,10 +15,11 @@ export class CodeRunnerTransformer implements ITransformer {
     /// Note: If the `XMessage` is modified, the function must returned
     /// the modified `XMessage` as a stringified JSON.
     constructor(readonly config: Record<string, any>) { }
+    private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = Date.now();
-        this.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime);
         if (!this.config?.code) {
             throw new Error('config.code is required');
         }
@@ -47,35 +49,12 @@ export class CodeRunnerTransformer implements ITransformer {
                 xmsg.payload = modifiedXmsg.payload;
             }
             catch (err) {
-                this.sendErrorTelemetry(xmsg, `${err}`);
+                this.telemetryLogger.sendErrorTelemetry(xmsg, `${err}`);
                 console.log(err);
                 throw new Error('XMessage must be returned as a stringified JSON!');
             }
         }
-        this.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime);
         return xmsg;
-    }
-
-    private async sendErrorTelemetry(xmsg: XMessage, error: string) {
-        const xmgCopy = {...xmsg};
-        xmgCopy.transformer!.metaData!.errorString = error;
-        this.config.eventBus.pushEvent({
-          eventName: Events.CUSTOM_TELEMETRY_EVENT_ERROR,
-          transformerId: this.config.transformerId,
-          eventData: xmgCopy,
-          timestamp: Date.now(),
-        })
-    }
-
-    private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number) {
-        const xmgCopy = {...xmsg};
-        xmgCopy.transformer!.metaData!.telemetryLog = log;
-        xmgCopy.transformer!.metaData!.stateExecutionTime = Date.now() - startTime;
-        this.config.eventBus.pushEvent({
-          eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
-          transformerId: this.config.transformerId,
-          eventData: xmgCopy,
-          timestamp: Date.now(),
-        })
     }
 }
