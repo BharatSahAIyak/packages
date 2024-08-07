@@ -1,10 +1,12 @@
 import { CustomTelemetrySideEffect } from "../customTelemetry";
+import { PropertyObserverSideEffect } from "../propertyObserver";
 import { TelemetrySideEffect } from "../telemetry/telemetry.sideEffect";
 import { ISideEffect } from "./sideEffect.interface";
 
 export const SupportedSideEffects = [
     TelemetrySideEffect,
     CustomTelemetrySideEffect,
+    PropertyObserverSideEffect,
 ];
 
 /// Note: Local side-effect config takes precedence over
