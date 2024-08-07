@@ -6,7 +6,7 @@ import { generateSentences } from "./stream/tokenizer";
 import getBhashiniConfig from "../translate/bhashini/bhashini.getConfig";
 import computeAzure from "../translate/azure/azure.compute";
 import computeBhashini from "../translate/bhashini/bhashini.compute";
-import { OpenAI as llamaindexOpenAI, serviceContextFromDefaults, Groq } from "llamaindex";
+import { serviceContextFromDefaults, Groq } from "llamaindex";
 import OpenAI from "openai";
 import { Events } from "@samagra-x/uci-side-effects";
 import {v4 as uuid4} from 'uuid';
@@ -176,10 +176,6 @@ export class LLMTransformer implements ITransformer {
         }
 
         xmsg.messageId.replyId = xmsg.messageId.Id;
-        this.switchFromTo(xmsg);
-        const oldMessageId = xmsg.messageId.Id;
-        const newMessageId = uuid4();
-        xmsg.messageId.Id = newMessageId;
         if(!this.config.enableStream) {
             let answer;
             if(this.config.provider?.toLowerCase() == "groq") answer = response.message.content?.replace(/\*\*/g, '*') || "";
@@ -209,9 +205,13 @@ export class LLMTransformer implements ITransformer {
                 }
             }
             xmsg.payload.media = media;
-            console.log("xmsg",xmsg)
-            await this.sendMessage(xmsg)
+            this.telemetryLogger.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
+            console.log("xmsg",xmsg);
         } else {
+            this.switchFromTo(xmsg);
+            const oldMessageId = xmsg.messageId.Id;
+            const newMessageId = uuid4();
+            xmsg.messageId.Id = newMessageId;
             if (!this.config.outboundURL){
                 throw new Error('`outboundURL` not defined in LLM transformer');
             }
@@ -311,15 +311,12 @@ export class LLMTransformer implements ITransformer {
                     streamStartLatency
                 }
             }
-            await this.sendMessage(xmsg)
-            xmsg.payload.text = xmsg.payload.text?.replace("<end/>",'')
+            xmsg.messageId.Id = oldMessageId;
+            this.telemetryLogger.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
+            xmsg.messageId.Id = newMessageId;
+            xmsg.transformer.metaData!.messageIdChanged = true;
         }
         delete process.env['OPENAI_API_KEY'];
-        xmsg.messageId.Id = oldMessageId;
-        this.switchFromTo(xmsg);
-        this.telemetryLogger.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
-        xmsg.messageId.Id = newMessageId;
-        this.switchFromTo(xmsg);
         return xmsg;
     }
 
@@ -363,6 +360,7 @@ export class LLMTransformer implements ITransformer {
         }
         return xmsg;
     }
+
     //triggering inboud here itself for now to enable streaming feature
     //TODO: add a queue at orchestrator and ping orchestrator here such that it tirggres outbound.
     async sendMessage(xmsg: XMessage){
