@@ -14,9 +14,9 @@ export class RandomBinaryTransformer implements ITransformer {
                 metaData: {}
             }
         }
-        this.telemertyLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Date.now());
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Date.now());
         xmsg.transformer.metaData!.state = Math.random() > 0.5 ? 'if' : 'else';
-        this.telemertyLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Date.now());
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Date.now());
         return xmsg;
     }
 }
