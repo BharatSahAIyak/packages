@@ -113,8 +113,18 @@ describe("LLMTransformer Tests", () => {
             "The capital of France is Paris."
         );
         expect(transformedXMsg.payload.media).toEqual([]);
-        expect(transformedXMsg.to).toEqual(xmsg.to);
-        expect(transformedXMsg.from).toEqual(xmsg.from);
+        expect(transformedXMsg.to).toEqual({
+            userID: "admin",
+            bot: true,
+            meta: new Map(
+                Object.entries({
+                    botMobileNumber: "919999999999",
+                })
+            ),
+        });
+        expect(transformedXMsg.from).toEqual({
+            userID: "9999999999",
+        });
     });
 
     it('should transform XMessage correctly when the input message is a non-English text', async () => {
@@ -169,6 +179,21 @@ describe("LLMTransformer Tests", () => {
             eventBus
         }
         await expect(transformer.transform(xmsg)).rejects.toThrow('`model` not defined in LLM transformer');
+    });
+
+    it('should call sendMessage method with transformed XMessage when enableStream is false', async () => {
+        const transformer = new LLMTransformer({
+            APIKey: 'mockkey',
+            model: 'gpt-3.5-turbo',
+            outboundURL: 'mockOutboundURL',
+            eventBus
+        });
+        transformer.sendMessage = jest.fn();
+        const transformedMessage = await transformer.transform(xmsg);
+        expect(transformedMessage).toBeDefined();
+        expect(transformer.sendMessage).toHaveBeenCalled();
+        expect(transformer.sendMessage).toHaveBeenCalledWith(transformedMessage);
+        expect(transformedMessage.payload.text).toContain("Paris");
     });
 
     it('should create an instance of LLMTransformer with valid configuration properties', () => {
