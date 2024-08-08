@@ -574,7 +574,46 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     queryParams.append('password', password);
     return queryParams;
   }
+
+  async sendLocationMessage(
+    xMsg: XMessage
+  ): Promise<void> {
   
+    const name = xMsg.payload.location?.name;
+    const address = xMsg.payload.location?.address;
+    const url = xMsg.payload.location?.url;
+  
+    if (!xMsg.payload.location?.longitude || !xMsg.payload.location?.latitude || !name || !address) {
+      throw new Error('Missing location parameters for sending location message');
+    }
+  
+    const baseUrl = 'https://media.smsgupshup.com/GatewayAPI/rest';
+  
+    const queryParams = new URLSearchParams();
+    queryParams.append('method', 'SendMessage');
+    queryParams.append('msg_type', 'LOCATION');
+    queryParams.append('userid', this.providerConfig?.username2Way ?? '');
+    queryParams.append('password', this.providerConfig?.password2Way ?? '');
+    queryParams.append('send_to', xMsg.to.userID);
+    queryParams.append('location', JSON.stringify({
+      longitude: xMsg.payload.location?.longitude?.toString(),
+      latitude: xMsg.payload.location?.latitude?.toString(),
+      name,
+      address,
+      url
+    }));
+  
+    const fullUrl = `${baseUrl}?${queryParams.toString()}`;
+  
+    try {
+      const response = await axios.get(fullUrl);
+      console.log('Location message sent:', response.data);
+    } catch (error) {
+      console.error('Error sending location message:', error);
+      throw error;
+    }
+  }
+ 
   // Convert XMessage to GupShupWhatsAppMessage
   async sendMessage (xMsg: XMessage) {
     if (!this.providerConfig) {
@@ -588,7 +627,13 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       ) {
         let text: string = xMsg.payload.text || '';
         let builder = this.getURIBuilder();
-  
+
+        if (xMsg.messageType === MessageType.LOCATION && xMsg.payload.location) {
+          await this.sendLocationMessage(xMsg);
+          xMsg.messageState = MessageState.SENT;
+          return; 
+        }                        
+
         if (xMsg.messageState === MessageState.OPTED_IN) {
           text += this.renderMessageChoices(xMsg.payload.buttonChoices?.choices || []);
   
