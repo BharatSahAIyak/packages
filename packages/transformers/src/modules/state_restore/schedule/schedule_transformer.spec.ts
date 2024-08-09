@@ -10,13 +10,16 @@ describe('ScheduleTransformer', () => {
     beforeEach(() => {
         xmsg = {
             from: { userID: '9999999999' },
+            channelURI: 'whatsapp',
+            providerURI: 'gupshup',
             payload: { text: 'Initial message' },
             transformer: { metaData: {} }
         } as XMessage;
 
         transformer = new ScheduleTransformer({
             timerDuration: 5000,
-            immediateRestore: true
+            resetOnReply: true,
+            resetState: 'resetState'
         });
 
         jest.spyOn(global, 'clearTimeout');
@@ -32,40 +35,43 @@ describe('ScheduleTransformer', () => {
         await transformer.transform(xmsg);
 
         expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 5000);
-        expect(transformer['timers'].has('9999999999_timer')).toBe(true);
+        const timerId = `timer_${xmsg.from.userID}_${xmsg.channelURI}_${xmsg.providerURI}`;
+        expect(ScheduleTransformer['timers'].has(timerId)).toBe(true);
     });
 
     it('should clear existing timer and set a new one if transform is called again', async () => {
         await transformer.transform(xmsg);
-        expect(transformer['timers'].has('9999999999_timer')).toBe(true);
+
+        const timerId = `timer_${xmsg.from.userID}_${xmsg.channelURI}_${xmsg.providerURI}`;
+        expect(ScheduleTransformer['timers'].has(timerId)).toBe(true);
 
         await transformer.transform(xmsg);
 
         expect(clearTimeout).toHaveBeenCalled();
         expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 5000);
-        expect(transformer['timers'].has('9999999999_timer')).toBe(true);
+        expect(ScheduleTransformer['timers'].has(timerId)).toBe(true);
     });
 
-    it('should restore state if immediateRestore is true', async () => {
-        xmsg.transformer!.metaData!.restoreState = 'restoredState';
+    it('should restore to resetState if resetOnReply is true', async () => {
+        xmsg.transformer!.metaData!.restoreState = 'restoreState';
 
         await transformer.transform(xmsg);
-        await transformer.transform(xmsg); // stimulating flow execution after second xmessage
+        await transformer.transform(xmsg);
 
-        expect(xmsg.transformer!.metaData!.state).toBe('restoredState');
+        expect(xmsg.transformer!.metaData!.state).toBe('resetState');
     });
 
-    it('should not restore state if immediateRestore is false', async () => {
+    it('should restore state to restoreState if resetOnReply is false', async () => {
         transformer = new ScheduleTransformer({
             timerDuration: 5000,
-            immediateRestore: false
+            resetOnReply: false
         });
 
-        xmsg.transformer!.metaData!.restoreState = 'restoredState';
+        xmsg.transformer!.metaData!.restoreState = 'restoreState';
 
         await transformer.transform(xmsg);
 
-        expect(xmsg.transformer!.metaData!.state).toBeUndefined();
+        expect(xmsg.transformer!.metaData!.state).toBe('restoreState');
     });
 
     it('should return xmsg after the timer completes', async () => {

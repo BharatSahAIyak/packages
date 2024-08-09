@@ -1,8 +1,8 @@
 {
     "label": "Schedule Transformer",
-    "type": "SCHEDULE",
-    "class": "ScheduleTransformer",
-    "description": "A transformer that sets a global timer, clears and resets the timer if a new message arrives before it completes, and optionally restores state.",
+    "type": "SCHEDULE_TRANSFORMER",
+    "class": "StateRestoreTransformer",
+    "description": "A transformer that enables a user to setup a timer before executing a specific part of the flow.",
     "version": 1,
     "outputType": "static",
     "inputs": [
@@ -15,7 +15,7 @@
         },
         {
             "label": "Immediate Restore",
-            "name": "immediateRestore",
+            "name": "resetOnReply",
             "type": "boolean",
             "description": "A flag indicating whether to restore the state immediately after clearing the timer.",
             "optional": true
@@ -23,9 +23,14 @@
     ],
     "outputs": [
         {
-            "label": "Restore State",
+            "label": "Trigger state",
             "name": "restoreState",
-            "description": "The state to restore to if immediateRestore is enabled."
+            "description": "The state to execute when the timer completes."
+        },
+        {
+            "label": "Reset State",
+            "name": "resetState",
+            "description": "The state to restore when the timer is reset."
         }
     ]
 }

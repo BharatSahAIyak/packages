@@ -4,13 +4,11 @@ import { ITransformer } from "../../common/transformer.interface";
 export class ScheduleTransformer implements ITransformer {
 
     /// Accepted config properties:
-    ///     timerDuration: number: (required) Specifies the duration of the timer in milliseconds. This value is mandatory and 
-    ///         determines how long the timer will run before it triggers the next action.
-    ///     immediateRestore: boolean: (optional, default: false) A flag indicating whether the state should be restored 
-    ///         immediately after clearing an existing timer. If set to `true`, the transformer's state is reset to the state
-    ///         stored in `metaData.restoreState` after clearing the timer. 
+    ///     timerDuration: number: (required) Specifies the duration of the timer in milliseconds.
+    ///     resetOnReply: boolean: (optional, default: false) If true, restores state immediately after clearing an existing timer.
+    ///     resetState: string: (optional) The state to restore when the timer is reset.
     
-    private timers: Map<string, NodeJS.Timeout> = new Map();
+    private static timers: Map<string, NodeJS.Timeout> = new Map();
 
     constructor(readonly config: Record<string, any>) { }
 
@@ -21,18 +19,21 @@ export class ScheduleTransformer implements ITransformer {
             throw new Error('timerDuration is required!');
         }
 
-        const timerId = `${xmsg.from.userID}_timer`;
+        const timerId = `timer_${xmsg.from.userID}_${xmsg.channelURI}_${xmsg.providerURI}`;
 
-        if (this.timers.has(timerId)) {
-            const timer = this.timers.get(timerId);
+        if (ScheduleTransformer.timers.has(timerId)) {
+            const timer = ScheduleTransformer.timers.get(timerId);
 
             if (timer) {
                 clearTimeout(timer);
-                this.timers.delete(timerId);
+                ScheduleTransformer.timers.delete(timerId);
                 console.log(`Timer for ${timerId} cleared.`);
 
-                if (this.config.immediateRestore) {
-                    xmsg.transformer!.metaData!.state = xmsg.transformer!.metaData!.restoreState;
+                // Determine the state to restore based on the resetOnReply flag.
+                if (this.config.resetOnReply && this.config.resetState) {
+                    xmsg.transformer!.metaData!.state = this.config.resetState;
+                } else {
+                    throw new Error('Reset state not set.');
                 }
             }
         }
@@ -41,13 +42,15 @@ export class ScheduleTransformer implements ITransformer {
             this.onTimerComplete(xmsg);
         }, this.config.timerDuration);
 
-        this.timers.set(timerId, newTimer);
+        ScheduleTransformer.timers.set(timerId, newTimer);
 
         return xmsg;
     }
 
     private onTimerComplete(xmsg: XMessage) {
         console.log(`Timer for ${xmsg.from.userID} completed.`);
+        // Set the state to the restoreState once the timer completes.
+        xmsg.transformer!.metaData!.state = xmsg.transformer!.metaData!.restoreState;
         return xmsg;
     }
 }
