@@ -28,6 +28,7 @@ export class LLMTransformer implements ITransformer {
     ///     temperature: The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. (default: `0`) (optional)
     ///     enableStream: boolean which allowes user to get streaming responses if enabled. By default this is set to `false`. (optional)
     ///     outputLanguage: Stream output language. Defaults to 'en'. (optional)
+    ///     responseFormat: JSON schema of the format in which we want the openai model to respond. (optiona)
     constructor(readonly config: Record<string, any>) { }
 
     // TODO: use TRANSLATE transformer directly instead of repeating code
@@ -73,7 +74,7 @@ export class LLMTransformer implements ITransformer {
                 this.sendErrorTelemetry(xmsg, '`bhashiniURL` not defined in TRANSLATE transformer');
                 throw new Error('`bhashiniURL` not defined in TRANSLATE transformer');
             }
-        }
+        } 
         if (!xmsg.payload.text) {
             this.sendErrorTelemetry(xmsg, '`xmsg.payload.text` not defined in LLM transformer');
             throw new Error('`xmsg.payload.text` not defined in LLM transformer');
@@ -162,12 +163,16 @@ export class LLMTransformer implements ITransformer {
         } else {
             // OPEN AI Implementaion
             const openai = new OpenAI({apiKey: this.config.APIKey});
-            response = await openai.chat.completions.create({
+            const config: any = {
                 model: this.config.model,
                 messages: prompt,
                 temperature: this.config.temperature || 0,
                 stream: this.config.enableStream ?? false,
-            }).catch((ex) => {
+            }
+            if(this.config.responseFormat) {
+                config.response_format = this.config.responseFormat
+            }
+            response = await openai.chat.completions.create(config).catch((ex) => {
                 console.error(`LLM failed. Reason: ${ex}`);
                 throw ex;
             });
