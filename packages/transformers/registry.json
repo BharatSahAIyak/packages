@@ -351,6 +351,13 @@
         "name": "languageProvider",
         "type": "string",
         "optional": true
+      },
+      {
+        "label": "Response Format",
+        "name": "responseFormat",
+        "type": "ide",
+        "optional": false,
+        "rows": 2
       }
     ],
     "outputs": [
