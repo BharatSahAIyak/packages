@@ -12,7 +12,7 @@ const openai200normal = {
     "choices": [
         {
             "message": {
-                content:"The capital of France is Paris.",
+                content: "The capital of France is Paris.",
             },
             "index": 0,
             "logprobs": null,
@@ -37,7 +37,7 @@ let mockOpenAIresponses = {
 jest.mock('openai', () => {
     return jest.fn().mockImplementation(() => {
         return {
-            chat:{
+            chat: {
                 completions: {
                     create: jest.fn().mockImplementation(async () => { return mockOpenAIresponses.create; })
                 }
@@ -148,15 +148,15 @@ describe("LLMTransformer Tests", () => {
                 }
             }
         };
-        
+
         const transformedXMessage = await transformer.transform(xmsgNonEnglish);
         expect(transformedXMessage.payload.text).toContain("France");
     });
 
     it('should throw error if model is not defined', async () => {
-        const transformer = new LLMTransformer({ 
+        const transformer = new LLMTransformer({
             APIKey: 'mockApiKey',
-            eventBus 
+            eventBus
         });
         const config = {
             APIKey: 'mockkey',
@@ -176,6 +176,44 @@ describe("LLMTransformer Tests", () => {
             APIKey: 'mockkey',
             model: 'gpt-3.5-turbo',
             outboundURL: 'mockOutboundURL',
+            eventBus
+        };
+        const transformer = new LLMTransformer(config);
+        expect(transformer.config).toEqual(config);
+        expect(transformer.sendMessage).toBeInstanceOf(Function);
+        expect(transformer.transform).toBeInstanceOf(Function);
+    })
+
+    it('should respect responseFormat in transformer config', () => {
+        const config = {
+            APIKey: 'mockkey',
+            model: 'gpt-3.5-turbo',
+            outboundURL: 'mockOutboundURL',
+            response_format: {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "reasoning_schema",
+                    "strict": true,
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "reasoning_steps": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "The reasoning steps leading to the final conclusion."
+                            },
+                            "answer": {
+                                "type": "string",
+                                "description": "The final answer, taking into account the reasoning steps."
+                            }
+                        },
+                        "required": ["reasoning_steps", "answer"],
+                        "additionalProperties": false
+                    }
+                }
+            },
             eventBus
         };
         const transformer = new LLMTransformer(config);
@@ -216,7 +254,7 @@ describe("LLMTransformer Tests", () => {
         };
         await expect(transformer.transform(xmsgEmptyPayload)).rejects.toThrow(
             "`xmsg.payload.text` not defined in LLM transformer"
-          );
+        );
     });
 
 });

@@ -28,6 +28,7 @@ export class LLMTransformer implements ITransformer {
     ///     temperature: The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. (default: `0`) (optional)
     ///     enableStream: boolean which allowes user to get streaming responses if enabled. By default this is set to `false`. (optional)
     ///     outputLanguage: Stream output language. Defaults to 'en'. (optional)
+    ///     responseFormat: Used to pass the json schema of the reponse format for OpenAI LLM calls. (optional)
     constructor(readonly config: Record<string, any>) { }
 
     // TODO: use TRANSLATE transformer directly instead of repeating code
@@ -162,12 +163,16 @@ export class LLMTransformer implements ITransformer {
         } else {
             // OPEN AI Implementaion
             const openai = new OpenAI({apiKey: this.config.APIKey});
-            response = await openai.chat.completions.create({
+            const openAIChatConfig: any = {
                 model: this.config.model,
                 messages: prompt,
                 temperature: this.config.temperature || 0,
                 stream: this.config.enableStream ?? false,
-            }).catch((ex) => {
+            };
+            if(this.config.responseFormat) {
+                openAIChatConfig.response_format = this.config.responseFormat;
+            }
+            response = await openai.chat.completions.create(openAIChatConfig).catch((ex) => {
                 console.error(`LLM failed. Reason: ${ex}`);
                 throw ex;
             });
