@@ -470,6 +470,42 @@
     ]
   },
   {
+    "label": "Schedule Transformer",
+    "type": "SCHEDULE_TRANSFORMER",
+    "class": "StateRestoreTransformer",
+    "description": "A transformer that enables a user to setup a timer before executing a specific part of the flow.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "Timer Duration",
+        "name": "timerDuration",
+        "type": "number",
+        "description": "The duration of the timer in milliseconds.",
+        "optional": false
+      },
+      {
+        "label": "Immediate Restore",
+        "name": "resetOnReply",
+        "type": "boolean",
+        "description": "A flag indicating whether to reset the state when a user message is received before timer expires.",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "Trigger state",
+        "name": "restoreState",
+        "description": "The state to execute when the timer completes."
+      },
+      {
+        "label": "Reset State",
+        "name": "resetState",
+        "description": "The state to restore when the timer is reset."
+      }
+    ]
+  },
+  {
     "label": "Simple Retry",
     "type": "SIMPLE_RETRY",
     "class": "RetryTransformer",
