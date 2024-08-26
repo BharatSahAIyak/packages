@@ -20,7 +20,6 @@ export class ScheduleTransformer implements ITransformer {
             throw new Error('timerDuration is required!');
         }
 
-        xmsg.transformer!.metaData!.state = this.config.resetState;
         const timerId = `timer_${xmsg.from.userID}_${xmsg.channelURI}_${xmsg.providerURI}`;
         xmsg.transformer!.metaData!.timerId = timerId;
         xmsg.transformer!.metaData!.timerDuration = this.config.timerDuration;
