@@ -12,13 +12,6 @@
             "type": "number",
             "description": "The duration of the timer in milliseconds.",
             "optional": false
-        },
-        {
-            "label": "Immediate Restore",
-            "name": "resetOnReply",
-            "type": "boolean",
-            "description": "A flag indicating whether to reset the state when a user message is received before timer expires.",
-            "optional": true
         }
     ],
     "outputs": [
