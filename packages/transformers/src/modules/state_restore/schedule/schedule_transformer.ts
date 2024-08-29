@@ -23,6 +23,8 @@ export class ScheduleTransformer implements ITransformer {
         const timerId = `timer_${xmsg.from.userID}_${xmsg.channelURI}_${xmsg.providerURI}`;
         xmsg.transformer!.metaData!.timerId = timerId;
         xmsg.transformer!.metaData!.timerDuration = this.config.timerDuration;
+        xmsg.transformer!.metaData!.restoreState = this.config.restoreState;
+        xmsg.transformer!.metaData!.resetState = this.config.resetState;
 
         this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Date.now());
         return xmsg;
