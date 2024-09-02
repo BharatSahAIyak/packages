@@ -1,0 +1,22 @@
+{
+    "label": "Switch Case",
+    "type": "SWITCH_CASE",
+    "class": "SwitchCaseTransformer",
+    "description": "A transformer used to classify a given text to a context label.",
+    "version": 1,
+    "outputType": "dynamic",
+    "inputs": [
+        {
+            "label": "Target Field",
+            "name": "target",
+            "type": "string",
+            "optional": false
+        }
+    ],
+    "outputs": [
+        {
+            "label": "Default",
+            "name": "default"
+        }
+    ]
+}
