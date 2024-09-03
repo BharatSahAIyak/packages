@@ -9,7 +9,7 @@
         {
             "label": "Target Field",
             "name": "target",
-            "type": "string",
+            "type": "json",
             "optional": true
         }
     ],
