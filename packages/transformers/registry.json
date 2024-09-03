@@ -115,6 +115,28 @@
     ]
   },
   {
+    "label": "Field State",
+    "type": "FIELD_STATE",
+    "class": "SwitchCaseTransformer",
+    "description": "A transformer that outputs the value of a field as its state, provided the field is defined",
+    "version": 1,
+    "outputType": "dynamic",
+    "inputs": [
+      {
+        "label": "Target Field",
+        "name": "target",
+        "type": "string",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "Default",
+        "name": "default"
+      }
+    ]
+  },
+  {
     "label": "HTTP GET Transformer",
     "type": "HTTP_GET",
     "class": "GenericTransformer",
