@@ -74,7 +74,7 @@ export class LLMTransformer implements ITransformer {
                 this.sendErrorTelemetry(xmsg, '`bhashiniURL` not defined in TRANSLATE transformer');
                 throw new Error('`bhashiniURL` not defined in TRANSLATE transformer');
             }
-        }
+        } 
         if (!xmsg.payload.text) {
             this.sendErrorTelemetry(xmsg, '`xmsg.payload.text` not defined in LLM transformer');
             throw new Error('`xmsg.payload.text` not defined in LLM transformer');
