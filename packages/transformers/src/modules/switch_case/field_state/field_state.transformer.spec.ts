@@ -1,5 +1,5 @@
 import { MessageState, MessageType, XMessage } from "@samagra-x/xmessage";
-import { SwitchCaseTransformer } from "./switch-case.transformer";
+import { FieldToStateTransformer } from "./field_state.transformer";
 
 const eventBus = {
     pushEvent: jest.fn()
@@ -42,18 +42,18 @@ describe("SwitchCaseTransformer", () => {
                 target: 'transformer.metaData.value',
                 eventBus
             };
-            const transformer = new SwitchCaseTransformer(config);
+            const transformer = new FieldToStateTransformer(config);
             expect(transformer.config).toEqual(config);
         });
     });
 
     describe("transform", () => {
-        it("should transform XMessage and set metaData.state based on target key value", async () => {
+        it("transform works as expected", async () => {
             const config = {
                 target: 'transformer.metaData.value',
                 eventBus
             };
-            const transformer = new SwitchCaseTransformer(config);
+            const transformer = new FieldToStateTransformer(config);
 
             const stateXmsg = await transformer.transform(xmsg);
 
@@ -65,17 +65,17 @@ describe("SwitchCaseTransformer", () => {
                 target: 'transformer.metaData.notFound',
                 eventBus
             };
-            const transformer = new SwitchCaseTransformer(config);
+            const transformer = new FieldToStateTransformer(config);
             const stateXmsg = await transformer.transform(xmsg);
             expect(stateXmsg.transformer!.metaData!.state).toEqual("STATE_NOT_AVAILABLE");
         });
 
-        it("should handle case when no target is passed", async () => {
+        it("should default to payload.text when no target is passed", async () => {
             const config = {
                 target: undefined,
                 eventBus
             };
-            const transformer = new SwitchCaseTransformer(config);
+            const transformer = new FieldToStateTransformer(config);
             const stateXmsg = await transformer.transform(xmsg);
             expect(stateXmsg.transformer!.metaData!.state).toEqual("Testing bot");
         });

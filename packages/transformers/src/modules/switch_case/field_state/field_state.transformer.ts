@@ -4,10 +4,11 @@ import { Events } from "@samagra-x/uci-side-effects";
 import get from 'lodash/get';
 import { TelemetryLogger } from "../../common/telemetry";
 
-export class SwitchCaseTransformer implements ITransformer{
+export class FieldToStateTransformer{
 
     config: Record<string, any>;
     private readonly telemetryLogger: TelemetryLogger;
+
     /// Accepted config properties:
     ///     target: string:  flat path to the target field in the transformer, defaults to  `payload.text`
     ///
@@ -39,7 +40,7 @@ export class SwitchCaseTransformer implements ITransformer{
             xmsg.transformer!.metaData!.state = 'STATE_NOT_AVAILABLE';
         }
         
-        this.telemetryLogger.sendLogTelemetry(xmsg, `SWITCH CASE generated state: ${xmsg.transformer!.metaData!.state}`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `FIELD TO STATE Transformer generated state: ${xmsg.transformer!.metaData!.state}`, startTime);
         console.log(`LABEL_CLASSIFIER generated state: ${xmsg.transformer!.metaData!.state}`);
         return xmsg;
     }
