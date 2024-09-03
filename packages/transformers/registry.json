@@ -125,7 +125,7 @@
       {
         "label": "Target Field",
         "name": "target",
-        "type": "string",
+        "type": "json",
         "optional": true
       }
     ],
@@ -377,7 +377,7 @@
       {
         "label": "Response Format",
         "name": "responseFormat",
-        "type": "ide",
+        "type": "json",
         "optional": false,
         "rows": 2
       }

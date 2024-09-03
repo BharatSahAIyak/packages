@@ -87,7 +87,7 @@
         {
             "label": "Response Format",
             "name": "responseFormat",
-            "type": "ide",
+            "type": "json",
             "optional": false,
             "rows": 2
         }
