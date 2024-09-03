@@ -171,7 +171,8 @@ export class Address {
 
 export interface XMessageProvider {
   sendMessage(xmsg: XMessage): Promise<any>;
-  // TODO: fix this to make satic method possible or have default
-  // constructors and make this injectable.
-  // convertMessageToXMsg?(msg: any): Promise<XMessage>;
+  convertMessageToXMsg?(msg: any): Promise<XMessage>;
+  // This function only converts one type to another, and
+  // does not send the actual message to user.
+  convertXmsgToMsg?(xmsg: XMessage): Promise<any>;
 }

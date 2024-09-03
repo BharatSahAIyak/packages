@@ -29,7 +29,6 @@ export enum MessageType {
   HSM = "HSM",
   TEXT = "TEXT",
   HSM_WITH_BUTTON = "HSM_WITH_BUTTON",
-  BROADCAST_TEXT = "BROADCAST_TEXT",
   IMAGE = "IMAGE",
   VIDEO = "VIDEO",
   AUDIO = "AUDIO",
@@ -42,6 +41,7 @@ export enum MessageType {
   REGISTRATION = "REGISTRATION",
   DEBUG = "DEBUG",
   ACKNOWLEDGEMENT = "ACKNOWLEDGEMENT",
+  BROADCAST = "BROADCAST",
 }
 
 export class XMessage {

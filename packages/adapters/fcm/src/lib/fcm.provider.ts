@@ -1,131 +1,83 @@
-import {
-  ChannelTypeEnum,
-  ISendMessageSuccessResponse,
-  IPushOptions,
-  IPushProvider,
-} from '@novu/stateless';
-import { initializeApp, cert, deleteApp, getApp } from 'firebase-admin/app';
-import {
-  AndroidConfig,
-  ApnsConfig,
-  FcmOptions,
-  getMessaging,
-  Messaging,
-  WebpushConfig,
-} from 'firebase-admin/messaging';
-import crypto from 'crypto';
+import { MessageState, MessageType, XMessage, XMessageProvider } from "@samagra-x/xmessage";
+import admin from 'firebase-admin';
+import { Message } from "firebase-admin/lib/messaging/messaging-api";
+import { FCMProviderConfig } from "./fcm.types";
+import { v4 as uuid4 } from 'uuid';
+import { deleteApp } from "firebase-admin/app";
 
-export class FcmPushProvider implements IPushProvider {
-  id = 'fcm';
-  channelType = ChannelTypeEnum.PUSH as ChannelTypeEnum.PUSH;
+export class FcmProvider implements XMessageProvider {
 
-  private appName: string;
-  private messaging: Messaging;
-  constructor(
-    private config: {
-      projectId: string;
-      email: string;
-      secretKey: string;
-    }
-  ) {
-    this.config = config;
-    this.appName = crypto.randomBytes(32).toString();
-    const firebase = initializeApp(
-      {
-        credential: cert({
-          projectId: this.config.projectId,
-          clientEmail: this.config.email,
-          privateKey: this.config.secretKey,
-        }),
-      },
-      this.appName
-    );
-    this.messaging = getMessaging(firebase);
-  }
+    constructor(private config: FCMProviderConfig) {}
 
-  async sendMessage(
-    options: IPushOptions
-  ): Promise<ISendMessageSuccessResponse> {
-    const {
-      deviceTokens: _,
-      type,
-      android,
-      apns,
-      fcmOptions,
-      webPush: webpush,
-      data,
-      ...overridesData
-    } = (options.overrides as IPushOptions['overrides'] & {
-      deviceTokens?: string[];
-      webPush: { [key: string]: { [key: string]: string } | string };
-    }) || {};
-
-    const payload = this.cleanPayload(options.payload);
-
-    let res;
-
-    if (type === 'data') {
-      res = await this.messaging.sendMulticast({
-        tokens: options.target,
-        data: {
-          ...payload,
-          title: options.title,
-          body: options.content,
-          message: options.content,
-        },
-        android,
-        apns,
-        fcmOptions,
-        webpush,
-      });
-    } else {
-      res = await this.messaging.sendMulticast({
-        tokens: options.target,
-        notification: {
-          title: options.title,
-          body: options.content,
-          ...overridesData,
-        },
-        data,
-        android,
-        apns,
-        fcmOptions,
-        webpush,
-      });
+    async convertMessageToXMsg(msg: XMessage): Promise<XMessage> {
+        msg.channelURI = 'Fcm';
+        msg.providerURI = 'Firebase';
+        msg.to = {
+            userID: 'admin',
+            bot: true,
+        };
+        msg.from.bot = false;
+        msg.messageType = msg.messageType ?? MessageType.BROADCAST;
+        msg.messageState = MessageState.ENQUEUED;
+        msg.timestamp = Date.now();
+        msg.messageId = {
+            Id: uuid4(),
+        };
+        msg.payload = {};
+        return msg;
     }
 
-    if (res.successCount === 0) {
-      throw new Error(
-        `Sending message failed due to "${
-          res.responses.find((i) => i.success === false).error.message
-        }"`
-      );
+    async convertXmsgToMsg(xmsg: XMessage): Promise<any> {
+        return xmsg;
     }
 
-    const app = getApp(this.appName);
-    await deleteApp(app);
+    async sendMessage(xmsg: XMessage): Promise<any> {
+        const appName = `${this.config.project_id}_${uuid4()}`;
+        xmsg.messageState = MessageState.SENT;
+        const keys: any = {
+            "project_id": this.config.project_id,
+            "private_key_id": this.config.private_key_id,
+            "private_key": Buffer.from(this.config.private_key).toString(),
+            "client_email": this.config.client_email,
+            "client_id": this.config.client_id,
+            "client_x509_cert_url": this.config.client_x509_cert_url,
+            "type": "service_account",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "universe_domain": "googleapis.com"
+        };
 
-    return {
-      ids: res?.responses?.map((response, index) =>
-        response.success
-          ? response.messageId
-          : `${response.error.message}. Invalid token:- ${options.target[index]}`
-      ),
-      date: new Date().toISOString(),
-    };
-  }
+        admin.initializeApp(
+            {
+            credential: admin.credential.cert(keys)
+            },
+            appName,
+        );
 
-  private cleanPayload(payload: object): Record<string, string> {
-    const cleanedPayload: Record<string, string> = {};
+        const fcmToken = xmsg.to.deviceID;
 
-    Object.keys(payload).forEach((key) => {
-      if (typeof payload[key] === 'string') {
-        cleanedPayload[key] = payload[key];
-      } else {
-        cleanedPayload[key] = JSON.stringify(payload[key]);
-      }
-    });
+        const message: Message = {
+            token: fcmToken,
+            notification: {
+                title: xmsg.payload?.subject,
+                body: xmsg.payload?.text,
+                imageUrl: xmsg.payload?.media?.[0]?.url,
+            }
+        };
 
-    return cleanedPayload;
-  }
+        admin.app(appName).messaging().send(message)
+        .then((response) => {
+            console.log('Successfully sent message:', response);
+        })
+        .catch((error) => {
+            console.error('Error sending message:', error);
+        })
+        .finally(() => deleteApp({
+            name: appName,
+            options: {
+                projectId: this.config.project_id,
+            }
+        }));
+    }
 }
