@@ -125,7 +125,7 @@
       {
         "label": "Target Field",
         "name": "target",
-        "type": "json",
+        "type": "string",
         "optional": true
       }
     ],
