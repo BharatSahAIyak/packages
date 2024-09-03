@@ -37,7 +37,7 @@ const xmsg = {
 
 describe("SwitchCaseTransformer", () => {
     describe("constructor", () => {
-        it("should create an instance of SwitchCaseTransformer with provided config", () => {
+        it("should create an instance of FieldStateTransformer with provided config", () => {
             const config = {
                 target: 'transformer.metaData.value',
                 eventBus
