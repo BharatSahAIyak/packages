@@ -20,7 +20,7 @@ export class FieldToStateTransformer{
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = Date.now();
-        this.telemetryLogger.sendLogTelemetry(xmsg, `SWITCH CASE TRANSFORMER : ${this.config.transformerId} started`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `FIELD STATE TRANSFORMER : ${this.config.transformerId} started`, startTime);
         
         if(!this.config.target){
             this.config.target = 'payload.text';
