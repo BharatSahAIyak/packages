@@ -1,0 +1,14 @@
+{
+    "label": "Broadcast Transformer",
+    "type": "BROADCAST",
+    "class": "GenericTransformer",
+    "description": "A transformer made for sending notifications.",
+    "version": 1,
+    "outputType": "static",
+    "outputs": [
+        {
+            "label": "On Success",
+            "name": "onSuccess"
+        }
+    ]
+}
