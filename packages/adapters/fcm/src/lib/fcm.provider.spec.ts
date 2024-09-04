@@ -1,368 +1,82 @@
-import { IPushOptions } from '@novu/stateless';
-import app from 'firebase-admin/app';
-
-import { FcmPushProvider } from './fcm.provider';
-
-let provider: FcmPushProvider;
-let spy: jest.SpyInstance;
-const subscriber = {};
-const step: IPushOptions['step'] = {
-  digest: false,
-  events: [{}],
-  total_count: 1,
+const MockMessaging = {
+    send: jest.fn(() => MockMessaging),
+    then: jest.fn(() => MockMessaging),
+    catch: jest.fn(() => MockMessaging),
 };
 
-beforeEach(() => {
-  jest.clearAllMocks();
-  jest.mock('firebase-admin');
+const MockAdmin = {
+    initializeApp: jest.fn(),
+    messaging: jest.fn(() => MockMessaging),
+    credential: {
+        cert: jest.fn(),
+    }
+};
 
-  provider = new FcmPushProvider({
-    secretKey: '--BEGIN PRIVATE KEY--abc',
-    projectId: 'test',
-    email: 'test@iam.firebase.google.com',
-  });
+jest.mock('firebase-admin', () => MockAdmin);
 
-  spy = jest
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    .spyOn(provider.messaging, 'sendMulticast')
-    .mockImplementation(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return {} as any;
-    });
-});
+import { MessageState, MessageType } from "@samagra-x/xmessage";
+import { FcmProvider } from "./fcm.provider";
 
-test('should trigger fcm correctly', async () => {
-  await provider.sendMessage({
-    title: 'Test',
-    content: 'Test push',
-    target: ['tester'],
-    payload: {
-      sound: 'test_sound',
-    },
-    subscriber,
-    step,
-  });
-  expect(app.initializeApp).toHaveBeenCalledTimes(1);
-  expect(app.cert).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalled();
-  expect(spy).toHaveBeenCalledWith({
-    notification: {
-      title: 'Test',
-      body: 'Test push',
-    },
-    tokens: ['tester'],
-  });
-});
+describe('fcm adapter tests', () => {
 
-test('should trigger fcm with fcm options override', async () => {
-  await provider.sendMessage({
-    title: 'Test',
-    content: 'Test push',
-    target: ['tester'],
-    payload: {
-      sound: 'test_sound',
-    },
-    overrides: {
-      data: { foo: 'bar' },
-      fcmOptions: {
-        analyticsLabel: 'my-label',
-      },
-    },
-    subscriber,
-    step,
-  });
-  expect(app.initializeApp).toHaveBeenCalledTimes(1);
-  expect(app.cert).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalled();
-  expect(spy).toHaveBeenCalledWith({
-    notification: {
-      title: 'Test',
-      body: 'Test push',
-    },
-    tokens: ['tester'],
-    data: { foo: 'bar' },
-    fcmOptions: {
-      analyticsLabel: 'my-label',
-    },
-  });
-});
+    it('fcm adapter works as expected', async () => {
+        const provider = new FcmProvider({
+            client_email: 'myClientEmail',
+            client_id: 'myClientId',
+            client_x509_cert_url: 'myClientCert',
+            private_key: 'myPrivateKey',
+            private_key_id: 'myPrivateId',
+            project_id: 'myProjectId'
+        });
+        await provider.sendMessage({
+            messageType: MessageType.BROADCAST,
+            channelURI: 'Fcm',
+            providerURI: 'Firebase',
+            from: {
+                userID: 'admin',
+                bot: true,
+            },
+            to: {
+                userID: 'myUserId',
+                deviceID: 'userFcmToken'
+            },
+            messageId: {
+                Id: '00000000-0000-0000-0000-000000000000'
+            },
+            timestamp: 9999,
+            payload: {
+                subject: 'my notification title',
+                text: 'my notification body',
+                media: [
+                    {
+                        url: 'myImageUrl',
+                    }
+                ]
+            },
+            messageState: MessageState.SENT,
+        });
 
-test('should trigger fcm with android override', async () => {
-  await provider.sendMessage({
-    title: 'Test',
-    content: 'Test push',
-    target: ['tester'],
-    payload: {
-      sound: 'test_sound',
-    },
-    overrides: {
-      data: { foo: 'bar' },
-      android: {
-        notification: {
-          title: 'Test',
-          body: 'Test push',
-        },
-        data: {
-          foo: 'bar',
-        },
-      },
-    },
-    subscriber,
-    step,
-  });
-  expect(app.initializeApp).toHaveBeenCalledTimes(1);
-  expect(app.cert).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalled();
-  expect(spy).toHaveBeenCalledWith({
-    notification: {
-      title: 'Test',
-      body: 'Test push',
-    },
-    tokens: ['tester'],
-    data: { foo: 'bar' },
-    android: {
-      notification: {
-        title: 'Test',
-        body: 'Test push',
-      },
-      data: {
-        foo: 'bar',
-      },
-    },
-  });
-});
-
-test('should trigger fcm with apns (ios) override', async () => {
-  await provider.sendMessage({
-    title: 'Test',
-    content: 'Test push',
-    target: ['tester'],
-    payload: {
-      sound: 'test_sound',
-    },
-    overrides: {
-      apns: {
-        payload: {
-          aps: {
+        expect(MockAdmin.initializeApp).toHaveBeenCalledTimes(1);
+        expect(MockAdmin.credential.cert).toHaveBeenCalledWith({
+            client_email: 'myClientEmail',
+            client_id: 'myClientId',
+            client_x509_cert_url: 'myClientCert',
+            private_key: 'myPrivateKey',
+            private_key_id: 'myPrivateId',
+            project_id: 'myProjectId',
+            type: 'service_account',
+            'auth_uri': 'https://accounts.google.com/o/oauth2/auth',
+            'token_uri': 'https://oauth2.googleapis.com/token',
+            'auth_provider_x509_cert_url': 'https://www.googleapis.com/oauth2/v1/certs',
+            'universe_domain': 'googleapis.com'
+        });
+        expect(MockMessaging.send).toHaveBeenCalledWith({
+            token: 'userFcmToken',
             notification: {
-              title: 'Test',
-              body: 'Test push',
-            },
-            data: {
-              foo: 'bar',
-            },
-          },
-        },
-      },
-    },
-    subscriber,
-    step,
-  });
-  expect(app.initializeApp).toHaveBeenCalledTimes(1);
-  expect(app.cert).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalled();
-  expect(spy).toHaveBeenCalledWith({
-    notification: {
-      title: 'Test',
-      body: 'Test push',
-    },
-    tokens: ['tester'],
-    apns: {
-      payload: {
-        aps: {
-          notification: {
-            title: 'Test',
-            body: 'Test push',
-          },
-          data: {
-            foo: 'bar',
-          },
-        },
-      },
-    },
-  });
-});
-
-test('should trigger fcm data for ios with headers options', async () => {
-  await provider.sendMessage({
-    title: 'Test',
-    content: 'Test push',
-    target: ['tester'],
-    payload: {
-      key_1: 'val_1',
-      key_2: 'val_2',
-    },
-    overrides: {
-      type: 'data',
-      apns: {
-        headers: {
-          'apns-priority': '5',
-        },
-        payload: {
-          aps: {
-            alert: {
-              'loc-key': 'some_body',
-              'title-loc-key': 'some_title',
-            },
-            sound: 'demo.wav',
-          },
-        },
-      },
-    },
-    subscriber,
-    step,
-  });
-  expect(app.initializeApp).toHaveBeenCalledTimes(1);
-  expect(app.cert).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalled();
-  expect(spy).toHaveBeenCalledWith({
-    tokens: ['tester'],
-    apns: {
-      headers: {
-        'apns-priority': '5',
-      },
-      payload: {
-        aps: {
-          alert: {
-            'loc-key': 'some_body',
-            'title-loc-key': 'some_title',
-          },
-          sound: 'demo.wav',
-        },
-      },
-    },
-    data: {
-      key_1: 'val_1',
-      key_2: 'val_2',
-      title: 'Test',
-      body: 'Test push',
-      message: 'Test push',
-    },
-  });
-});
-
-test('should trigger fcm data for android with priority option', async () => {
-  await provider.sendMessage({
-    title: 'Test',
-    content: 'Test push',
-    target: ['tester'],
-    payload: {
-      key_1: 'val_1',
-      key_2: 'val_2',
-    },
-    overrides: {
-      type: 'data',
-      android: {
-        data: {
-          for_android: 'only',
-        },
-        priority: 'high',
-      },
-    },
-    subscriber,
-    step,
-  });
-  expect(app.initializeApp).toHaveBeenCalledTimes(1);
-  expect(app.cert).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalled();
-  expect(spy).toHaveBeenCalledWith({
-    tokens: ['tester'],
-    android: {
-      data: {
-        for_android: 'only',
-      },
-      priority: 'high',
-    },
-    data: {
-      key_1: 'val_1',
-      key_2: 'val_2',
-      title: 'Test',
-      body: 'Test push',
-      message: 'Test push',
-    },
-  });
-});
-
-test('should clean the payload for the FCM data message', async () => {
-  const payload = {
-    foo: 'bar',
-    one: 1,
-    isActive: true,
-    object: { asd: 'asd' },
-  };
-  const cleanPayload = {
-    foo: 'bar',
-    one: '1',
-    isActive: 'true',
-    object: '{"asd":"asd"}',
-    title: 'Test',
-    body: 'Test push',
-    message: 'Test push',
-  };
-
-  await provider.sendMessage({
-    title: 'Test',
-    content: 'Test push',
-    target: ['tester'],
-    payload,
-    overrides: {
-      type: 'data',
-      android: {
-        data: {
-          for_android: 'only',
-        },
-        priority: 'high',
-      },
-    },
-    subscriber,
-    step,
-  });
-  expect(app.initializeApp).toHaveBeenCalledTimes(1);
-  expect(app.cert).toHaveBeenCalledTimes(1);
-  expect(spy).toHaveBeenCalled();
-  expect(spy).toHaveBeenCalledWith({
-    tokens: ['tester'],
-    android: {
-      data: {
-        for_android: 'only',
-      },
-      priority: 'high',
-    },
-    data: cleanPayload,
-  });
-});
-
-test('should trigger fcm multiple times with the same overrides', async () => {
-  const tokens = ['tester1', 'tester2'];
-  const overrides: IPushOptions['overrides'] = {
-    type: 'data',
-    data: { foo: 'bar' },
-  };
-
-  tokens.forEach(async (token) => {
-    await provider.sendMessage({
-      title: 'Test',
-      content: 'Test push',
-      target: [token],
-      payload: {
-        sound: 'test_sound',
-      },
-      overrides,
-      subscriber,
-      step,
+                title: 'my notification title',
+                body: 'my notification body',
+                imageUrl: 'myImageUrl',
+            }
+        });
     });
-    expect(app.initializeApp).toHaveBeenCalledTimes(1);
-    expect(app.cert).toHaveBeenCalledTimes(1);
-    expect(spy).toHaveBeenCalled();
-    expect(spy).toHaveBeenCalledWith({
-      tokens: [token],
-      data: {
-        title: 'Test',
-        body: 'Test push',
-        message: 'Test push',
-        sound: 'test_sound',
-      },
-    });
-  });
 });
