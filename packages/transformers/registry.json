@@ -1,6 +1,6 @@
 [
   {
-    "label": "Code Runner Transformer",
+    "label": "Broadcast Transformer",
     "type": "BROADCAST_TRANSFORMER",
     "class": "GenericTransformer",
     "description": "A node used to configure broadcast messages.",
