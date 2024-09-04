@@ -75,6 +75,12 @@
         "name": "logic",
         "type": "string",
         "optional": true
+      },
+      {
+        "label": "Algorithm",
+        "name": "algorithm",
+        "type": "string",
+        "optional": true
       }
     ],
     "outputs": [
