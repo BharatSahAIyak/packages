@@ -1,0 +1,50 @@
+{
+    "label": "Code Runner Transformer",
+    "type": "BROADCAST_TRANSFORMER",
+    "class": "GenericTransformer",
+    "description": "A node used to configure broadcast messages.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+        {
+            "label": "title",
+            "name": "title",
+            "type": "string",
+            "optional": false
+        },
+        {
+            "label": "body",
+            "name": "body",
+            "type": "string",
+            "optional": false
+        },
+        {
+            "label": "image",
+            "name": "image",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "icon",
+            "name": "icon",
+            "type": "string",
+            "optional": true
+        },
+        {
+            "label": "deeplink",
+            "name": "deeplink",
+            "type": "string",
+            "optional": true
+        }
+    ],
+    "outputs": [
+        {
+            "label": "On Success",
+            "name": "onSuccess"
+        },
+        {
+            "label": "On Error",
+            "name": "onError"
+        }
+    ]
+}
