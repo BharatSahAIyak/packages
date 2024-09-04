@@ -37,7 +37,7 @@ export class DocRetrieverTransformer implements ITransformer {
         }
         
         try {
-            let data = qs.stringify({
+            let qsData: any = {
                 'requestId': uuid4(),
                 'query': xmsg.payload.text,
                 'topK': this.config.topK || '3',
@@ -46,7 +46,11 @@ export class DocRetrieverTransformer implements ITransformer {
                 'logic': this.config.logic || 'topK',
                 'recipeConfig': JSON.stringify(this.config.recipeConfig || {}),
                 'threshold': this.config.threshold || 0
-            });
+            }
+            if(this.config.algorithm) {
+                qsData['algorithm'] = this.config.algorithm
+            }
+            let data = qs.stringify(qsData);
 
             let config = {
                 method: 'post',
