@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-adapters-factory",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "A factory module which provides specific adapter instance based on request data.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
