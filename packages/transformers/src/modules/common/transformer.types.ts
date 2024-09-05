@@ -17,6 +17,7 @@ export enum TransformerType {
     SPEECH_TO_TEXT = 'SPEECH_TO_TEXT',
     FIELD_STATE = 'FIELD_STATE',
     BROADCAST_TRANSFORMER = 'BROADCAST_TRANSFORMER',
+    SCHEDULE_TRANSFORMER = 'SCHEDULE_TRANSFORMER',
 }
 
 export enum TransformerClass {
@@ -46,4 +47,5 @@ export const TransformerMapping: Record<TransformerType, TransformerClass> = {
     [TransformerType.SPEECH_TO_TEXT]: TransformerClass.GenericTransformer,
     [TransformerType.FIELD_STATE]: TransformerClass.SwitchCaseTransformer,
     [TransformerType.BROADCAST_TRANSFORMER]: TransformerClass.GenericTransformer,
+    [TransformerType.SCHEDULE_TRANSFORMER]: TransformerClass.StateRestoreTransformer,
 };
