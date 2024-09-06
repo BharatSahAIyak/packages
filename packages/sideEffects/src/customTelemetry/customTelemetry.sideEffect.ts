@@ -26,7 +26,7 @@ const AcceptedEvents: string[] = [
 ];
 
 export class CustomTelemetrySideEffect implements ISideEffect {
-    constructor(private readonly config: Record<string, any>) { }
+    constructor(private readonly config: Record<string, any>) {}
 
     static getName(): string {
         return "CustomTelemetry";
@@ -38,15 +38,31 @@ export class CustomTelemetrySideEffect implements ISideEffect {
 
     async execute(sideEffectData: SideEffectData): Promise<boolean> {
         try {
-            const eventData: ConstructedEventData = this.createEventData(sideEffectData);
             const host: string = this.extractHostFromConfig();
+            
+            if (this.config.events) {
+                const eventData: ConstructedEventData[] = this.config.events.map((event: {
+                    eventId: string,
+                    setters: Record<string, string>
+                }) => this.createEventData(sideEffectData, event.eventId, event.setters));
 
-            if (!eventData || !host) {
-                console.error("Event data or host not found.");
-                return false;
+                if (!eventData || !host) {
+                    console.error("Event data or host not found.");
+                    return false;
+                }
+                
+                await Promise.all(eventData.map((event) => this.sendEventDataToTelemetry(event, host)));
+            } else {
+                /// NOTE: This spec can be planned to be deprecated
+                const eventData: ConstructedEventData = this.createEventData(sideEffectData, this.config.eventId, this.config.setters);
+
+                if (!eventData || !host) {
+                    console.error("Event data or host not found.");
+                    return false;
+                }
+
+                await this.sendEventDataToTelemetry(eventData, host);
             }
-
-            await this.sendEventDataToTelemetry(eventData, host);
             console.log("Event data sent to Telemetry service successfully.");
             return true;
         } catch (error) {
@@ -55,7 +71,7 @@ export class CustomTelemetrySideEffect implements ISideEffect {
         }
     }
 
-    private createEventData(sideEffectData: SideEffectData): ConstructedEventData {
+    private createEventData(sideEffectData: SideEffectData, eventId: string, setters: Record<string, string>): ConstructedEventData {
         const subEventData: any = {
             botId: sideEffectData.eventData.app!,
             orgId: sideEffectData.eventData?.orgId!,
@@ -74,7 +90,7 @@ export class CustomTelemetrySideEffect implements ISideEffect {
             actorId: sideEffectData.eventData.from?.userID || sideEffectData.eventData.to.userID,
             actorType: 'System',
             env: process.env.ENVIRONMENT || 'UNKNOWN',
-            eventId: this.config.eventId ?? 'UNKNOWN_EVENT_ID',
+            eventId: eventId ?? 'UNKNOWN_EVENT_ID',
             event: 'Transformer Execution',
             subEvent: sideEffectData.eventName,
             eventData: subEventData
@@ -87,9 +103,8 @@ export class CustomTelemetrySideEffect implements ISideEffect {
             subEventData['error'] = sideEffectData.eventData.transformer?.metaData?.errorString;
         }
 
-        const setters: Record<string, string> = this.config.setters;
         Object.entries(setters ?? {}).forEach((entry) => {
-            set(subEventData, entry[0], get(sideEffectData.eventData, entry[1]));
+            set(subEventData, entry[0], get(sideEffectData.eventData, entry[1])); // setters have values as xMsg fields
         });
 
         eventData.timestamp = Math.trunc(eventData.timestamp / 1000);
