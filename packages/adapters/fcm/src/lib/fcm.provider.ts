@@ -65,8 +65,7 @@ export class FcmProvider implements XMessageProvider {
                 imageUrl: xmsg.payload?.media?.[0]?.url,
             },
             data:{
-                deeplink: xmsg.payload?.metaData?.deeplink,
-                ...xmsg.payload?.metaData?.additionalBroadcastData ?? {}
+                ...xmsg.payload?.metaData
             }
         };
 

@@ -38,7 +38,7 @@
         },
         {
             "label": "broadcast meta data",
-            "name": "broadcastMetaData",
+            "name": "metaData",
             "type": "json",
             "optional": true
         }

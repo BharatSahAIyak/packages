@@ -34,17 +34,9 @@ export class BroadcastTransformer implements ITransformer {
         }
         
         if(this.config?.broadcastMetaData){
-            if(typeof this.config.broadcastMetaData === 'string'){
-                xmsg.payload.metaData = {
-                    ...xmsg.payload.metaData,
-                    additionalBroadcastData: JSON.parse(this.config.broadcastMetaData),
-                }
-            }
-            else{
-                xmsg.payload.metaData = {
-                    ...xmsg.payload.metaData,
-                    additionalBroadcastData: this.config.broadcastMetaData,
-                }
+            xmsg.payload.metaData = {
+                ...xmsg.payload.metaData,
+                ...this.config.broadcastMetaData,
             }
         }
 
