@@ -32,6 +32,22 @@ export class BroadcastTransformer implements ITransformer {
             ...xmsg.payload.metaData,
             deeplink: this.config.deeplink,
         }
+        
+        if(this.config?.broadcastMetaData){
+            if(typeof this.config.broadcastMetaData === 'string'){
+                xmsg.payload.metaData = {
+                    ...xmsg.payload.metaData,
+                    additionalBroadcastData: JSON.parse(this.config.broadcastMetaData),
+                }
+            }
+            else{
+                xmsg.payload.metaData = {
+                    ...xmsg.payload.metaData,
+                    additionalBroadcastData: this.config.broadcastMetaData,
+                }
+            }
+        }
+
         this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Date.now());
         return xmsg;
     }
