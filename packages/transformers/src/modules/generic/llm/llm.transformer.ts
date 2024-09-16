@@ -210,10 +210,7 @@ export class LLMTransformer implements ITransformer {
             xmsg.payload.media = media;
             this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
         } else {
-            this.switchFromTo(xmsg);
-            const oldMessageId = xmsg.messageId.Id;
             const newMessageId = uuid4();
-            xmsg.messageId.Id = newMessageId;
             if (!this.config.outboundURL){
                 throw new Error('`outboundURL` not defined in LLM transformer');
             }
@@ -267,8 +264,11 @@ export class LLMTransformer implements ITransformer {
                         translatedSentences.push(xmsg.payload.text);
                         xmsg.payload.media = media;
                         xmsg.payload.text = translatedSentences.join(' ');
-                        xmsg.payload.text = xmsg.payload.text?.replace(/<newline>/g, '\n')
-                        await this.sendMessage(xmsg)
+                        xmsg.payload.text = xmsg.payload.text?.replace(/<newline>/g, '\n');
+                        const msgCopy = JSON.parse(JSON.stringify(xmsg));
+                        this.switchFromTo(msgCopy);
+                        msgCopy.messageId.Id = newMessageId;
+                        await this.sendMessage(msgCopy);
                     }
                 }
             }
@@ -313,10 +313,7 @@ export class LLMTransformer implements ITransformer {
                     streamStartLatency
                 }
             }
-            xmsg.messageId.Id = oldMessageId;
             this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
-            xmsg.messageId.Id = newMessageId;
-            xmsg.transformer.metaData!.messageIdChanged = true;
         }
         delete process.env['OPENAI_API_KEY'];
         return xmsg;
