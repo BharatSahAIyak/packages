@@ -30,8 +30,8 @@ const eventBus = {
     pushEvent: (event: any) => {}
 }
 
-let mockOpenAIresponses = {
-    create: openai200normal,
+const mockOpenAIresponses = {
+    create: jest.fn(() => openai200normal),
 };
 
 jest.mock('openai', () => {
@@ -39,7 +39,7 @@ jest.mock('openai', () => {
         return {
             chat: {
                 completions: {
-                    create: jest.fn().mockImplementation(async () => { return mockOpenAIresponses.create; })
+                    create: jest.fn().mockImplementation(async () => { return mockOpenAIresponses.create(); })
                 }
             }
         }
@@ -257,4 +257,52 @@ describe("LLMTransformer Tests", () => {
         );
     });
 
+    it('transformer does not modify original XMessage object when streaming is enabled', async () => {
+        const transformerConfig = {
+            model: "gpt-3.5-turbo",
+            APIKey: "mockkey",
+            outboundURL: "mockOutboundURL",
+            bhashiniUserId: "mockUserId",
+            bhashiniAPIKey: "mockAPIKey",
+            bhashiniURL: "mockBhashiniURL",
+            temperature: 0.5,
+            outputLanguage: "en",
+            eventBus,
+            enableStream: true,
+        };
+        const transformer = new LLMTransformer(transformerConfig);
+        jest.spyOn(mockOpenAIresponses, 'create').mockReturnValue([
+            {
+                choices: [{
+                    delta: {
+                        content: 'Hello there.',
+                    }
+                }]
+            },
+            {
+                choices: [{
+                    delta: {
+                        content: ' How are you.',
+                    }
+                }]
+            }
+        ] as any);
+        jest.spyOn(transformer, 'sendMessage').mockImplementation(async (data) => {
+            // sendMessage should have been called with copy of XMessage.
+            expect(data.messageId.Id != xmsg.messageId.Id).toBe(true);
+            expect(data.from.userID).toStrictEqual(xmsg.to.userID);
+            expect(data.to.userID).toStrictEqual(xmsg.from.userID);
+            // check whether actual payload is set.
+            expect(data.payload.text).toEqual('Hello there.');
+        });
+        const transformedXMsg = await transformer.transform(xmsg);
+        // Original message id is not modified.
+        expect(transformedXMsg.messageId.Id).toEqual(xmsg.messageId.Id);
+        // Original message from, to is not modified.
+        expect(transformedXMsg.to).toEqual(xmsg.to);
+        expect(transformedXMsg.from).toEqual(xmsg.from);
+        // Check `messageIdChanged` is only set for messages
+        // directly sent by LLM.
+        expect(transformedXMsg.payload.metaData?.messageIdChanged).toBeUndefined();
+    });
 });
