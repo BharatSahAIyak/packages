@@ -87,20 +87,7 @@ describe('BroadcastTransformer', () => {
         const transformedXMessage = await transformer.transform(mockXMessage);
         expect(transformedXMessage.payload.metaData).toEqual({
             deeplink: mockConfig.deeplink,
-            additionalBroadcastData: {
-                test: 'test'
-            }
-        });
-    });
-    it('should transform the xmsg object correctly with broadcastMetaData as string', async () => {
-        mockConfig.broadcastMetaData = '{"test": "test"}';
-        transformer = new BroadcastTransformer(mockConfig);
-        const transformedXMessage = await transformer.transform(mockXMessage);
-        expect(transformedXMessage.payload.metaData).toEqual({
-            deeplink: mockConfig.deeplink,
-            additionalBroadcastData: {
-                test: 'test'
-            }
+            ...mockConfig.broadcastMetaData
         });
     });
 });
