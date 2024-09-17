@@ -36,6 +36,12 @@
         "name": "deeplink",
         "type": "string",
         "optional": true
+      },
+      {
+        "label": "broadcast meta data",
+        "name": "metaData",
+        "type": "json",
+        "optional": true
       }
     ],
     "outputs": [

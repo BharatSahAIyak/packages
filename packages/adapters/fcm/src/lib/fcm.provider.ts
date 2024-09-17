@@ -63,6 +63,9 @@ export class FcmProvider implements XMessageProvider {
                 title: xmsg.payload?.subject,
                 body: xmsg.payload?.text,
                 imageUrl: xmsg.payload?.media?.[0]?.url,
+            },
+            data:{
+                ...xmsg.payload?.metaData
             }
         };
 
