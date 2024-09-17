@@ -18,37 +18,37 @@ jobs:
           node-version: 18.17
 
       - name: Install Dependencies Transformer
-        run: cd packages/transformers && npm install --legacy-peer-deps
+        run: cd packages/transformers && yarn install --legacy-peer-deps
 
       - name: Run Tests Transformer
-        run: cd packages/transformers && npx jest --coverage
-      
+        run: cd packages/transformers && yarn jest --coverage
+
       - name: Coveralls
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file: packages/transformers/coverage/lcov.info
-      
+
       - name: Install Dependencies Factory
-        run: cd packages/adapters/factory && npm install
+        run: cd packages/adapters/factory && yarn install
 
       - name: Run Tests Factory
-        run: cd packages/adapters/factory && npm run test
+        run: cd packages/adapters/factory && yarn test
 
       - name: Install Dependencies FCM
-        run: cd packages/adapters/fcm && npm install
+        run: cd packages/adapters/fcm && yarn install
 
       - name: Run Tests FCM
-        run: cd packages/adapters/fcm && npm run test
+        run: cd packages/adapters/fcm && yarn test
 
       - name: Install Dependencies Gupshup Whatsapp
-        run: cd packages/adapters/gupshup-whatsapp && npm install
+        run: cd packages/adapters/gupshup-whatsapp && yarn install
 
       - name: Run Tests Gupshup Whatsapp
-        run: cd packages/adapters/gupshup-whatsapp && npm run test
+        run: cd packages/adapters/gupshup-whatsapp && yarn test
 
       - name: Install Dependencies Recipe Compiler
-        run: cd packages/recipeCompiler && npm install
+        run: cd packages/recipeCompiler && yarn install
 
       - name: Run Tests Recipe Compiler
-        run: cd packages/recipeCompiler && npm run test
+        run: cd packages/recipeCompiler && yarn test
