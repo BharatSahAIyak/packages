@@ -35,12 +35,6 @@ jobs:
       - name: Run Tests Factory
         run: cd packages/adapters/factory && yarn test
 
-      - name: Install Dependencies FCM
-        run: cd packages/adapters/fcm && yarn install
-
-      - name: Run Tests FCM
-        run: cd packages/adapters/fcm && yarn test
-
       - name: Install Dependencies Gupshup Whatsapp
         run: cd packages/adapters/gupshup-whatsapp && yarn install
 
