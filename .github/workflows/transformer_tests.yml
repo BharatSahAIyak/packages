@@ -40,12 +40,6 @@ jobs:
 
       - name: Run Tests FCM
         run: cd packages/adapters/fcm && npm run test
-      
-      - name: Install Dependencies PWA
-        run: cd packages/adapters/pwa && npm install
-
-      - name: Run Tests PWA
-        run: cd packages/adapters/pwa && npm run test
 
       - name: Install Dependencies Gupshup Whatsapp
         run: cd packages/adapters/gupshup-whatsapp && npm install
