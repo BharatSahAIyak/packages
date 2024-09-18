@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-adapters-fcm",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A FCM adapter for @samagra-x/uci-adapters-factory",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
