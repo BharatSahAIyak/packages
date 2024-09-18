@@ -4,14 +4,14 @@ const ivm = require('isolated-vm');
 import { XMessage } from "@samagra-x/xmessage";
 
 const AcceptedEvents: string[] = [
-    Events.CUSTOM_CODE_RUNNER,
+    Events.DEFAULT_TRANSFORMER_END_EVENT
 ];
 
 export class CodeRunnerSideEffect implements ISideEffect {
     constructor(private readonly config: Record<string, any>) {}
 
     static getName(): string {
-        return "CodeRunner";
+        return "codeRunner";
     }
 
     static doesConsumeEvent(eventName: string): Boolean {
@@ -40,7 +40,6 @@ export class CodeRunnerSideEffect implements ISideEffect {
                 this.config.code,
                 [ JSON.stringify(xmsgCopy) ],
                 {
-                    timeout: 30_000,
                     arguments: { 
                         fetch: new ivm.Reference(async (url: string) => {
                           // Perform fetch in the main Node.js environment
@@ -64,7 +63,7 @@ export class CodeRunnerSideEffect implements ISideEffect {
             console.log('CodeRunner sideEffect return:',codeResult);
             return true;
         } catch (error) {
-            console.error("Error occurred during telemetry:", error);
+            console.error("Error while executing code runner side-effect", error);
             return false;
         }
     }
