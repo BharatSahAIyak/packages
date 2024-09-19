@@ -17,7 +17,7 @@ export class PwaBotProvider implements XMessageProvider {
         };
         msg.from.bot = false;
         msg.messageType = msg.messageType ?? MessageType.TEXT;
-        msg.messageState = MessageState.REPLIED;
+        msg.messageState = msg.messageState ?? MessageState.REPLIED;
         msg.timestamp = Date.now();
         msg.payload = msg.payload ?? {};
         return msg;
