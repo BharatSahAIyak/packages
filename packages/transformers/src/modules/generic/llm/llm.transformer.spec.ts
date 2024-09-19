@@ -304,5 +304,7 @@ describe("LLMTransformer Tests", () => {
         // Check `messageIdChanged` is only set for messages
         // directly sent by LLM.
         expect(transformedXMsg.payload.metaData?.messageIdChanged).toBeUndefined();
+        // Check if new message id used for streams has been preserved in metaData.
+        expect(transformedXMsg.transformer?.metaData?.streamMessageId).toBeDefined();
     });
 });

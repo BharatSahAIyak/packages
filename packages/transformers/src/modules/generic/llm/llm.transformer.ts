@@ -309,6 +309,7 @@ export class LLMTransformer implements ITransformer {
                 ...xmsg.transformer,
                 metaData: {
                     ...xmsg.transformer?.metaData,
+                    streamMessageId: newMessageId,
                     responseInEnglish: allSentences.join(' ')?.replace("<end/>",'')?.replace(/<newline>/g, '\n')?.replace(/<ନୂତନ ଲାଇନ୍>/g, '\n')?.replace(/<न्यूलाइन>/g, '\n')?.replace(/<नई लाइन>/g, '\n'),
                     streamStartLatency
                 }
