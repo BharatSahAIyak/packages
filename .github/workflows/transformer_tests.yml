@@ -23,6 +23,12 @@ jobs:
       - name: Run Tests Transformer
         run: cd packages/transformers && yarn jest --coverage
 
+      - name: Install Dependencies Side-Effects
+        run: cd packages/sideEffects && yarn install
+
+      - name: Run Tests Side-Effects
+        run: cd packages/sideEffects && yarn test
+
       - name: Coveralls
         uses: coverallsapp/github-action@v2
         with:
