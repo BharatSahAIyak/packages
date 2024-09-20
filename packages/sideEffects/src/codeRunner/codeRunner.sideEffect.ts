@@ -2,6 +2,7 @@ import { ISideEffect } from "../common/sideEffect.interface";
 import { Events, SideEffectData } from "../common/sideEffect.types";
 const ivm = require('isolated-vm');
 import { XMessage } from "@samagra-x/xmessage";
+import fetch from 'node-fetch';
 
 const AcceptedEvents: string[] = [
     Events.DEFAULT_TRANSFORMER_END_EVENT
@@ -38,29 +39,43 @@ export class CodeRunnerSideEffect implements ISideEffect {
             xmsgCopy.transformer = xmsg.transformer;
             const codeResult = context.evalClosureSync(
                 this.config.code,
-                [ JSON.stringify(xmsgCopy) ],
-                {
-                    arguments: { 
-                        fetch: new ivm.Reference(async (url: string) => {
-                          // Perform fetch in the main Node.js environment
-                          const response = await fetch(url);
-                          const contentType = response.headers.get('content-type');
-                          let data;
-                          
-                          // Check the content type and parse accordingly
-                          if (contentType && contentType.includes('application/json')) {
-                            data = await response.json();
-                          } else {
-                            data = await response.text();
-                          }
-                          
-                          return data; // Return the parsed data to the VM
-                        }),
-                      },
-                      result: { promise: true } // Ensure we return promises
-                }
+                [ 
+                    JSON.stringify(xmsgCopy),
+                    (url:string='',requestOptions:any={
+                        method:'GET',
+                        headers: {'Content-Type': 'application/json'}
+                    }) => {
+                        fetch(url, requestOptions)
+                            .then((result) => {
+                                if (!result.ok) {
+                                    // Handle specific HTTP errors
+                                    return result.json().then((errorResponse:any) => {
+                                    throw new Error(
+                                        `HTTP error! status: ${result.status}, message: ${errorResponse?.message || result.statusText}`
+                                    );
+                                    });
+                                }
+                                // Attempt to parse JSON response
+                                return result.json().catch(() => {
+                                    // If the response body is not JSON, handle it as plain text
+                                    throw new Error('Response is not in JSON format');
+                                });
+                            })
+                            .then((response) => {
+                                // Successful response
+                                console.log("CodeRunner sideEffect: REST API call response =", response);
+                                return response; // You can return or use the response as needed
+                            })
+                            .catch((error) => {
+                                // Handle network or other errors
+                                console.error("CodeRunner sideEffect: Error while executing REST API call:", error.message || error);
+                                throw error; // Re-throw if needed for further error handling
+                            });
+                    }
+                ],
+                { }
             );
-            console.log('CodeRunner sideEffect return:',codeResult);
+            console.log('CodeRunner sideEffect return:', codeResult);
             return true;
         } catch (error) {
             console.error("Error while executing code runner side-effect", error);

@@ -2,22 +2,17 @@ import { Events, SideEffectData } from '../common/sideEffect.types';
 import { MessageState, MessageType } from '@samagra-x/xmessage';
 import { CodeRunnerSideEffect } from './codeRunner.sideEffect';
 
-// Mock fetch globally
-global.fetch = jest.fn();
+global.fetch = jest.fn(() =>
+    Promise.resolve({
+      ok: true, // required to simulate a successful response
+      status: 200,
+      statusText: 'OK',
+      json: () => Promise.resolve({ message: 'Success' }),
+      // You can also add other optional fields if necessary
+    } as Response) // Cast as Response to satisfy TypeScript
+  );
 
 describe('CodeRunnerSideEffect Tests', () => {
-
-    let fetchMock: jest.SpyInstance;
-
-    beforeEach(() => {
-        // Spy on global fetch and mock its implementation
-        fetchMock = jest.spyOn(global, 'fetch').mockImplementation(() =>
-            Promise.resolve({
-                json: () => Promise.resolve('response'),
-                text: () => Promise.resolve('response')
-            }) as unknown as Promise<Response>
-        );
-    });
 
     const mockSideEffectData: SideEffectData = {
         eventName: Events.DEFAULT_TRANSFORMER_END_EVENT,
@@ -53,11 +48,11 @@ describe('CodeRunnerSideEffect Tests', () => {
       };
 
     test('should return true for valid config and event data', async () => {
-        const config = { code: 'return JSON.parse(arguments[0]).eventData.payload;' };
-
+        const config = { code: 'return $0;' };
         const codeRunner = new CodeRunnerSideEffect(config);
         const result = await codeRunner.execute(mockSideEffectData);
         expect(result).toBe(true);
+        expect(fetch).toHaveBeenCalledTimes(0);
     });
 
     test('should return false when config.code is missing', async () => {
@@ -66,14 +61,6 @@ describe('CodeRunnerSideEffect Tests', () => {
         const codeRunner = new CodeRunnerSideEffect(config);
         const result = await codeRunner.execute(mockSideEffectData);
         expect(result).toBe(false);
-    });
-
-    test('should initialize transformer if missing', async () => {
-        const config = { code: 'return JSON.parse(arguments[0]).payload;' };
-
-        const codeRunner = new CodeRunnerSideEffect(config);
-        const result = await codeRunner.execute(mockSideEffectData);
-        expect(result).toBe(true);
     });
 
     test('should return false if code throws an error', async () => {
@@ -85,19 +72,14 @@ describe('CodeRunnerSideEffect Tests', () => {
     });
 
     test('should handle fetch calls correctly', async () => {
-        const config = { code: 'return fetch(`https://jsonplaceholder.typicode.com/todos/1`).then(response => response.json());' };
-
-        // Mock fetch response
-        fetchMock.mockImplementation(() =>
-            Promise.resolve({
-                json: () => Promise.resolve('response')
-            }) as unknown as Promise<Response>
-        );
+        const config = { code: '$1(`https://test.com`)'};
 
         const codeRunner = new CodeRunnerSideEffect(config);
         const result = await codeRunner.execute(mockSideEffectData);
+        console.log('fetchresult=',result)
         expect(result).toBe(true);
-        expect(fetchMock).toHaveBeenCalled();
+        expect(fetch).toHaveBeenCalled();
+        expect(fetch).toHaveBeenCalledTimes(1);
     });
 
     test('should identify accepted and non-accepted events', () => {
