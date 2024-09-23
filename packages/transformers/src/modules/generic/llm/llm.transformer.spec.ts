@@ -307,4 +307,128 @@ describe("LLMTransformer Tests", () => {
         // Check if new message id used for streams has been preserved in metaData.
         expect(transformedXMsg.transformer?.metaData?.streamMessageId).toBeDefined();
     });
+
+    it("should use default prompt when neither config.prompt nor transformer.metaData.prompt are available", async () => {
+        jest.spyOn(mockOpenAIresponses, 'create').mockReturnValue({
+            choices: [{
+                message: {
+                    content: "Default prompt response",
+                }
+            }]
+        } as any);
+
+        const transformer = new LLMTransformer({
+            model: "gpt-3.5-turbo",
+            APIKey: "mockkey",
+            outboundURL: "mockOutboundURL",
+            bhashiniUserId: "mockUserId",
+            bhashiniAPIKey: "mockAPIKey",
+            bhashiniURL: "mockBhashiniURL",
+            temperature: 0.5,
+            outputLanguage: "en",
+            eventBus
+        });
+
+        const transformedXMsg = await transformer.transform(xmsg);
+
+        const expectedPrompt = "You are am assistant who helps with answering questions for users based on the search results. If question is not relevant to search reults/corpus, refuse to answer";
+        expect(transformedXMsg.transformer?.metaData?.prompt).toBe(expectedPrompt);
+        expect(typeof transformedXMsg.transformer?.metaData?.prompt).toBe("string");
+
+        
+    });
+
+    it("should use config.prompt when available, taking precedence over transformer.metaData.prompt", async () => {
+        const configPrompt = "You are a helpful assistant. Answer the following question:";
+        jest.spyOn(mockOpenAIresponses, 'create').mockReturnValue({
+            choices: [{
+                message: {
+                    content: "Config prompt response",
+                }
+            }]
+        } as any);
+
+        const transformer = new LLMTransformer({
+            model: "gpt-3.5-turbo",
+            APIKey: "mockkey",
+            outboundURL: "mockOutboundURL",
+            bhashiniUserId: "mockUserId",
+            bhashiniAPIKey: "mockAPIKey",
+            bhashiniURL: "mockBhashiniURL",
+            temperature: 0.5,
+            outputLanguage: "en",
+            eventBus,
+            prompt: configPrompt
+        });
+
+        xmsg.transformer!.metaData!.prompt = "This prompt should be ignored";
+
+        const transformedXMsg = await transformer.transform(xmsg);
+
+        expect(transformedXMsg.transformer?.metaData?.prompt).toBe(configPrompt);
+        expect(typeof transformedXMsg.transformer?.metaData?.prompt).toBe("string");
+    });
+
+    it("should use transformer.metaData.prompt when available and config.prompt is not set", async () => {
+        const metaDataPrompt = "You are an AI language model. Please provide a concise answer:";
+        jest.spyOn(mockOpenAIresponses, 'create').mockReturnValue({
+            choices: [{
+                message: {
+                    content: "Metadata prompt response",
+                }
+            }]
+        } as any);
+
+        xmsg.transformer!.metaData!.prompt = metaDataPrompt;
+
+        const transformer = new LLMTransformer({
+            model: "gpt-3.5-turbo",
+            APIKey: "mockkey",
+            outboundURL: "mockOutboundURL",
+            bhashiniUserId: "mockUserId",
+            bhashiniAPIKey: "mockAPIKey",
+            bhashiniURL: "mockBhashiniURL",
+            temperature: 0.5,
+            outputLanguage: "en",
+            eventBus
+        });
+
+        const transformedXMsg = await transformer.transform(xmsg);
+
+        expect(transformedXMsg.transformer?.metaData?.prompt).toBe(metaDataPrompt);
+        expect(typeof transformedXMsg.transformer?.metaData?.prompt).toBe("string");
+    });
+
+    it("should replace {{date}} placeholder in the prompt with current date", async () => {
+        const datePrompt = "Today is {{date}}. You are a helpful assistant. Answer the following question:";
+        jest.spyOn(mockOpenAIresponses, 'create').mockReturnValue({
+            choices: [{
+                message: {
+                    content: "Date prompt response",
+                }
+            }]
+        } as any);
+
+        const transformer = new LLMTransformer({
+            model: "gpt-3.5-turbo",
+            APIKey: "mockkey",
+            outboundURL: "mockOutboundURL",
+            bhashiniUserId: "mockUserId",
+            bhashiniAPIKey: "mockAPIKey",
+            bhashiniURL: "mockBhashiniURL",
+            temperature: 0.5,
+            outputLanguage: "en",
+            eventBus,
+            prompt: datePrompt
+        });
+
+        const transformedXMsg = await transformer.transform(xmsg);
+
+        expect(transformedXMsg.transformer?.metaData?.prompt).toMatch(
+            /Today is [A-Z][a-z]{2} \d{2}, \d{4} \([A-Z][a-z]+\)\. You are a helpful assistant\. Answer the following question:/
+        );
+        expect(typeof transformedXMsg.transformer?.metaData?.prompt).toBe("string");
+    });
 });
+
+
