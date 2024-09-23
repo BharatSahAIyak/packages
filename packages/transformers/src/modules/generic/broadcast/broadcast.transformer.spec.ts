@@ -80,14 +80,14 @@ describe('BroadcastTransformer', () => {
         });
     });
     it('should transform the xmsg object correctly with broadcastMetaData', async () => {
-        mockConfig.broadcastMetaData = {
+        mockConfig.metaData = {
             test: 'test'
         };
         transformer = new BroadcastTransformer(mockConfig);
         const transformedXMessage = await transformer.transform(mockXMessage);
         expect(transformedXMessage.payload.metaData).toEqual({
             deeplink: mockConfig.deeplink,
-            ...mockConfig.broadcastMetaData
+            ...mockConfig.metaData
         });
     });
 });
