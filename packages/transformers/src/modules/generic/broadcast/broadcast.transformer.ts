@@ -33,10 +33,10 @@ export class BroadcastTransformer implements ITransformer {
             deeplink: this.config.deeplink,
         }
         
-        if(this.config?.broadcastMetaData){
+        if(this.config?.metaData){
             xmsg.payload.metaData = {
                 ...xmsg.payload.metaData,
-                ...this.config.broadcastMetaData,
+                ...this.config.metaData,
             }
         }
 
