@@ -50,11 +50,6 @@ export class MessageIdBuilder {
     return this;
   }
 
-  public setConversationId(conversationId: string): MessageIdBuilder { // New setter
-    this.conversationId = conversationId;
-    return this;
-  }
-
   public build(): MessageId {
     return new MessageId(this);
   }
