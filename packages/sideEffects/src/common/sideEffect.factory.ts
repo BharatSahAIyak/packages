@@ -1,10 +1,12 @@
 import { CustomTelemetrySideEffect } from "../customTelemetry";
+import { CodeRunnerSideEffect } from "../codeRunner";
 import { TelemetrySideEffect } from "../telemetry/telemetry.sideEffect";
 import { ISideEffect } from "./sideEffect.interface";
 
 export const SupportedSideEffects = [
     TelemetrySideEffect,
     CustomTelemetrySideEffect,
+    CodeRunnerSideEffect
 ];
 
 /// Note: Local side-effect config takes precedence over
