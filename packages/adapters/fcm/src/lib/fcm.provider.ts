@@ -57,7 +57,7 @@ export class FcmProvider implements XMessageProvider {
 
         const fcmToken = xmsg.to.deviceID;
 
-        let message: Message = {
+        const message: Message = {
             token: fcmToken,
             data: {
                 title: xmsg.payload?.subject,
