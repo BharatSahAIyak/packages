@@ -59,15 +59,19 @@ export class FcmProvider implements XMessageProvider {
 
         const message: Message = {
             token: fcmToken,
-            notification: {
+            data: {
                 title: xmsg.payload?.subject,
                 body: xmsg.payload?.text,
                 imageUrl: xmsg.payload?.media?.[0]?.url,
-            },
-            data:{
-                ...xmsg.payload?.metaData
+                icon: xmsg.payload?.media?.[1]?.url,
+                notificationId: xmsg.app
             }
-        };
+        }
+
+        message.data = {
+            ...message.data,
+            ...xmsg.payload?.metaData
+        }
 
         admin.app(appName).messaging().send(message)
         .then((response) => {
