@@ -15,11 +15,13 @@ export class MessageId {
   public Id: string;
   public channelMessageId?: string;
   public replyId?: string;
+  public conversationId?: string;
 
   constructor(builder: MessageIdBuilder) {
     this.Id = builder.id;
     this.channelMessageId = builder.channelMessageId;
     this.replyId = builder.replyId;
+    this.conversationId = builder.conversationId;
   }
 
   static builder(): MessageIdBuilder {
@@ -31,6 +33,7 @@ export class MessageIdBuilder {
   public id: string = '';
   public channelMessageId: string = '';
   public replyId: string = '';
+  public conversationId: string = '';
 
   public setId(id: string): MessageIdBuilder {
     this.id = id;
@@ -44,6 +47,11 @@ export class MessageIdBuilder {
 
   public setReplyId(replyId: string): MessageIdBuilder {
     this.replyId = replyId;
+    return this;
+  }
+
+  public setConversationId(conversationId: string): MessageIdBuilder { // New setter
+    this.conversationId = conversationId;
     return this;
   }
 
