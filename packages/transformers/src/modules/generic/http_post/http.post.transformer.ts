@@ -2,6 +2,8 @@ import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
 import { Events } from "@samagra-x/uci-side-effects";
 import { TelemetryLogger } from "../../common/telemetry";
+import get from 'lodash/get';
+import { cloneDeep, set } from "lodash";
 
 export class HttpPostTransformer implements ITransformer {
 
@@ -21,7 +23,23 @@ export class HttpPostTransformer implements ITransformer {
         this.config.headers = this.config.headers ?? xmsg.transformer?.metaData?.httpHeaders ?? {};
         this.config.headers = typeof this.config.headers === 'string' ? JSON.parse(this.config.headers || "{}") : this.config.headers ?? {};
         this.config.headers['Content-Type'] = 'application/json';
+        
         this.config.body = this.config.body ?? xmsg.transformer?.metaData?.httpBody ?? {};
+        const httpBodyCopy: Record<string, string> = cloneDeep(this.config.body);
+
+        Object.entries(this.config.body as Record<string, any>).forEach((entry) => {
+            if (entry[1] && typeof entry[1] === 'object') {
+                this.resolvePlaceholders(entry[1], xmsg);
+                set(httpBodyCopy, entry[0], entry[1]);
+            }
+            else {
+                set(httpBodyCopy, entry[0], this.getResolvedValue(entry[1], xmsg));
+            }
+        });
+
+        this.config.body = httpBodyCopy;
+        
+
         console.log("HTTP POST url-", this.config.url)
         console.log("HTTP POST body -", typeof this.config.body === 'string' ? this.config.body : JSON.stringify(this.config.body ?? {}));
         console.log("HTTP POST headers -", new Headers(this.config.headers))
@@ -64,5 +82,42 @@ export class HttpPostTransformer implements ITransformer {
         });
         this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
         return xmsg;
+    }
+
+    /// Recursively resolves all the placeholders inside a JSON.
+    private resolvePlaceholders(jsonValue: Record<string, any>, xmsg: XMessage) {
+        Object.entries(jsonValue).forEach(([key, value]) => {
+            if (value && typeof value === 'object') {
+                this.resolvePlaceholders(jsonValue[key], xmsg);
+            }
+            else {
+                set(jsonValue, key, this.getResolvedValue(value, xmsg));
+            }
+        });
+    }
+
+    /// Gets resolved value of a string containing placeholders
+    /// by extracting it from XMessage.
+    private getResolvedValue(value: string, xmsg: XMessage): string {
+        const xmsgPlaceholder = /\{\{msg:([^}]*)\}\}/g;
+        const historyPlaceholder = /\{\{history:([^}]*)\}\}/g;
+        const replacements: Record<string, any> = {};
+        let matched;
+        while ((matched = xmsgPlaceholder.exec(value)) !== null) {
+            replacements[matched[0]] = get(xmsg, matched[1]);
+        }
+        while ((matched = historyPlaceholder.exec(value)) !== null) {
+            replacements[matched[0]] = get(xmsg.transformer?.metaData?.userHistory[0] ?? {}, matched[1]);
+        }
+        Object.entries(replacements).forEach((replacement) => {
+            value = value.replaceAll(
+                replacement[0],
+                replacement[1] ?
+                typeof replacement[1] == 'object' ?
+                JSON.stringify(replacement[1]) : replacement[1]
+                : ''
+            );
+        });
+        return value;
     }
 }
