@@ -3,7 +3,7 @@ import { ITransformer } from "../../common/transformer.interface";
 import { Events } from "@samagra-x/uci-side-effects";
 import { TelemetryLogger } from "../../common/telemetry";
 import get from 'lodash/get';
-import { set } from "lodash";
+import { cloneDeep, set } from "lodash";
 
 export class HttpPostTransformer implements ITransformer {
 
@@ -25,9 +25,9 @@ export class HttpPostTransformer implements ITransformer {
         this.config.headers['Content-Type'] = 'application/json';
         
         this.config.body = this.config.body ?? xmsg.transformer?.metaData?.httpBody ?? {};
-        const httpBodyCopy: Record<string, string> = {...this.config.body};
+        const httpBodyCopy: Record<string, string> = cloneDeep(this.config.body);
 
-        Object.entries(this.config.body as Record<string, string>).forEach((entry) => {
+        Object.entries(this.config.body as Record<string, any>).forEach((entry) => {
             if (entry[1] && typeof entry[1] === 'object') {
                 this.resolvePlaceholders(entry[1], xmsg);
                 set(httpBodyCopy, entry[0], entry[1]);
