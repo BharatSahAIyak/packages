@@ -3,7 +3,7 @@ import admin from 'firebase-admin';
 import { Message } from "firebase-admin/lib/messaging/messaging-api";
 import { FCMProviderConfig } from "./fcm.types";
 import { v4 as uuid4 } from 'uuid';
-import { deleteApp } from "firebase-admin/app";
+import { deleteApp } from "firebase-admin/lib/app/lifecycle";
 
 export class FcmProvider implements XMessageProvider {
 
@@ -70,7 +70,7 @@ export class FcmProvider implements XMessageProvider {
 
         message.data = {
             ...message.data,
-            ...xmsg.payload?.metaData
+            ...xmsg.payload?.metaData?.broadcastData
         }
 
         admin.app(appName).messaging().send(message)

@@ -75,7 +75,7 @@ describe('BroadcastTransformer', () => {
                 caption: 'Icon_Image'
             }
         ]);
-        expect(transformedXMessage.payload.metaData).toEqual({
+        expect(transformedXMessage?.payload?.metaData?.broadcastData).toEqual({
             deeplink: mockConfig.deeplink
         });
     });

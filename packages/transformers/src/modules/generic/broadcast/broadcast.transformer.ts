@@ -28,15 +28,21 @@ export class BroadcastTransformer implements ITransformer {
             category: MediaCategory.IMAGE_URL,
             caption: "Icon_Image",
         });
-        xmsg.payload.metaData = {
-            ...xmsg.payload.metaData,
-            deeplink: this.config.deeplink,
-        }
         
+        xmsg.payload.metaData = {
+            broadcastData: {}
+        }
+
+        // Add deeplink inside broadcastData
+        if(this.config?.deeplink){
+            xmsg.payload.metaData.broadcastData.deeplink = this.config.deeplink;
+        }
+
+        // Add metaData inside broadcastData
         if(this.config?.metaData){
-            xmsg.payload.metaData = {
-                ...xmsg.payload.metaData,
-                ...this.config.metaData,
+            xmsg.payload.metaData.broadcastData = {
+                ...xmsg.payload.metaData.broadcastData,
+                ...this.config.metaData
             }
         }
 
