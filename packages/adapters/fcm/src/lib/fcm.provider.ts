@@ -3,7 +3,7 @@ import admin from 'firebase-admin';
 import { Message } from "firebase-admin/lib/messaging/messaging-api";
 import { FCMProviderConfig } from "./fcm.types";
 import { v4 as uuid4 } from 'uuid';
-import { deleteApp } from "firebase-admin/lib/app/lifecycle";
+import { deleteApp } from "firebase-admin/app";
 
 export class FcmProvider implements XMessageProvider {
 

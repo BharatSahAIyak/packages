@@ -25,7 +25,7 @@
     "@samagra-x/uci-adapters-twilio-sms": "^1.0.0",
     "@samagra-x/uci-adapters-telegram-bot": "^1.0.6",
     "@samagra-x/uci-adapters-pwa": "^1.1.5",
-    "@samagra-x/uci-adapters-fcm": "^1.0.6",
+    "@samagra-x/uci-adapters-fcm": "^1.0.7",
     "jest": "^29.7.0",
     "tsup": "^8.0.0"
   },
