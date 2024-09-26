@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-adapters-factory",
-  "version": "1.1.12",
+  "version": "1.1.13",
   "description": "A factory module which provides specific adapter instance based on request data.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -25,7 +25,7 @@
     "@samagra-x/uci-adapters-twilio-sms": "^1.0.0",
     "@samagra-x/uci-adapters-telegram-bot": "^1.0.6",
     "@samagra-x/uci-adapters-pwa": "^1.1.5",
-    "@samagra-x/uci-adapters-fcm": "^1.0.5",
+    "@samagra-x/uci-adapters-fcm": "^1.0.6",
     "jest": "^29.7.0",
     "tsup": "^8.0.0"
   },
