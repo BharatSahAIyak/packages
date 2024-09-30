@@ -75,7 +75,7 @@ describe('BroadcastTransformer', () => {
                 caption: 'Icon_Image'
             }
         ]);
-        expect(transformedXMessage.payload.metaData).toEqual({
+        expect(transformedXMessage?.payload?.metaData?.broadcastData).toEqual({
             deeplink: mockConfig.deeplink
         });
     });
@@ -83,11 +83,21 @@ describe('BroadcastTransformer', () => {
         mockConfig.metaData = {
             test: 'test'
         };
+        
         transformer = new BroadcastTransformer(mockConfig);
         const transformedXMessage = await transformer.transform(mockXMessage);
-        expect(transformedXMessage.payload.metaData).toEqual({
+
+        expect(transformedXMessage?.payload?.metaData?.broadcastData).toEqual({
             deeplink: mockConfig.deeplink,
             ...mockConfig.metaData
+        });
+    });
+    it('should transform the xmsg object correctly with without any metaData', async () => {
+        mockConfig.metaData = {};
+        transformer = new BroadcastTransformer(mockConfig);
+        const transformedXMessage = await transformer.transform(mockXMessage);        
+        expect(transformedXMessage?.payload?.metaData?.broadcastData).toEqual({
+            deeplink: mockConfig.deeplink,
         });
     });
 });

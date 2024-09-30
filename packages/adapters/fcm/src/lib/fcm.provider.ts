@@ -70,7 +70,7 @@ export class FcmProvider implements XMessageProvider {
 
         message.data = {
             ...message.data,
-            ...xmsg.payload?.metaData
+            ...xmsg.payload?.metaData?.broadcastData
         }
 
         admin.app(appName).messaging().send(message)
