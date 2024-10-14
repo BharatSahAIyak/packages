@@ -163,7 +163,19 @@ export class LLMTransformer implements ITransformer {
             });
         } else {
             // OPEN AI Implementaion
-            const openai = new OpenAI({apiKey: this.config.APIKey});
+            let openAIConfig:any = {
+                apiKey: this.config.APIKey
+            }
+            if([
+                'krutrim',
+                'mistralai',
+                'meta',
+                'google'
+            ].indexOf(this.config.provider)!=-1) {
+                openAIConfig['baseURL']='https://cloud.olakrutrim.com/v1';
+            }
+            console.log('openAIConfig',openAIConfig);
+            const openai = new OpenAI(openAIConfig);
             const openAIChatConfig: any = {
                 model: this.config.model,
                 messages: prompt,

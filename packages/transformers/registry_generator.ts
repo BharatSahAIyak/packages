@@ -12,6 +12,7 @@ enum ConfigType {
     IDE = 'ide',
     NUMBER = 'number',
     BOOLEAN = 'boolean',
+    OPTIONS = 'options'
 }
 
 const transformerSpec = z.object({
