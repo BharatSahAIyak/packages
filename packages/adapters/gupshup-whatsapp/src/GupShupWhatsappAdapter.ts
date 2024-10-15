@@ -716,6 +716,9 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             if (media.caption) {
               builder.set('caption', media.caption);
             }
+            if (media.filename) {
+              builder.set('filename', media.filename)
+            }
             builder.set('isHSM', 'false');
             plainText = false;
           }

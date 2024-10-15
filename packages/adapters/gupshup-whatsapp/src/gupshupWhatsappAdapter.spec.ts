@@ -145,10 +145,11 @@ describe('gupshup whatsapp adapter', () => {
       {
         category: MediaCategory.FILE,
         url: 'http://fakeurl.pdf',
-        caption: 'This is a caption'
+        caption: 'This is a caption',
+        filename: 'filename'
       }
     ];
-    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMediaMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=DOCUMENT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&media_url=http%3A%2F%2Ffakeurl.pdf&caption=This+is+a+caption&isHSM=false'
+    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMediaMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=DOCUMENT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&media_url=http%3A%2F%2Ffakeurl.pdf&caption=This+is+a+caption&filename=filename&isHSM=false'
     const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
     let actualParametersPassed: string | undefined = '';
     mock.onGet(urlRegex).reply(config => {
