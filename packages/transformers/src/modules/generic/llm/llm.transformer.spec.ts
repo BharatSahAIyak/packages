@@ -332,8 +332,8 @@ describe("LLMTransformer Tests", () => {
         const transformedXMsg = await transformer.transform(xmsg);
 
         const expectedPrompt = "You are am assistant who helps with answering questions for users based on the search results. If question is not relevant to search reults/corpus, refuse to answer";
-        expect(transformedXMsg.transformer?.metaData?.prompt).toBe(expectedPrompt);
-        expect(typeof transformedXMsg.transformer?.metaData?.prompt).toBe("string");
+        expect(transformedXMsg.transformer?.metaData?.prompt[0].content).toBe(expectedPrompt);
+        expect(typeof transformedXMsg.transformer?.metaData?.prompt).toBe("object");
 
         
     });
@@ -365,8 +365,8 @@ describe("LLMTransformer Tests", () => {
 
         const transformedXMsg = await transformer.transform(xmsg);
 
-        expect(transformedXMsg.transformer?.metaData?.prompt).toBe(configPrompt);
-        expect(typeof transformedXMsg.transformer?.metaData?.prompt).toBe("string");
+        expect(transformedXMsg.transformer?.metaData?.prompt[0].content).toBe(configPrompt);
+        expect(typeof transformedXMsg.transformer?.metaData?.prompt).toBe("object");
     });
 
     it("should use transformer.metaData.prompt when available and config.prompt is not set", async () => {
@@ -395,8 +395,8 @@ describe("LLMTransformer Tests", () => {
 
         const transformedXMsg = await transformer.transform(xmsg);
 
-        expect(transformedXMsg.transformer?.metaData?.prompt).toBe(metaDataPrompt);
-        expect(typeof transformedXMsg.transformer?.metaData?.prompt).toBe("string");
+        expect(transformedXMsg.transformer?.metaData?.prompt[0].content).toBe(metaDataPrompt);
+        expect(typeof transformedXMsg.transformer?.metaData?.prompt).toBe("object");
     });
 
     it("should replace {{date}} placeholder in the prompt with current date", async () => {
@@ -423,11 +423,10 @@ describe("LLMTransformer Tests", () => {
         });
 
         const transformedXMsg = await transformer.transform(xmsg);
-
-        expect(transformedXMsg.transformer?.metaData?.prompt).toMatch(
+        expect(transformedXMsg.transformer?.metaData?.prompt[0].content).toMatch(
             /Today is [A-Z][a-z]{2} \d{2}, \d{4} \([A-Z][a-z]+\)\. You are a helpful assistant\. Answer the following question:/
         );
-        expect(typeof transformedXMsg.transformer?.metaData?.prompt).toBe("string");
+        expect(typeof transformedXMsg.transformer?.metaData?.prompt).toBe("object");
     });
 });
 
