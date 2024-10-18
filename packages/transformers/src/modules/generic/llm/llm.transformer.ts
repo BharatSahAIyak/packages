@@ -142,7 +142,7 @@ export class LLMTransformer implements ITransformer {
             role: "user",
             content: xmsg?.payload?.text
         })
-        xmsg.transformer.metaData!.prompt = systemInstructions;
+        xmsg.transformer.metaData!.prompt = prompt;
         console.log(`LLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt,null,3)}`);
 
         //llamaIndex implementaion
