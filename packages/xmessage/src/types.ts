@@ -104,6 +104,7 @@ export class MessageMedia {
   url?: string;
   size?: number;
   mimeType?: string;
+  filename?: string;
 }
 
 export class LocationParams {
