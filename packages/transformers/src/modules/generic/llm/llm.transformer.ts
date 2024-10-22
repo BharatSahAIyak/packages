@@ -196,7 +196,11 @@ export class LLMTransformer implements ITransformer {
             let answer;
             if(this.config.provider?.toLowerCase() == "groq") answer = response.message.content?.replace(/\*\*/g, '*') || "";
             else answer = response["choices"][0].message.content?.replace(/\*\*/g, '*') || "";
-            xmsg = this.postProcessResponse(xmsg, answer, searchResults)
+            try {
+                xmsg = this.postProcessResponse(xmsg, answer, searchResults)
+            } catch(err) {
+                console.log('post processing failed with error: ', err);
+            }
             if(this.config.outputLanguage!='en') {
                 if(this.config.languageProvider == "bhashini") {
                     xmsg.payload.text = (await this.translateBhashini(
@@ -250,7 +254,11 @@ export class LLMTransformer implements ITransformer {
                     allSentences.push(currentSentence);
                     counter++;
                     if (counter > 1) {
-                        xmsg = this.postProcessResponse(xmsg, currentSentence, searchResults)
+                        try {
+                            xmsg = this.postProcessResponse(xmsg, currentSentence, searchResults)
+                        } catch(err) {
+                            console.error('post processing failed with error', err);
+                        }
                         if(this.config.outputLanguage!='en') {
                             if(this.config.languageProvider == "bhashini") {
                                 xmsg.payload.text = (await this.translateBhashini(
@@ -286,7 +294,11 @@ export class LLMTransformer implements ITransformer {
                 }
             }
             allSentences.push(sentences[sentences.length - 1])
-            xmsg = this.postProcessResponse(xmsg, sentences[sentences.length - 1], searchResults)
+            try {
+                xmsg = this.postProcessResponse(xmsg, sentences[sentences.length - 1], searchResults)
+            } catch(err) {
+                console.error('post processing failed with error', err);
+            }
             if(this.config.outputLanguage!='en') {
                 if(this.config.languageProvider == "bhashini") {
                     xmsg.payload.text = (await this.translateBhashini(
@@ -333,6 +345,13 @@ export class LLMTransformer implements ITransformer {
         return xmsg;
     }
 
+    /**
+     * Function to figure out follow up questions and references basis a regex.
+     * @param xmsg 
+     * @param answer 
+     * @param searchResults 
+     * @returns 
+     */
     postProcessResponse(xmsg: XMessage, answer: string, searchResults: Array<{
         index: number;
         title: string;
@@ -358,9 +377,9 @@ export class LLMTransformer implements ITransformer {
             snippets: string;
             page: any
         }> = [];
-        referencesArray.forEach((ref,i)=>{
+        referencesArray.forEach((ref,i) => {
             answer = answer?.replace(`[${ref}]`,`[${i+1}]`)
-            let newSearch = searchResults[ref-1];
+            let newSearch = searchResults[ref-1] ?? {};
             newSearch.index = i+1
             updatedSearchResults.push(newSearch)
         })
