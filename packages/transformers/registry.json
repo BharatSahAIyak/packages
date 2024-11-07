@@ -384,6 +384,10 @@
             "name": "gpt-3.5-turbo"
           },
           {
+            "label": "Meta LLama3.1 8B Kumbh",
+            "name": "Meta-Llama-3.1-8B-Kumbh"
+          },
+          {
             "label": "Krutrim Spectre v2",
             "name": "Krutrim-spectre-v2"
           },
