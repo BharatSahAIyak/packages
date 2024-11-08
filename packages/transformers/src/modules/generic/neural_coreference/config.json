@@ -17,6 +17,80 @@
             "name": "APIKey",
             "type": "string",
             "optional": false
+        },
+        {
+            "label": "Model",
+            "name": "model",
+            "type": "options",
+            "default": "gpt-4o-mini",
+            "optional": false,
+            "options": [
+              {
+                "label": "gpt-4o-mini",
+                "name": "gpt-4o-mini"
+              },
+              {
+                "label": "gpt-4o",
+                "name": "gpt-4o"
+              },
+              {
+                "label": "gpt-3.5-turbo",
+                "name": "gpt-3.5-turbo"
+              },
+              {
+                "label": "Meta LLama3.1 8B Kumbh",
+                "name": "Meta-Llama-3.1-8B-Kumbh"
+              },
+              {
+                "label": "Krutrim Spectre v2",
+                "name": "Krutrim-spectre-v2"
+              },
+              {
+                "label": "Mistral 7B Instruct v0.1",
+                "name": "Mistral-7B-Instruct"
+              },
+              {
+                "label": "Meta LLama3 8B Instruct",
+                "name": "Meta-Llama-3-8B-Instruct"
+              },
+              {
+                "label": "Google Gemma 2 27B it",
+                "name": "google/gemma-2-27b-it"
+              }
+            ]
+        },
+        {
+            "label": "Provider",
+            "name": "provider",
+            "type": "options",
+            "default": "gpt",
+            "optional": false,
+            "options": [
+              {
+                "label": "GPT",
+                "name": "gpt"
+              },
+              {
+                "label": "Groq",
+                "name": "groq"
+              },
+              {
+                "label": "Krutrim",
+                "name": "krutrim"
+              },
+              {
+                "label": "Mistralai",
+                "name": "mistralai"
+              },
+              {
+                "label": "Meta",
+                "name": "meta"
+              },
+              {
+                "label": "Google",
+                "name": "google"
+              }
+            ]
         }
     ],
     "outputs": [
