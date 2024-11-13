@@ -181,6 +181,7 @@ export class LLMTransformer implements ITransformer {
                 messages: prompt,
                 temperature: this.config.temperature || 0,
                 stream: this.config.enableStream ?? false,
+                top_p: this.config.top_p ?? 1
             };
             if(this.config.responseFormat) {
                 openAIChatConfig.response_format = this.config.responseFormat;

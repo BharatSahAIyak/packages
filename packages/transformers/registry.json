@@ -424,6 +424,12 @@
         "optional": true
       },
       {
+        "label": "Top P",
+        "name": "top_p",
+        "type": "number",
+        "optional": true
+      },
+      {
         "label": "Enable Streaming",
         "name": "enableStream",
         "type": "boolean",
