@@ -199,6 +199,50 @@
     ]
   },
   {
+    "label": "HTTP DELETE Transformer",
+    "type": "HTTP_DELETE",
+    "class": "GenericTransformer",
+    "description": "A transformer capable of making HTTP DELETE request.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "Url",
+        "name": "url",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Query",
+        "name": "query",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Query JSON",
+        "name": "queryJson",
+        "type": "json",
+        "optional": true
+      },
+      {
+        "label": "Headers",
+        "name": "headers",
+        "type": "json",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "On Success",
+        "name": "onSuccess"
+      },
+      {
+        "label": "On Error",
+        "name": "onError"
+      }
+    ]
+  },
+  {
     "label": "HTTP GET Transformer",
     "type": "HTTP_GET",
     "class": "GenericTransformer",
@@ -243,10 +287,86 @@
     ]
   },
   {
+    "label": "HTTP PATCH Transformer",
+    "type": "HTTP_PATCH",
+    "class": "GenericTransformer",
+    "description": "A transformer capable of making HTTP PATCH request.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "Url",
+        "name": "url",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Headers",
+        "name": "headers",
+        "type": "json",
+        "optional": true
+      },
+      {
+        "label": "Body",
+        "name": "body",
+        "type": "json",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "On Success",
+        "name": "onSuccess"
+      },
+      {
+        "label": "On Error",
+        "name": "onError"
+      }
+    ]
+  },
+  {
     "label": "HTTP POST Transformer",
     "type": "HTTP_POST",
     "class": "GenericTransformer",
     "description": "A transformer capable of making HTTP POST request.",
+    "version": 1,
+    "outputType": "static",
+    "inputs": [
+      {
+        "label": "Url",
+        "name": "url",
+        "type": "string",
+        "optional": true
+      },
+      {
+        "label": "Headers",
+        "name": "headers",
+        "type": "json",
+        "optional": true
+      },
+      {
+        "label": "Body",
+        "name": "body",
+        "type": "json",
+        "optional": true
+      }
+    ],
+    "outputs": [
+      {
+        "label": "On Success",
+        "name": "onSuccess"
+      },
+      {
+        "label": "On Error",
+        "name": "onError"
+      }
+    ]
+  },
+  {
+    "label": "HTTP PUT Transformer",
+    "type": "HTTP_PUT",
+    "class": "GenericTransformer",
+    "description": "A transformer capable of making HTTP PUT request.",
     "version": 1,
     "outputType": "static",
     "inputs": [
