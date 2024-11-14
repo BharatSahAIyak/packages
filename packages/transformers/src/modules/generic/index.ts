@@ -8,3 +8,6 @@ export * from './code_runner/code_runner.transformer';
 export * from './field_setter/field_setter.transformer';
 export * from './speect_to_text/speech_to_text.transformer';
 export * from './broadcast/broadcast.transformer';
+export * from './http_delete/http.delete.transformer';
+export * from './http_patch/http.patch.transformer';
+export * from './http_put/http.put.transformer';
