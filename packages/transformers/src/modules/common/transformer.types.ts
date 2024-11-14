@@ -18,6 +18,9 @@ export enum TransformerType {
     FIELD_STATE = 'FIELD_STATE',
     BROADCAST_TRANSFORMER = 'BROADCAST_TRANSFORMER',
     SCHEDULE_TRANSFORMER = 'SCHEDULE_TRANSFORMER',
+    HTTP_DELETE = 'HTTP_DELETE',
+    HTTP_PATCH = 'HTTP_PATCH',
+    HTTP_PUT = 'HTTP_PUT',
 }
 
 export enum TransformerClass {
@@ -48,4 +51,7 @@ export const TransformerMapping: Record<TransformerType, TransformerClass> = {
     [TransformerType.FIELD_STATE]: TransformerClass.SwitchCaseTransformer,
     [TransformerType.BROADCAST_TRANSFORMER]: TransformerClass.GenericTransformer,
     [TransformerType.SCHEDULE_TRANSFORMER]: TransformerClass.StateRestoreTransformer,
+    [TransformerType.HTTP_DELETE]: TransformerClass.GenericTransformer,
+    [TransformerType.HTTP_PATCH]: TransformerClass.GenericTransformer,
+    [TransformerType.HTTP_PUT]: TransformerClass.GenericTransformer,
 };
