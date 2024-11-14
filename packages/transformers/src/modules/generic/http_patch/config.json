@@ -1,0 +1,38 @@
+{
+  "label": "HTTP PATCH Transformer",
+  "type": "HTTP_PATCH",
+  "class": "GenericTransformer",
+  "description": "A transformer capable of making HTTP PATCH request.",
+  "version": 1,
+  "outputType": "static",
+  "inputs": [
+    {
+      "label": "Url",
+      "name": "url",
+      "type": "string",
+      "optional": true
+    },
+    {
+      "label": "Headers",
+      "name": "headers",
+      "type": "json",
+      "optional": true
+    },
+    {
+      "label": "Body",
+      "name": "body",
+      "type": "json",
+      "optional": true
+    }
+  ],
+  "outputs": [
+    {
+      "label": "On Success",
+      "name": "onSuccess"
+    },
+    {
+      "label": "On Error",
+      "name": "onError"
+    }
+  ]
+}
