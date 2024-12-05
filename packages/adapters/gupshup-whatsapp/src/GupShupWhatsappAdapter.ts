@@ -304,7 +304,8 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         `${this.providerConfig?.fusionAuthUrl}/api/user/search?queryString=${phoneNumber}&exactMatch=true`,
         {
           headers: {
-            'x-application-id': `${this.providerConfig?.applicationId}`
+            'x-application-id': `${this.providerConfig?.applicationId}`,
+            'Authorization': `${this.providerConfig?.authToken}`
           }
         }
       );
