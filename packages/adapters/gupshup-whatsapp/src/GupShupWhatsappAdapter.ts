@@ -23,6 +23,10 @@ export type IGSWhatsappConfig = {
   passwordHSM: string,
   username2Way: string,
   usernameHSM: string,
+  userServiceUrl: string,
+  fusionAuthUrl: string,
+  applicationId: string,
+  authToken: string
 };
 
 type GSWhatsappReport = {
@@ -74,6 +78,13 @@ type SectionRow = {
   title: string;
 }
 
+interface UserSearchResponse {
+  users: {
+    id: string;
+    username: string;
+  }[];
+  total: number;
+}
 export class GupshupWhatsappProvider implements XMessageProvider {
 
   private readonly providerConfig?: IGSWhatsappConfig;
@@ -287,12 +298,85 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     return '';
   };
   
+  private async searchUser(phoneNumber: string): Promise<string | null> {
+    try {
+      const response = await axios.get<UserSearchResponse>(
+        `${this.providerConfig?.fusionAuthUrl}/api/user/search?queryString=${phoneNumber}&exactMatch=true`,
+        {
+          headers: {
+            'x-application-id': `${this.providerConfig?.applicationId}`
+          }
+        }
+      );
+      
+      if (response.data.total > 0) {
+        return response.data.users[0].id;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error searching user:', error);
+      return null;
+    }
+  }
+  
+  private async registerUser(phoneNumber: string): Promise<string | null> {
+    try {
+      const response = await axios.post<any>(
+        `${this.providerConfig?.userServiceUrl}/api/signup`,
+        {
+          user: {
+            active: true,
+            username: phoneNumber,
+            password: "00000000",
+            data: {
+              cmvideoCount: 0
+            }
+          },
+          registration: {
+            applicationId: `${this.providerConfig?.applicationId}`
+          }
+        },
+        {
+          headers: {
+            'x-application-id': `${this.providerConfig?.applicationId}`,
+            'Authorization': `${this.providerConfig?.authToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.data.responseCode === 'OK' && response.data.result?.id) {
+        return response.data.result.id;
+      }
+      console.error('User registration failed:', response.data.params.errMsg || 'Unknown error');
+      return null;
+    } catch (error) {
+      console.error('Error registering user:', error);
+      return null;
+    }
+  }
+  
   // Convert GupShupWhatsAppMessage to XMessage
   convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
     const message = msg as GSWhatsAppMessage;
-    const from: SenderReceiverInfo = { userID: '' };
+    const phoneNumber = message.mobile?.substring(2);
+    const from: SenderReceiverInfo = { 
+      userID: '',
+    };
     const to: SenderReceiverInfo = { userID: 'admin' };
-  
+
+    if (this.providerConfig?.fusionAuthUrl && this.providerConfig?.userServiceUrl) {
+      let userId = await this.searchUser(phoneNumber);
+
+      if (!userId) {
+        userId = await this.registerUser(phoneNumber);
+      }
+
+      from.userID = userId || phoneNumber;
+    } else {
+      from.userID = phoneNumber;
+    }
+
     const messageState: MessageState[] = [MessageState.REPLIED];
     const messageIdentifier: MessageId = { Id: uuid4() };
     if (message.messageId) {
