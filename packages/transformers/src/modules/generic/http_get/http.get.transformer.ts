@@ -70,6 +70,7 @@ export class HttpGetTransformer implements ITransformer {
             this.telemetryLogger.sendErrorTelemetry(xmsg, '`url` not defined in HTTP_GET transformer');
             throw new Error('`url` not defined in HTTP_GET transformer');
         }
+        this.config.url = this.processURL(this.config.url, xmsg);
         await fetch(`${this.config.url}${this.config.query ?? ''}`, {
             method: 'GET',
             headers: new Headers(this.config.headers),
@@ -150,5 +151,18 @@ export class HttpGetTransformer implements ITransformer {
             );
         });
         return value;
+    }
+
+    private processURL(url: string, xmsg: XMessage) {
+        return url.split('/').map((part: string) => {
+            const msgPlaceholderRegex = /\{\{\s*msg:([^}]+)\s*\}\}/;
+            const match = msgPlaceholderRegex.exec(part);
+            if (match) {
+                const path = match[0];
+                part = part.replace(msgPlaceholderRegex, this.getResolvedValue(path, xmsg));
+                console.log(part)
+            }
+            return part;
+        }).join('/')
     }
 }

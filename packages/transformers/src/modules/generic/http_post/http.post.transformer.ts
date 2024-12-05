@@ -71,6 +71,8 @@ export class HttpPostTransformer implements ITransformer {
             this.telemetryLogger.sendErrorTelemetry(xmsg, '`url` not defined in HTTP_POST transformer');
             throw new Error('`url` not defined in HTTP_POST transformer');
         }
+
+        this.config.url = this.processURL(this.config.url, xmsg);
         await fetch(this.config.url, {
             method: 'POST',
             body: typeof this.config.body === 'string' ? this.config.body : JSON.stringify(this.config.body ?? {}),
@@ -142,5 +144,18 @@ export class HttpPostTransformer implements ITransformer {
             );
         });
         return value;
+    }
+
+    private processURL(url: string, xmsg: XMessage) {
+        return url.split('/').map((part: string) => {
+            const msgPlaceholderRegex = /\{\{\s*msg:([^}]+)\s*\}\}/;
+            const match = msgPlaceholderRegex.exec(part);
+            if (match) {
+                const path = match[0];
+                part = part.replace(msgPlaceholderRegex, this.getResolvedValue(path, xmsg));
+                console.log(part)
+            }
+            return part;
+        }).join('/')
     }
 }

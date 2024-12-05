@@ -310,7 +310,8 @@ describe('HttpPostTransformer Headers Parsing', () => {
           someValue: "metadata value",
           nestedValue: {
             inner: "nested metadata value"
-          }
+          },
+          pathParam: "somepath"
         }
       }
     };
@@ -372,6 +373,25 @@ describe('HttpPostTransformer Headers Parsing', () => {
           key1: "Testing bot",
           key2: "metadata value", "Content-Type": "application/json"
         })
+      })
+    );
+  });
+
+  test('handles references in URL', async () => {
+    const config = {
+      url: "https://example.com/api/{{msg:transformer.metaData.pathParam}}",
+      body: { key: "direct value" },
+      headers: { orgId: 'uuid' },
+      eventBus
+    };
+    httpPostTransformer = new HttpPostTransformer(config);
+
+    await httpPostTransformer.transform(mockXMessage);
+
+    expect(global.fetch).toHaveBeenCalledWith(
+      "https://example.com/api/somepath",
+      expect.objectContaining({
+        headers: new Headers({ orgId: "uuid", "Content-Type": "application/json" }),
       })
     );
   });
