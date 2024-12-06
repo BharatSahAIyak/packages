@@ -64,3 +64,29 @@ export class MediaSizeLimit {
     }
   }
 }
+
+export type UserHistoryMessage = {
+    id: number;
+    app?: string;
+    messageType: string;
+    adapterId?: string;
+    orgId?: string;
+    ownerId?: string;
+    messageId?: string;
+    to?: string;
+    from?: string;
+    channelURI: string;
+    providerURI: string;
+    timestamp: string | Date;
+    messageState?: string;
+    lastMessageID?: string;
+    payload?: any;
+    metaData?: {
+        sessionId?: string;
+        [key: string]: any;
+    };
+    replyId?: string;
+    channelMessageId?: string;
+    conversationId?: string;
+    tags?: string[];
+}
