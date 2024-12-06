@@ -207,9 +207,6 @@ describe('gupshup whatsapp adapter', () => {
     expect(xmsg.messageId.Id).toBeDefined();
     xmsg.timestamp = 0;
     xmsg.messageId.Id = 'testId';
-    if (xmsg.transformer?.metaData) {
-      delete xmsg.transformer.metaData.sessionId;
-    }
     expect(xmsg).toStrictEqual(expectedXMessage);
   });
 
@@ -253,7 +250,6 @@ describe('gupshup whatsapp adapter', () => {
     xmsg.messageId.Id = 'testId';
     expect(xmsg.timestamp).toBeGreaterThan(0);
     xmsg.timestamp = 0;
-    delete xmsg.transformer?.metaData?.sessionId;
     expect(xmsg).toStrictEqual(expectedAudioMessage);
   });
 
@@ -297,7 +293,6 @@ describe('gupshup whatsapp adapter', () => {
     xmsg.messageId.Id = 'testId';
     expect(xmsg.timestamp).toBeGreaterThan(0);
     xmsg.timestamp = 0;
-    delete xmsg.transformer?.metaData?.sessionId;
     expect(xmsg).toStrictEqual(expectedXMessage);
   });
 
@@ -341,7 +336,6 @@ describe('gupshup whatsapp adapter', () => {
     xmsg.messageId.Id = 'testId';
     expect(xmsg.timestamp).toBeGreaterThan(0);
     xmsg.timestamp = 0;
-    delete xmsg.transformer?.metaData?.sessionId;
     expect(xmsg).toStrictEqual(expectedXMessage);
   });
 })
