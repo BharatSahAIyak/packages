@@ -19,7 +19,7 @@ export class CodeRunnerTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = Date.now();
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Started`, startTime);
         if (!this.config?.code) {
             throw new Error('config.code is required');
         }
