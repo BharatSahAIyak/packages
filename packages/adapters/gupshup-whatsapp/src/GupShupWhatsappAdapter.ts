@@ -250,7 +250,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     return location;
   };
 
-  private generateSessionId(): string {
+  private generateConversationId(): string {
     return uuid4();
   }
 
@@ -261,33 +261,22 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     return new Date(userHistory[0].timestamp).getTime();
   }
 
-  private shouldCreateNewSession(lastMessageTimestamp: number, currentTimestamp: number): boolean {
+  private shouldCreateNewConversation(lastMessageTimestamp: number, currentTimestamp: number): boolean {
     const TEN_MINUTES = 10 * 60 * 1000; // 10 minutes in milliseconds
     return currentTimestamp - lastMessageTimestamp > TEN_MINUTES;
   }
 
-  private manageSession(xmsg: XMessage): void {
-    if (!xmsg.transformer) {
-        xmsg.transformer = { metaData: {} };
-    }
-    if (!xmsg.transformer.metaData) {
-        xmsg.transformer.metaData = {};
-    }
-
+  private manageConversation(xmsg: XMessage): void {
     const currentTimestamp = Date.now();
     const lastMessageTimestamp = this.getLastMessageTimestamp(this.userHistory);
 
-    if (this.shouldCreateNewSession(lastMessageTimestamp, currentTimestamp)) {
-        xmsg.transformer.metaData.sessionId = this.generateSessionId();
+    if (this.shouldCreateNewConversation(lastMessageTimestamp, currentTimestamp)) {
+      xmsg.messageId.conversationId = this.generateConversationId();
     } else if (this.userHistory.length > 0) {
-        const lastSessionId = this.userHistory[0]?.metaData?.sessionId;
-        if (lastSessionId) {
-            xmsg.transformer.metaData.sessionId = lastSessionId;
-        } else {
-            xmsg.transformer.metaData.sessionId = this.generateSessionId();
-        }
+      const lastConversationId = this.userHistory[0]?.conversationId;
+      xmsg.messageId.conversationId = lastConversationId || this.generateConversationId();
     } else {
-        xmsg.transformer.metaData.sessionId = this.generateSessionId();
+      xmsg.messageId.conversationId = this.generateConversationId();
     }
   }
 
@@ -314,7 +303,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         payload: xmsgPayload,
         transformer: existingTransformer
     };
-    this.manageSession(xmsg);
+    this.manageConversation(xmsg);
     return xmsg;
   };
   
