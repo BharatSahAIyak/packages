@@ -9,7 +9,7 @@ import computeBhashini from "../translate/bhashini/bhashini.compute";
 import { serviceContextFromDefaults, Groq } from "llamaindex";
 import OpenAI from "openai";
 import { Events } from "@samagra-x/uci-side-effects";
-import {v4 as uuid4} from 'uuid';
+import { v4 as uuid4 } from 'uuid';
 
 export class LLMTransformer implements ITransformer {
 
@@ -29,14 +29,14 @@ export class LLMTransformer implements ITransformer {
     ///     enableStream: boolean which allowes user to get streaming responses if enabled. By default this is set to `false`. (optional)
     ///     outputLanguage: Stream output language. Defaults to 'en'. (optional)
     ///     responseFormat: Used to pass the json schema of the reponse format for OpenAI LLM calls. (optional)
-    constructor(readonly config: Record<string, any>) { }
+    constructor(readonly config: Record<string, any>) {}
 
     // TODO: use TRANSLATE transformer directly instead of repeating code
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = Date.now();
+        const startTime = performance.timeOrigin + performance.now();
         this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM Started`, startTime);
         console.log("LLM transformer called.");
-        if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length){
+        if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length) {
             xmsg.transformer = {
                 ...xmsg.transformer,
                 metaData: {
@@ -54,14 +54,14 @@ export class LLMTransformer implements ITransformer {
             throw new Error('`APIKey` not defined in LLM transformer');
         }
         //TODO: Fix this later.
-        process.env['OPENAI_API_KEY']=this.config.APIKey;
+        process.env['OPENAI_API_KEY'] = this.config.APIKey;
         if (!this.config.temperature) {
             this.config.temperature = 0;
         }
         if (!this.config.outputLanguage) {
             this.config.outputLanguage = xmsg?.transformer?.metaData?.inputLanguage || 'en';
         }
-        if(this.config.outputLanguage!='en') {
+        if (this.config.outputLanguage != 'en') {
             if (!this.config.bhashiniUserId) {
                 this.sendErrorTelemetry(xmsg, '`bhashiniUserId` not defined in TRANSLATE transformer');
                 throw new Error('`bhashiniUserId` not defined in TRANSLATE transformer');
@@ -74,7 +74,7 @@ export class LLMTransformer implements ITransformer {
                 this.sendErrorTelemetry(xmsg, '`bhashiniURL` not defined in TRANSLATE transformer');
                 throw new Error('`bhashiniURL` not defined in TRANSLATE transformer');
             }
-        } 
+        }
         if (!xmsg.payload.text) {
             this.sendErrorTelemetry(xmsg, '`xmsg.payload.text` not defined in LLM transformer');
             throw new Error('`xmsg.payload.text` not defined in LLM transformer');
@@ -87,18 +87,18 @@ export class LLMTransformer implements ITransformer {
             page: any
         }> = [];
         let media: Array<MessageMedia> = []
-        let mediaUrls:Array<string> = []
-        console.error("Chunks",xmsg?.transformer?.metaData?.retrievedChunks);
-        if(xmsg?.transformer?.metaData?.retrievedChunks?.message != 'No chunks found for given parameters'){
-            xmsg?.transformer?.metaData?.retrievedChunks?.forEach((doc: any, index: number)=> {
-                expertContext+=`${index+1}: ${doc.content}\n`
+        let mediaUrls: Array<string> = []
+        console.error("Chunks", xmsg?.transformer?.metaData?.retrievedChunks);
+        if (xmsg?.transformer?.metaData?.retrievedChunks?.message != 'No chunks found for given parameters') {
+            xmsg?.transformer?.metaData?.retrievedChunks?.forEach((doc: any, index: number) => {
+                expertContext += `${index + 1}: ${doc.content}\n`
                 searchResults.push({
-                    index: index+1,
+                    index: index + 1,
                     title: doc.heading,
                     snippets: doc.content,
                     page: doc.metaData
                 })
-                if(doc.video && mediaUrls.indexOf(doc.video)==-1){
+                if (doc.video && mediaUrls.indexOf(doc.video) == -1) {
                     xmsg.messageType = MessageType.HSM
                     mediaUrls.push(doc.video)
                     media.push({
@@ -108,26 +108,26 @@ export class LLMTransformer implements ITransformer {
                 }
             }) || '';
         }
-        
-        let systemInstructions: string = this.config.prompt || xmsg.transformer?.metaData?.prompt ||  'You are am assistant who helps with answering questions for users based on the search results. If question is not relevant to search reults/corpus, refuse to answer';
+
+        let systemInstructions: string = this.config.prompt || xmsg.transformer?.metaData?.prompt || 'You are am assistant who helps with answering questions for users based on the search results. If question is not relevant to search reults/corpus, refuse to answer';
         systemInstructions = systemInstructions?.replace('{{date}}', moment().format('MMM DD, YYYY (dddd)'))
         let contentString = this.config.corpusPrompt || 'Relevant Corpus:\n{{corpus}}'
-        contentString = contentString?.replace('{{corpus}}',expertContext)
+        contentString = contentString?.replace('{{corpus}}', expertContext)
         const prompt: any = [
             {
                 role: 'system',
-                content: systemInstructions 
+                content: systemInstructions
             },
             {
                 role: 'user',
                 content: contentString
             }
         ]
-        xmsg.transformer.metaData?.userHistory.filter((message:any) => { 
-            if(message.from=='admin') return true
+        xmsg.transformer.metaData?.userHistory.filter((message: any) => {
+            if (message.from == 'admin') return true
             else return false
-         }).forEach((message:any) => {
-            if(message?.metaData?.transalatedQuery){
+        }).forEach((message: any) => {
+            if (message?.metaData?.transalatedQuery) {
                 prompt.push({
                     role: "user",
                     content: message?.metaData?.transalatedQuery
@@ -143,16 +143,16 @@ export class LLMTransformer implements ITransformer {
             content: xmsg?.payload?.text
         })
         xmsg.transformer.metaData!.prompt = prompt;
-        console.log(`LLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt,null,3)}`);
+        console.log(`LLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt, null, 3)}`);
 
         //llamaIndex implementaion
         let llm: any;
         let response: any;
-        let responseStartTime = Date.now();
+        let responseStartTime = performance.timeOrigin + performance.now();
         let streamStartLatency;
 
-        if(this.config.provider?.toLowerCase() == "groq"){
-            llm = new Groq({apiKey: this.config.APIKey});
+        if (this.config.provider?.toLowerCase() == "groq") {
+            llm = new Groq({ apiKey: this.config.APIKey });
             const serviceContext = serviceContextFromDefaults({ llm });
             response = await serviceContext.llm.chat({
                 messages: prompt,
@@ -163,18 +163,18 @@ export class LLMTransformer implements ITransformer {
             });
         } else {
             // OPEN AI Implementaion
-            let openAIConfig:any = {
+            let openAIConfig: any = {
                 apiKey: this.config.APIKey
             }
-            if([
+            if ([
                 'krutrim',
                 'mistralai',
                 'meta',
                 'google'
-            ].indexOf(this.config.provider)!=-1) {
-                openAIConfig['baseURL']='https://cloud.olakrutrim.com/v1';
+            ].indexOf(this.config.provider) != -1) {
+                openAIConfig['baseURL'] = 'https://cloud.olakrutrim.com/v1';
             }
-            console.log('openAIConfig',openAIConfig);
+            console.log('openAIConfig', openAIConfig);
             const openai = new OpenAI(openAIConfig);
             const openAIChatConfig: any = {
                 model: this.config.model,
@@ -183,7 +183,7 @@ export class LLMTransformer implements ITransformer {
                 stream: this.config.enableStream ?? false,
                 top_p: this.config.top_p ?? 1
             };
-            if(this.config.responseFormat) {
+            if (this.config.responseFormat) {
                 openAIChatConfig.response_format = this.config.responseFormat;
             }
             response = await openai.chat.completions.create(openAIChatConfig).catch((ex) => {
@@ -193,30 +193,30 @@ export class LLMTransformer implements ITransformer {
         }
 
         xmsg.messageId.replyId = xmsg.messageId.Id;
-        if(!this.config.enableStream) {
+        if (!this.config.enableStream) {
             let answer;
-            if(this.config.provider?.toLowerCase() == "groq") answer = response.message.content?.replace(/\*\*/g, '*') || "";
+            if (this.config.provider?.toLowerCase() == "groq") answer = response.message.content?.replace(/\*\*/g, '*') || "";
             else answer = response["choices"][0].message.content?.replace(/\*\*/g, '*') || "";
             try {
                 xmsg = this.postProcessResponse(xmsg, answer, searchResults)
-            } catch(err) {
+            } catch (err) {
                 console.log('post processing failed with error: ', err);
             }
-            if(this.config.outputLanguage!='en') {
-                if(this.config.languageProvider == "bhashini") {
+            if (this.config.outputLanguage != 'en') {
+                if (this.config.languageProvider == "bhashini") {
                     xmsg.payload.text = (await this.translateBhashini(
                         'en',
                         this.config.outputLanguage,
                         xmsg.payload.text!
                     ))['translated']
-                } else if(this.config.languageProvider == "azure") {
+                } else if (this.config.languageProvider == "azure") {
                     xmsg.payload.text = (await this.translateAzure(
                         'en',
                         this.config.outputLanguage,
                         xmsg.payload.text!,
                         xmsg
                     ))['translated']
-                } else{
+                } else {
                     xmsg.payload.text = (await this.translateAzure(
                         'en',
                         this.config.outputLanguage,
@@ -229,16 +229,16 @@ export class LLMTransformer implements ITransformer {
             this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
         } else {
             const newMessageId = uuid4();
-            if (!this.config.outboundURL){
+            if (!this.config.outboundURL) {
                 throw new Error('`outboundURL` not defined in LLM transformer');
             }
-            let sentences: any, allSentences = [], translatedSentences = [], output = "" ,counter = 0;
+            let sentences: any, allSentences = [], translatedSentences = [], output = "", counter = 0;
             for await (const chunk of response) {
-                if(!streamStartLatency){ 
-                    streamStartLatency = Date.now() - responseStartTime;
+                if (!streamStartLatency) {
+                    streamStartLatency = performance.timeOrigin + performance.now() - responseStartTime;
                 }
                 let currentChunk: any;
-                if(this.config.provider?.toLowerCase() == "groq") currentChunk = chunk.delta || "";
+                if (this.config.provider?.toLowerCase() == "groq") currentChunk = chunk.delta || "";
                 else currentChunk = chunk.choices[0]?.delta?.content || "";
                 currentChunk = currentChunk?.replace("AI: ", "")
                 output += currentChunk;
@@ -257,24 +257,24 @@ export class LLMTransformer implements ITransformer {
                     if (counter > 1) {
                         try {
                             xmsg = this.postProcessResponse(xmsg, currentSentence, searchResults)
-                        } catch(err) {
+                        } catch (err) {
                             console.error('post processing failed with error', err);
                         }
-                        if(this.config.outputLanguage!='en') {
-                            if(this.config.languageProvider == "bhashini") {
+                        if (this.config.outputLanguage != 'en') {
+                            if (this.config.languageProvider == "bhashini") {
                                 xmsg.payload.text = (await this.translateBhashini(
                                     'en',
                                     this.config.outputLanguage,
                                     xmsg.payload.text!
                                 ))['translated']
-                            } else if(this.config.languageProvider == "azure") {
+                            } else if (this.config.languageProvider == "azure") {
                                 xmsg.payload.text = (await this.translateAzure(
                                     'en',
                                     this.config.outputLanguage,
                                     xmsg.payload.text!,
                                     xmsg
                                 ))['translated']
-                            } else{
+                            } else {
                                 xmsg.payload.text = (await this.translateAzure(
                                     'en',
                                     this.config.outputLanguage,
@@ -297,24 +297,24 @@ export class LLMTransformer implements ITransformer {
             allSentences.push(sentences[sentences.length - 1])
             try {
                 xmsg = this.postProcessResponse(xmsg, sentences[sentences.length - 1], searchResults)
-            } catch(err) {
+            } catch (err) {
                 console.error('post processing failed with error', err);
             }
-            if(this.config.outputLanguage!='en') {
-                if(this.config.languageProvider == "bhashini") {
+            if (this.config.outputLanguage != 'en') {
+                if (this.config.languageProvider == "bhashini") {
                     xmsg.payload.text = (await this.translateBhashini(
                         'en',
                         this.config.outputLanguage,
                         xmsg.payload.text!
                     ))['translated']
-                } else if(this.config.languageProvider == "azure") {
+                } else if (this.config.languageProvider == "azure") {
                     xmsg.payload.text = (await this.translateAzure(
                         'en',
                         this.config.outputLanguage,
                         xmsg.payload.text!,
                         xmsg
                     ))['translated']
-                } else{
+                } else {
                     xmsg.payload.text = (await this.translateAzure(
                         'en',
                         this.config.outputLanguage,
@@ -336,7 +336,7 @@ export class LLMTransformer implements ITransformer {
                 metaData: {
                     ...xmsg.transformer?.metaData,
                     streamMessageId: newMessageId,
-                    responseInEnglish: allSentences.join(' ')?.replace("<end/>",'')?.replace(/<newline>/g, '\n')?.replace(/<ନୂତନ ଲାଇନ୍>/g, '\n')?.replace(/<न्यूलाइन>/g, '\n')?.replace(/<नई लाइन>/g, '\n'),
+                    responseInEnglish: allSentences.join(' ')?.replace("<end/>", '')?.replace(/<newline>/g, '\n')?.replace(/<ନୂତନ ଲାଇନ୍>/g, '\n')?.replace(/<न्यूलाइन>/g, '\n')?.replace(/<नई लाइन>/g, '\n'),
                     streamStartLatency
                 }
             }
@@ -363,7 +363,7 @@ export class LLMTransformer implements ITransformer {
         const matches = answer.match(/<<(.*?)>>/g)
         if (matches) {
             followUpQuestions = matches.map((match: string) => match.slice(2, -2).trim());
-        } 
+        }
         answer = answer?.replace(/<<(.*?)>>/g, '').trim();
         const referenceRegex = /\[(\d+)\]/g;
         let referencesArray = [];
@@ -371,24 +371,24 @@ export class LLMTransformer implements ITransformer {
         while ((match = referenceRegex.exec(answer)) !== null) {
             referencesArray.push(parseInt(match[1]));
         }
-        referencesArray = referencesArray.sort((a,b)=>a-b);
+        referencesArray = referencesArray.sort((a, b) => a - b);
         let updatedSearchResults: Array<{
             index: number;
             title: string;
             snippets: string;
             page: any
         }> = [];
-        referencesArray.forEach((ref,i) => {
-            answer = answer?.replace(`[${ref}]`,`[${i+1}]`)
-            let newSearch = searchResults[ref-1] ?? {};
-            newSearch.index = i+1
+        referencesArray.forEach((ref, i) => {
+            answer = answer?.replace(`[${ref}]`, `[${i + 1}]`)
+            let newSearch = searchResults[ref - 1] ?? {};
+            newSearch.index = i + 1
             updatedSearchResults.push(newSearch)
         })
         xmsg.payload.text = answer;
         xmsg.payload.metaData!['searchResults'] = updatedSearchResults;
         if (followUpQuestions.length > 0) {
             xmsg.payload.buttonChoices = {
-                choices: followUpQuestions.map((question: string, index: number): ButtonChoice=>{return {key: `${index}`, text: question, isEnabled: true}})
+                choices: followUpQuestions.map((question: string, index: number): ButtonChoice => { return { key: `${index}`, text: question, isEnabled: true } })
             };
         }
         return xmsg;
@@ -396,7 +396,7 @@ export class LLMTransformer implements ITransformer {
 
     //triggering inboud here itself for now to enable streaming feature
     //TODO: add a queue at orchestrator and ping orchestrator here such that it tirggres outbound.
-    async sendMessage(xmsg: XMessage){
+    async sendMessage(xmsg: XMessage) {
         console.log(`sending message to ${this.config.outboundURL}...`)
         console.log('-------------------------------------------------------------')
         xmsg.payload.text = xmsg.payload.text?.replace(/<newline>/g, '\n');
@@ -407,19 +407,19 @@ export class LLMTransformer implements ITransformer {
         // This also reduces payload size and prevents 413 error.
         delete xmsg.transformer?.metaData?.userHistory;
         xmsg.transformer!.metaData!.messageIdChanged = true;
-        try{
-          var myHeaders = new Headers();
-          myHeaders.append("Content-Type", "application/json");
-          var requestOptions = {
-            method: "POST",
-            headers: myHeaders,
-            body: JSON.stringify(xmsg),
-          };
-          await fetch(`${this.config.outboundURL}`, requestOptions)
-          return;
-        } catch (error){
+        try {
+            var myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+            var requestOptions = {
+                method: "POST",
+                headers: myHeaders,
+                body: JSON.stringify(xmsg),
+            };
+            await fetch(`${this.config.outboundURL}`, requestOptions)
+            return;
+        } catch (error) {
             console.log("outbound error....")
-          console.log(error)
+            console.log(error)
         }
     }
 
@@ -428,25 +428,25 @@ export class LLMTransformer implements ITransformer {
         target: string,
         text: string,
         xmsg: XMessage
-      ) {
+    ) {
         try {
-          let response: any = await computeAzure({
-            sourceLanguage: source,
-            targetLanguage: target,
-            text,
-            botId: xmsg.app,
-            orgId: xmsg.orgId
-          }, this.config.bhashiniURL);
-          return {
-            translated: response.translated,
-            error: null
-          }
+            let response: any = await computeAzure({
+                sourceLanguage: source,
+                targetLanguage: target,
+                text,
+                botId: xmsg.app,
+                orgId: xmsg.orgId
+            }, this.config.bhashiniURL);
+            return {
+                translated: response.translated,
+                error: null
+            }
         } catch (error) {
-          console.log(error)
-          return {
-            translated: "",
-            error: error
-          }
+            console.log(error)
+            return {
+                translated: "",
+                error: error
+            }
         }
     }
 
@@ -457,74 +457,74 @@ export class LLMTransformer implements ITransformer {
         text: string
     ) {
         try {
-          let config = {
-            "language": {
-              "sourceLanguage": source,
-              "targetLanguage": target
+            let config = {
+                "language": {
+                    "sourceLanguage": source,
+                    "targetLanguage": target
+                }
             }
-          }
-          let bhashiniConfig: any = await getBhashiniConfig(
-            'translation', 
-            config,
-            this.config.bhashiniUserId,
-            this.config.bhashiniAPIKey,
-            this.config.bhashiniURL
-          )
-          let textArray = text?.replace(/\n\n/g, "\n").split("\n")
-          for (let i = 0; i < textArray.length; i++) {
-            let response: any = await computeBhashini(
-              bhashiniConfig?.pipelineInferenceAPIEndPoint?.inferenceApiKey?.value,
-              "translation",
-              bhashiniConfig?.pipelineResponseConfig[0].config[0].serviceId,
-              bhashiniConfig?.pipelineInferenceAPIEndPoint?.callbackUrl,
-              config,
-              {
-                "input": [
-                  {
-                    "source": textArray[i]
-                  }
-                ]
-              }
+            let bhashiniConfig: any = await getBhashiniConfig(
+                'translation',
+                config,
+                this.config.bhashiniUserId,
+                this.config.bhashiniAPIKey,
+                this.config.bhashiniURL
             )
-            if (response["error"]) {
-              console.log(response["error"])
-              throw new Error(response["error"])
+            let textArray = text?.replace(/\n\n/g, "\n").split("\n")
+            for (let i = 0; i < textArray.length; i++) {
+                let response: any = await computeBhashini(
+                    bhashiniConfig?.pipelineInferenceAPIEndPoint?.inferenceApiKey?.value,
+                    "translation",
+                    bhashiniConfig?.pipelineResponseConfig[0].config[0].serviceId,
+                    bhashiniConfig?.pipelineInferenceAPIEndPoint?.callbackUrl,
+                    config,
+                    {
+                        "input": [
+                            {
+                                "source": textArray[i]
+                            }
+                        ]
+                    }
+                )
+                if (response["error"]) {
+                    console.log(response["error"])
+                    throw new Error(response["error"])
+                }
+                textArray[i] = response?.pipelineResponse[0]?.output[0]?.target
             }
-            textArray[i] = response?.pipelineResponse[0]?.output[0]?.target
-          }
-          return {
-            translated: textArray.join('\n'),
-            error: null
-          }
+            return {
+                translated: textArray.join('\n'),
+                error: null
+            }
         } catch (error) {
-          console.log(error)
-          return {
-            translated: "",
-            error: error
-          }
+            console.log(error)
+            return {
+                translated: "",
+                error: error
+            }
         }
     }
 
     private async sendErrorTelemetry(xmsg: XMessage, error: string) {
-        const xmgCopy = {...xmsg};
+        const xmgCopy = { ...xmsg };
         xmgCopy.transformer!.metaData!.errorString = error;
         this.config.eventBus.pushEvent({
-          eventName: Events.CUSTOM_TELEMETRY_EVENT_ERROR,
-          transformerId: this.config.transformerId,
-          eventData: xmgCopy,
-          timestamp: Date.now(),
+            eventName: Events.CUSTOM_TELEMETRY_EVENT_ERROR,
+            transformerId: this.config.transformerId,
+            eventData: xmgCopy,
+            timestamp: performance.timeOrigin + performance.now(),
         })
     }
 
     private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number) {
-        const xmgCopy = {...xmsg};
+        const xmgCopy = { ...xmsg };
         xmgCopy.transformer!.metaData!.telemetryLog = log;
-        xmgCopy.transformer!.metaData!.stateExecutionTime = Date.now() - startTime;
+        xmgCopy.transformer!.metaData!.stateExecutionTime = performance.timeOrigin + performance.now() - startTime;
         this.config.eventBus.pushEvent({
-          eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
-          transformerId: this.config.transformerId,
-          eventData: xmgCopy,
-          timestamp: Date.now(),
+            eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
+            transformerId: this.config.transformerId,
+            eventData: xmgCopy,
+            timestamp: performance.timeOrigin + performance.now(),
         })
     }
 

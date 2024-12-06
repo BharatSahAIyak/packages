@@ -9,7 +9,7 @@ describe("TranslateTransformer", () => {
     from: { userID: "1234567890", bot: true, meta: new Map() },
     channelURI: "",
     providerURI: "",
-    timestamp: Date.now(),
+    timestamp: performance.timeOrigin + performance.now(),
     messageState: MessageState.REPLIED,
     payload: { text: "Hello, world!" },
     transformer: {

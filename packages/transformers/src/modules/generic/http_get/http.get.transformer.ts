@@ -16,7 +16,7 @@ export class HttpGetTransformer implements ITransformer {
     private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = Date.now();
+        const startTime = performance.timeOrigin + performance.now();
         if (!xmsg.transformer) {
             xmsg.transformer = {
                 metaData: {}
@@ -65,7 +65,6 @@ export class HttpGetTransformer implements ITransformer {
 
         console.log("query:", `${this.config.url}${this.config.query ?? ''}`)
         console.log("headers", JSON.stringify(this.config.headers))
-        // TODO: Add support for accessing xMessage variables in URL
         if (!this.config.url) {
             this.telemetryLogger.sendErrorTelemetry(xmsg, '`url` not defined in HTTP_GET transformer');
             throw new Error('`url` not defined in HTTP_GET transformer');

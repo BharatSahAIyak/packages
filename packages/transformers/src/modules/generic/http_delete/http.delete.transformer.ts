@@ -13,7 +13,7 @@ export class HttpDeleteTransformer implements ITransformer {
   private readonly telemetryLogger = new TelemetryLogger(this.config);
 
   async transform(xmsg: XMessage): Promise<XMessage> {
-    const startTime = Date.now();
+    const startTime = performance.timeOrigin + performance.now();
     if (!xmsg.transformer) {
       xmsg.transformer = {
         metaData: {}
