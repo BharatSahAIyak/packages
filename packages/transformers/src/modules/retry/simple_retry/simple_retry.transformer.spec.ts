@@ -44,10 +44,10 @@ describe('SimpleRetryTransformer', () => {
 
     it('should wait for the specified delay before retrying', async () => {
         const delaySpy = jest.spyOn(transformer as any, 'delay').mockImplementation(mockDelay);
-        const start = Date.now();
+        const start = performance.timeOrigin + performance.now();
 
         await transformer.transform(xmsg);
-        const end = Date.now();
+        const end = performance.timeOrigin + performance.now();
 
         expect(end - start).toBeGreaterThanOrEqual(1000);
         delaySpy.mockRestore();
@@ -58,28 +58,28 @@ describe('SimpleRetryTransformer', () => {
         await transformer.transform(xmsg);
         await transformer.transform(xmsg);
         await transformer.transform(xmsg);
-        await transformer.transform(xmsg); 
-        expect(xmsg.transformer?.metaData!.state).toBe('error'); 
-    });    
+        await transformer.transform(xmsg);
+        expect(xmsg.transformer?.metaData!.state).toBe('error');
+    });
 
     it('should handle case when no config is provided', async () => {
         const transformerWithoutConfig = new SimpleRetryTransformer({});
         await transformerWithoutConfig.transform(xmsg);
-        expect(xmsg.transformer?.metaData!.retryCount).toBe(1); 
+        expect(xmsg.transformer?.metaData!.retryCount).toBe(1);
     });
 
     it('should handle case when no transformer metadata is provided', async () => {
         const xmsgWithoutMetadata = {} as XMessage;
         await transformer.transform(xmsgWithoutMetadata);
-        expect(xmsgWithoutMetadata.transformer!.metaData!.retryCount).toBe(1); 
-    });   
+        expect(xmsgWithoutMetadata.transformer!.metaData!.retryCount).toBe(1);
+    });
 
     it('should retry with default delay if no delay is provided', async () => {
         const transformerWithDefaultDelay = new SimpleRetryTransformer({ retries: 3 });
-        const start = Date.now();
+        const start = performance.timeOrigin + performance.now();
         await transformerWithDefaultDelay.transform(xmsg);
-        const end = Date.now();
-        expect(end - start).toBeGreaterThanOrEqual(0); 
+        const end = performance.timeOrigin + performance.now();
+        expect(end - start).toBeGreaterThanOrEqual(0);
     });
 
     it('should send telemetry log events', async () => {

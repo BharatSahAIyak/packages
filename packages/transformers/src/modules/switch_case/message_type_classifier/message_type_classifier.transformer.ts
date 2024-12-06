@@ -13,7 +13,7 @@ export class MessageTypeClassifierTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         xmsg.transformer!.metaData!.state = xmsg.messageType ?? MessageType.TEXT;
-        this.telemetryLogger.sendLogTelemetry(xmsg, `Message type classified as ${xmsg.transformer!.metaData!.state}`, Date.now());
+        this.telemetryLogger.sendLogTelemetry(xmsg, `Message type classified as ${xmsg.transformer!.metaData!.state}`, performance.timeOrigin + performance.now());
         return xmsg;
     }
 }
