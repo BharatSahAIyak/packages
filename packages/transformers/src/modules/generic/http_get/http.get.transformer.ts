@@ -91,8 +91,7 @@ export class HttpGetTransformer implements ITransformer {
                             return resp.text();
                         }
                     }
-                }
-            })
+                })
             .then((resp) => {
                 if (!xmsg.transformer) {
                     xmsg.transformer = {
