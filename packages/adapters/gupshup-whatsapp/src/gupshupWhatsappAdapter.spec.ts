@@ -351,6 +351,10 @@ describe('Conversation Management', () => {
         passwordHSM: "passHSM",
         username2Way: "9999999999",
         usernameHSM: "9999999999",
+        userServiceUrl: "http://mock-url",
+        fusionAuthUrl: "http://mock-fusion-auth",
+        applicationId: "mock-app-id",
+        authToken: "mock-token"
     };
     
     beforeEach(() => {
