@@ -143,8 +143,8 @@ export class LLMTransformer implements ITransformer {
             content: xmsg?.payload?.text
         })
         xmsg.transformer.metaData!.prompt = prompt;
-        this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Prompt prepared ${JSON.stringify(prompt, null, 3)}`, startTime)
-
+        this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Prompt prepared ${JSON.stringify(prompt,null,3)}`, startTime)
+        console.log(`LLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt,null,3)}`);
 
         //llamaIndex implementaion
         let llm: any;
