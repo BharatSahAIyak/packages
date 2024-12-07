@@ -2,6 +2,7 @@ import { GupshupWhatsappProvider, IGSWhatsappConfig } from './GupShupWhatsappAda
 import { MediaCategory, MessageState, MessageType, StylingTag, XMessage } from '@samagra-x/xmessage';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import { UserHistoryMessage } from './types';
 
 const mockGSWhatsappReport = {
   externalId: 'report-123',
@@ -58,6 +59,10 @@ describe('gupshup whatsapp adapter', () => {
       passwordHSM: "passHSM",
       username2Way: "9999999999",
       usernameHSM: "9999999999",
+      userServiceUrl: "http://mock-url",
+      fusionAuthUrl: "http://mock-fusion-auth",
+      applicationId: "mock-app-id",
+      authToken: "mock-token"
     };
 
     adapter = new GupshupWhatsappProvider(mockCredentials);
@@ -192,14 +197,16 @@ describe('gupshup whatsapp adapter', () => {
       messageState: 'DELIVERED',
       messageId: {
         Id: 'testId',
+        conversationId: expect.any(String)
       },
       messageType: 'REPORT',
       timestamp: 0,
-      payload: { text: '' }
+      payload: { text: '' },
+      transformer: {
+        metaData: {}  // We'll ignore sessionId in comparison
+      }
     };
     const xmsg = await adapter.convertMessageToXMsg(mockReport);
-    // Timestamp will be different every time, hence only
-    // check for existence of field.
     expect("timestamp" in xmsg).toBeTruthy();
     expect(xmsg.messageId.Id).toBeDefined();
     xmsg.timestamp = 0;
@@ -216,7 +223,7 @@ describe('gupshup whatsapp adapter', () => {
       "waNumber": "918888888888",
       "name": "User"
     };
-    const expectedXMessage: XMessage = {
+    const expectedAudioMessage: XMessage = {
       to: { userID: 'admin' },
       from: { userID: '9999999999' },
       channelURI: 'Whatsapp',
@@ -224,6 +231,7 @@ describe('gupshup whatsapp adapter', () => {
       messageState: MessageState.REPLIED,
       messageId: {
         Id: 'testId',
+        conversationId: expect.any(String)
       },
       messageType: MessageType.AUDIO,
       timestamp: 0,
@@ -236,6 +244,9 @@ describe('gupshup whatsapp adapter', () => {
             mimeType: 'audio/ogg; codecs=opus',
           }
         ]
+      },
+      transformer: {
+        metaData: {}  // We'll ignore sessionId in comparison
       }
     };
     const xmsg = await adapter.convertMessageToXMsg(mockAudioMessage);
@@ -243,7 +254,7 @@ describe('gupshup whatsapp adapter', () => {
     xmsg.messageId.Id = 'testId';
     expect(xmsg.timestamp).toBeGreaterThan(0);
     xmsg.timestamp = 0;
-    expect(xmsg).toStrictEqual(expectedXMessage);
+    expect(xmsg).toStrictEqual(expectedAudioMessage);
   });
 
   it("Convert Whatsapp Video message to XMessage", async () => {
@@ -263,6 +274,7 @@ describe('gupshup whatsapp adapter', () => {
       messageState: MessageState.REPLIED,
       messageId: {
         Id: 'testId',
+        conversationId: expect.any(String)
       },
       messageType: MessageType.VIDEO,
       timestamp: 0,
@@ -275,6 +287,9 @@ describe('gupshup whatsapp adapter', () => {
             mimeType: 'video/mp4',
           }
         ]
+      },
+      transformer: {
+        metaData: {}  // We'll ignore sessionId in comparison
       }
     };
     const xmsg = await adapter.convertMessageToXMsg(mockAudioMessage);
@@ -302,6 +317,7 @@ describe('gupshup whatsapp adapter', () => {
       messageState: MessageState.REPLIED,
       messageId: {
         Id: 'testId',
+        conversationId: expect.any(String)
       },
       messageType: MessageType.IMAGE,
       timestamp: 0,
@@ -314,6 +330,9 @@ describe('gupshup whatsapp adapter', () => {
             mimeType: 'image/jpeg',
           }
         ]
+      },
+      transformer: {
+        metaData: {}  // We'll ignore sessionId in comparison
       }
     };
     const xmsg = await adapter.convertMessageToXMsg(mockAudioMessage);
@@ -321,7 +340,119 @@ describe('gupshup whatsapp adapter', () => {
     xmsg.messageId.Id = 'testId';
     expect(xmsg.timestamp).toBeGreaterThan(0);
     xmsg.timestamp = 0;
-    xmsg.messageId.Id = 'testId';
     expect(xmsg).toStrictEqual(expectedXMessage);
   });
 })
+
+describe('Conversation Management', () => {
+    let adapter: GupshupWhatsappProvider;
+    const credentials: IGSWhatsappConfig = {
+        password2Way: "pass2Way",
+        passwordHSM: "passHSM",
+        username2Way: "9999999999",
+        usernameHSM: "9999999999",
+        userServiceUrl: "http://mock-url",
+        fusionAuthUrl: "http://mock-fusion-auth",
+        applicationId: "mock-app-id",
+        authToken: "mock-token"
+    };
+    
+    beforeEach(() => {
+        adapter = new GupshupWhatsappProvider(credentials);
+    });
+
+    it('should generate new conversationId for first message', async () => {
+        const mockMessage = {
+            "mobile": "919999999999",
+            "type": "text",
+            "text": "Hello",
+            "timestamp": Date.now().toString(),
+        };
+        
+        const xmsg = await adapter.convertMessageToXMsg(mockMessage);
+        expect(xmsg.messageId.conversationId).toBeDefined();
+        expect(typeof xmsg.messageId.conversationId).toBe('string');
+    });
+
+    it('should reuse conversationId for messages within 10 minutes', async () => {
+        const currentTime = Date.now();
+        const fiveMinutesAgo = new Date(currentTime - (5 * 60 * 1000));
+        const existingConversationId = '123456789';
+        
+        const userHistory: UserHistoryMessage[] = [{
+            id: 11,
+            app: "BOT_ID_1",
+            messageType: "TEXT",
+            channelMessageId: "CHANNEL_MESSAGE_ID_1",
+            adapterId: "3073705e-7e9d-4b7b-96f8-0f2d84351628",
+            orgId: "5a8d8a57-cd84-4670-8f75-e8ede4504752",
+            ownerId: "2fc6a82e-0bd1-4e58-a752-98eba6211c9c",
+            messageId: "fe9cdbdd-d04e-4db1-bf7e-653265b185e4",
+            to: "USER_ID_2",
+            from: "admin",
+            channelURI: "Pwa",
+            providerURI: "Pwa",
+            timestamp: fiveMinutesAgo.toISOString(),
+            messageState: "REPLIED",
+            lastMessageID: undefined,
+            conversationId: existingConversationId,
+            payload: {
+                text: "Hello User",
+                metaData: {}
+            }
+        }];
+
+        const adapterWithHistory = new GupshupWhatsappProvider(credentials, userHistory);
+
+        const mockMessage = {
+            mobile: "919999999999",
+            type: "text",
+            text: "Hello",
+            timestamp: currentTime.toString()
+        };
+
+        const newXMsg = await adapterWithHistory.convertMessageToXMsg(mockMessage);
+        expect(newXMsg.messageId.conversationId).toBe(existingConversationId);
+    });
+
+    it('should generate new conversationId for messages after 10 minutes', async () => {
+        const currentTime = Date.now();
+        const fifteenMinutesAgo = new Date(currentTime - (15 * 60 * 1000));
+        const existingConversationId = '123456789';
+        
+        const userHistory: UserHistoryMessage[] = [{
+            id: 11,
+            app: "BOT_ID_1",
+            messageType: "TEXT",
+            channelMessageId: "CHANNEL_MESSAGE_ID_1",
+            adapterId: "3073705e-7e9d-4b7b-96f8-0f2d84351628",
+            orgId: "5a8d8a57-cd84-4670-8f75-e8ede4504752",
+            ownerId: "2fc6a82e-0bd1-4e58-a752-98eba6211c9c",
+            messageId: existingConversationId,
+            to: "USER_ID_2",
+            from: "admin",
+            channelURI: "Pwa",
+            providerURI: "Pwa",
+            timestamp: fifteenMinutesAgo.toISOString(),
+            messageState: "REPLIED",
+            lastMessageID: undefined,
+            payload: {
+                text: "Hello User",
+                metaData: {}
+            }
+        }];
+
+        const adapterWithHistory = new GupshupWhatsappProvider(credentials, userHistory);
+
+        const mockMessage = {
+            mobile: "919999999999",
+            type: "text",
+            text: "Hello",
+            timestamp: currentTime.toString()
+        };
+
+        const newXMsg = await adapterWithHistory.convertMessageToXMsg(mockMessage);
+        expect(newXMsg.messageId.conversationId).not.toBe(existingConversationId);
+        expect(newXMsg.messageId.conversationId).toBeDefined();
+    });
+});

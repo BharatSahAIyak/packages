@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { GSWhatsAppMessage, MethodType } from './types';
+import { GSWhatsAppMessage, MethodType, UserHistoryMessage } from './types';
 import {
   StylingTag,
   MessageId,
@@ -23,6 +23,10 @@ export type IGSWhatsappConfig = {
   passwordHSM: string,
   username2Way: string,
   usernameHSM: string,
+  userServiceUrl: string,
+  fusionAuthUrl: string,
+  applicationId: string,
+  authToken: string
 };
 
 type GSWhatsappReport = {
@@ -74,12 +78,21 @@ type SectionRow = {
   title: string;
 }
 
+interface UserSearchResponse {
+  users: {
+    id: string;
+    username: string;
+  }[];
+  total: number;
+}
 export class GupshupWhatsappProvider implements XMessageProvider {
 
   private readonly providerConfig?: IGSWhatsappConfig;
+  private readonly userHistory: UserHistoryMessage[];
 
-  constructor(config?: IGSWhatsappConfig) {
+  constructor(config?: IGSWhatsappConfig, userHistory: UserHistoryMessage[] = []) {
     this.providerConfig = config;
+    this.userHistory = userHistory;
   }
 
   private getMessageState = (eventType: String): MessageState => {
@@ -248,6 +261,36 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     return location;
   };
 
+  private generateConversationId(): string {
+    return uuid4();
+  }
+
+  private getLastMessageTimestamp(userHistory: UserHistoryMessage[]): number {
+    if (!userHistory || userHistory.length === 0) {
+      return 0;
+    }
+    return new Date(userHistory[0].timestamp).getTime();
+  }
+
+  private shouldCreateNewConversation(lastMessageTimestamp: number, currentTimestamp: number): boolean {
+    const TEN_MINUTES = 10 * 60 * 1000; // 10 minutes in milliseconds
+    return currentTimestamp - lastMessageTimestamp > TEN_MINUTES;
+  }
+
+  private manageConversation(xmsg: XMessage): void {
+    const currentTimestamp = Date.now();
+    const lastMessageTimestamp = this.getLastMessageTimestamp(this.userHistory);
+
+    if (this.shouldCreateNewConversation(lastMessageTimestamp, currentTimestamp)) {
+      xmsg.messageId.conversationId = this.generateConversationId();
+    } else if (this.userHistory.length > 0) {
+      const lastConversationId = this.userHistory[0]?.conversationId;
+      xmsg.messageId.conversationId = lastConversationId || this.generateConversationId();
+    } else {
+      xmsg.messageId.conversationId = this.generateConversationId();
+    }
+  }
+
   private processedXMessage = (
     message: GSWhatsAppMessage,
     xmsgPayload: XMessagePayload,
@@ -257,17 +300,22 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     messageIdentifier: MessageId,
     messageType: MessageType
   ): XMessage => {
-    return {
-      to: to,
-      from: from,
-      channelURI: 'Whatsapp',
-      providerURI: 'Gupshup',
-      messageState: messageState,
-      messageId: messageIdentifier,
-      messageType: messageType,
-      timestamp: parseInt(message.timestamp as string) || Date.now(),
-      payload: xmsgPayload,
+    const existingTransformer = (message as any).transformer || { metaData: {} };
+    
+    const xmsg = {
+        to: to,
+        from: from,
+        channelURI: 'Whatsapp',
+        providerURI: 'Gupshup',
+        messageState: messageState,
+        messageId: messageIdentifier,
+        messageType: messageType,
+        timestamp: parseInt(message.timestamp as string) || Date.now(),
+        payload: xmsgPayload,
+        transformer: existingTransformer
     };
+    this.manageConversation(xmsg);
+    return xmsg;
   };
   
   private renderMessageChoices = (buttonChoices: ButtonChoice[] | null): string => {
@@ -287,12 +335,86 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     return '';
   };
   
+  private async searchUser(phoneNumber: string): Promise<string | null> {
+    try {
+      const response = await axios.get<UserSearchResponse>(
+        `${this.providerConfig?.fusionAuthUrl}/api/user/search?queryString=${phoneNumber}&exactMatch=true`,
+        {
+          headers: {
+            'x-application-id': `${this.providerConfig?.applicationId}`,
+            'Authorization': `${this.providerConfig?.authToken}`
+          }
+        }
+      );
+      
+      if (response.data.total > 0) {
+        return response.data.users[0].id;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error searching user:', error);
+      return null;
+    }
+  }
+  
+  private async registerUser(phoneNumber: string): Promise<string | null> {
+    try {
+      const response = await axios.post<any>(
+        `${this.providerConfig?.userServiceUrl}/api/signup`,
+        {
+          user: {
+            active: true,
+            username: phoneNumber,
+            password: "00000000",
+            data: {
+              cmvideoCount: 0
+            }
+          },
+          registration: {
+            applicationId: `${this.providerConfig?.applicationId}`
+          }
+        },
+        {
+          headers: {
+            'x-application-id': `${this.providerConfig?.applicationId}`,
+            'Authorization': `${this.providerConfig?.authToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.data.responseCode === 'OK' && response.data.result?.id) {
+        return response.data.result.id;
+      }
+      console.error('User registration failed:', response.data.params.errMsg || 'Unknown error');
+      return null;
+    } catch (error) {
+      console.error('Error registering user:', error);
+      return null;
+    }
+  }
+  
   // Convert GupShupWhatsAppMessage to XMessage
   convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
     const message = msg as GSWhatsAppMessage;
-    const from: SenderReceiverInfo = { userID: '' };
+    const phoneNumber = message.mobile?.substring(2);
+    const from: SenderReceiverInfo = { 
+      userID: '',
+    };
     const to: SenderReceiverInfo = { userID: 'admin' };
-  
+
+    if (this.providerConfig?.fusionAuthUrl && this.providerConfig?.userServiceUrl) {
+      let userId = await this.searchUser(phoneNumber);
+
+      if (!userId) {
+        userId = await this.registerUser(phoneNumber);
+      }
+
+      from.userID = userId || phoneNumber;
+    } else {
+      from.userID = phoneNumber;
+    }
+
     const messageState: MessageState[] = [MessageState.REPLIED];
     const messageIdentifier: MessageId = { Id: uuid4() };
     if (message.messageId) {
