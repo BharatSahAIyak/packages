@@ -143,6 +143,7 @@ export class LLMTransformer implements ITransformer {
             content: xmsg?.payload?.text
         })
         xmsg.transformer.metaData!.prompt = prompt;
+        this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Prompt prepared ${JSON.stringify(prompt,null,3)}`, startTime)
         console.log(`LLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt,null,3)}`);
 
         //llamaIndex implementaion
@@ -151,6 +152,12 @@ export class LLMTransformer implements ITransformer {
         let responseStartTime = Date.now();
         let streamStartLatency;
 
+        this.sendLogTelemetry(xmsg, `Triggering LLM with config: ${{
+            stream: this.config.enableStream ?? false,
+            model: this.config.model,
+            provider: this.config.provider,
+        }}`, startTime)
+        
         if(this.config.provider?.toLowerCase() == "groq"){
             llm = new Groq({apiKey: this.config.APIKey});
             const serviceContext = serviceContextFromDefaults({ llm });
