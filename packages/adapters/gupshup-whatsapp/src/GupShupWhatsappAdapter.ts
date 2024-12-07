@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { GSWhatsAppMessage, MethodType } from './types';
+import { GSWhatsAppMessage, MethodType, UserHistoryMessage } from './types';
 import {
   StylingTag,
   MessageId,
@@ -88,9 +88,11 @@ interface UserSearchResponse {
 export class GupshupWhatsappProvider implements XMessageProvider {
 
   private readonly providerConfig?: IGSWhatsappConfig;
+  private readonly userHistory: UserHistoryMessage[];
 
-  constructor(config?: IGSWhatsappConfig) {
+  constructor(config?: IGSWhatsappConfig, userHistory: UserHistoryMessage[] = []) {
     this.providerConfig = config;
+    this.userHistory = userHistory;
   }
 
   private getMessageState = (eventType: String): MessageState => {
@@ -259,6 +261,36 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     return location;
   };
 
+  private generateConversationId(): string {
+    return uuid4();
+  }
+
+  private getLastMessageTimestamp(userHistory: UserHistoryMessage[]): number {
+    if (!userHistory || userHistory.length === 0) {
+      return 0;
+    }
+    return new Date(userHistory[0].timestamp).getTime();
+  }
+
+  private shouldCreateNewConversation(lastMessageTimestamp: number, currentTimestamp: number): boolean {
+    const TEN_MINUTES = 10 * 60 * 1000; // 10 minutes in milliseconds
+    return currentTimestamp - lastMessageTimestamp > TEN_MINUTES;
+  }
+
+  private manageConversation(xmsg: XMessage): void {
+    const currentTimestamp = Date.now();
+    const lastMessageTimestamp = this.getLastMessageTimestamp(this.userHistory);
+
+    if (this.shouldCreateNewConversation(lastMessageTimestamp, currentTimestamp)) {
+      xmsg.messageId.conversationId = this.generateConversationId();
+    } else if (this.userHistory.length > 0) {
+      const lastConversationId = this.userHistory[0]?.conversationId;
+      xmsg.messageId.conversationId = lastConversationId || this.generateConversationId();
+    } else {
+      xmsg.messageId.conversationId = this.generateConversationId();
+    }
+  }
+
   private processedXMessage = (
     message: GSWhatsAppMessage,
     xmsgPayload: XMessagePayload,
@@ -268,17 +300,22 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     messageIdentifier: MessageId,
     messageType: MessageType
   ): XMessage => {
-    return {
-      to: to,
-      from: from,
-      channelURI: 'Whatsapp',
-      providerURI: 'Gupshup',
-      messageState: messageState,
-      messageId: messageIdentifier,
-      messageType: messageType,
-      timestamp: parseInt(message.timestamp as string) || Date.now(),
-      payload: xmsgPayload,
+    const existingTransformer = (message as any).transformer || { metaData: {} };
+    
+    const xmsg = {
+        to: to,
+        from: from,
+        channelURI: 'Whatsapp',
+        providerURI: 'Gupshup',
+        messageState: messageState,
+        messageId: messageIdentifier,
+        messageType: messageType,
+        timestamp: parseInt(message.timestamp as string) || Date.now(),
+        payload: xmsgPayload,
+        transformer: existingTransformer
     };
+    this.manageConversation(xmsg);
+    return xmsg;
   };
   
   private renderMessageChoices = (buttonChoices: ButtonChoice[] | null): string => {
