@@ -109,3 +109,7 @@ yarn build
 ```bash
 npm publish --access=public
 ```
+
+**Note**: While publishing, updating the version is a mandatory step, the `package.json` file has a key named `version` which follows [semantic-versioning](https://semver.org/) and the semantic version needs to be updated (incremented in most cases) for a new version to be published to the npm registr (npm will publish any version which is not already present in it's registry but a good convention is just to keep the version numbers incremental).
+
+
