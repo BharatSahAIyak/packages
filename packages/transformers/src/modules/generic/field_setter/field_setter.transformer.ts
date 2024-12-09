@@ -23,6 +23,7 @@ export class FieldSetterTransformer implements ITransformer {
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = ((performance.timeOrigin + performance.now()) * 1000);
         console.log("Field Setter called.");
+
         this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
         if (!this.config.setters) {
             throw new Error('`config.setters` is a required parameter!');
@@ -52,6 +53,7 @@ export class FieldSetterTransformer implements ITransformer {
                 this.telemetryLogger.sendErrorTelemetry(xmsg, `Error setting field ${entry[0]}: ${error}`);
             }
         });
+
 
         if (allResolved) {
             this.telemetryLogger.sendLogTelemetry(xmsg, `All fields resolved and set successfully`, startTime);
