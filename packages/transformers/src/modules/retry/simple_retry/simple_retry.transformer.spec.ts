@@ -44,10 +44,10 @@ describe('SimpleRetryTransformer', () => {
 
     it('should wait for the specified delay before retrying', async () => {
         const delaySpy = jest.spyOn(transformer as any, 'delay').mockImplementation(mockDelay);
-        const start = performance.timeOrigin + performance.now();
+        const start = ((performance.timeOrigin + performance.now()) * 1000);
 
         await transformer.transform(xmsg);
-        const end = performance.timeOrigin + performance.now();
+        const end = ((performance.timeOrigin + performance.now()) * 1000);
 
         expect(end - start).toBeGreaterThanOrEqual(1000);
         delaySpy.mockRestore();
@@ -76,9 +76,9 @@ describe('SimpleRetryTransformer', () => {
 
     it('should retry with default delay if no delay is provided', async () => {
         const transformerWithDefaultDelay = new SimpleRetryTransformer({ retries: 3 });
-        const start = performance.timeOrigin + performance.now();
+        const start = ((performance.timeOrigin + performance.now()) * 1000);
         await transformerWithDefaultDelay.transform(xmsg);
-        const end = performance.timeOrigin + performance.now();
+        const end = ((performance.timeOrigin + performance.now()) * 1000);
         expect(end - start).toBeGreaterThanOrEqual(0);
     });
 

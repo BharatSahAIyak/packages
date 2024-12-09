@@ -76,7 +76,7 @@ export class SpeechToTextTransformer implements ITransformer {
     if (this.persist) {
       xmsg.payload.text = speechToTextData;
     }
-    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.constructor.name} finished!`, performance.timeOrigin + performance.now());
+    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.constructor.name} finished!`, ((performance.timeOrigin + performance.now()) * 1000));
     return xmsg;
   }
 }

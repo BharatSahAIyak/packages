@@ -16,7 +16,7 @@ export class HttpGetTransformer implements ITransformer {
     private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = performance.timeOrigin + performance.now();
+        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
         if (!xmsg.transformer) {
             xmsg.transformer = {
                 metaData: {}

@@ -19,7 +19,7 @@ export class TranslateTransformer implements ITransformer {
   private readonly telemetryLogger = new TelemetryLogger(this.config);
 
   async transform(xmsg: XMessage): Promise<XMessage> {
-    let startTime = performance.timeOrigin + performance.now();
+    let startTime = ((performance.timeOrigin + performance.now()) * 1000);
     if (!this.config.inputLanguage) {
       this.config.inputLanguage = xmsg?.transformer?.metaData?.inputLanguage || 'en';
     }

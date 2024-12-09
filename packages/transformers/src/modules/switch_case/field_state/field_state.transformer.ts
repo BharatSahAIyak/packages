@@ -19,7 +19,7 @@ export class FieldToStateTransformer {
 
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = performance.timeOrigin + performance.now();
+        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
         this.telemetryLogger.sendLogTelemetry(xmsg, `FIELD STATE TRANSFORMER : ${this.config.transformerId} started`, startTime);
 
         if (!this.config.target) {

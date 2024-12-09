@@ -14,7 +14,7 @@ export class ScheduleTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log(`SCHEDULE_TRANSFORMER called.`);
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, performance.timeOrigin + performance.now());
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000));
 
         if (!this.config.timerDuration) {
             throw new Error('timerDuration is required!');
@@ -26,7 +26,7 @@ export class ScheduleTransformer implements ITransformer {
         xmsg.transformer!.metaData!.restoreState = this.config.restoreState;
         xmsg.transformer!.metaData!.resetState = this.config.resetState;
 
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, performance.timeOrigin + performance.now());
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, ((performance.timeOrigin + performance.now()) * 1000));
         return xmsg;
     }
 }

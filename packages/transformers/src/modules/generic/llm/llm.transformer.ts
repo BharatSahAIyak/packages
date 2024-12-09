@@ -33,7 +33,7 @@ export class LLMTransformer implements ITransformer {
 
     // TODO: use TRANSLATE transformer directly instead of repeating code
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = performance.timeOrigin + performance.now();
+        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
         this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM Started`, startTime);
         console.log("LLM transformer called.");
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length) {
@@ -148,7 +148,7 @@ export class LLMTransformer implements ITransformer {
         //llamaIndex implementaion
         let llm: any;
         let response: any;
-        let responseStartTime = performance.timeOrigin + performance.now();
+        let responseStartTime = ((performance.timeOrigin + performance.now()) * 1000);
         let streamStartLatency;
 
         if (this.config.provider?.toLowerCase() == "groq") {
@@ -235,7 +235,7 @@ export class LLMTransformer implements ITransformer {
             let sentences: any, allSentences = [], translatedSentences = [], output = "", counter = 0;
             for await (const chunk of response) {
                 if (!streamStartLatency) {
-                    streamStartLatency = performance.timeOrigin + performance.now() - responseStartTime;
+                    streamStartLatency = ((performance.timeOrigin + performance.now()) * 1000) - responseStartTime;
                 }
                 let currentChunk: any;
                 if (this.config.provider?.toLowerCase() == "groq") currentChunk = chunk.delta || "";
@@ -512,19 +512,19 @@ export class LLMTransformer implements ITransformer {
             eventName: Events.CUSTOM_TELEMETRY_EVENT_ERROR,
             transformerId: this.config.transformerId,
             eventData: xmgCopy,
-            timestamp: performance.timeOrigin + performance.now(),
+            timestamp: ((performance.timeOrigin + performance.now()) * 1000),
         })
     }
 
     private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number) {
         const xmgCopy = { ...xmsg };
         xmgCopy.transformer!.metaData!.telemetryLog = log;
-        xmgCopy.transformer!.metaData!.stateExecutionTime = performance.timeOrigin + performance.now() - startTime;
+        xmgCopy.transformer!.metaData!.stateExecutionTime = ((performance.timeOrigin + performance.now()) * 1000) - startTime;
         this.config.eventBus.pushEvent({
             eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
             transformerId: this.config.transformerId,
             eventData: xmgCopy,
-            timestamp: performance.timeOrigin + performance.now(),
+            timestamp: ((performance.timeOrigin + performance.now()) * 1000),
         })
     }
 

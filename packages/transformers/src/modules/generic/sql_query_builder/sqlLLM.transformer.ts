@@ -25,7 +25,7 @@ export class SQLLLMTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log("SQLLLMTransformer transformer called.");
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, performance.timeOrigin + performance.now());
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000));
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length) {
             xmsg.transformer = {
                 ...xmsg.transformer,
@@ -175,7 +175,7 @@ export class SQLLLMTransformer implements ITransformer {
         }
         console.log("xmsg", xmsg)
         await this.sendMessage(xmsg)
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, performance.timeOrigin + performance.now());
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, ((performance.timeOrigin + performance.now()) * 1000));
         return xmsg;
     }
 
