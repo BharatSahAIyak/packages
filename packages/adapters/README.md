@@ -52,3 +52,30 @@ Creating a new adapter is quite a simple process. Here is a step by step guide o
 
 A number of adapters here are taken from
 https://github.com/novuhq/novu
+
+
+## Local Setup and Testing
+
+To test out changes to any of the individual adapters which are being exposed and used using the [@samagra-x/uci-adapters-factory](./factory/) you can follow the below mentioned steps:
+
+1. Make changes to your adapter and build the package and then link the package (we use `yarn` as our preferred package manager)
+```bash
+yarn build
+yarn link
+```
+
+2. Navigate to the [factory](./factory/) folder and link the package you just built in step 1
+```bash
+yarn link <NAME_OF_YOUR_PACKAGE>
+```
+
+3. Build the UCI Adapters Factory using the `build` command and create the link for it.
+```bash
+yarn build
+yarn link
+```
+
+4. Navigate to the project wherever you want to use uci-adapters and link the adapters factory
+```bash
+yarn link @samagra-x/uci-adapters-factory
+```
