@@ -94,7 +94,8 @@ export class HttpPostTransformer implements ITransformer {
                             return resp.text();
                         }
                     }
-                })
+                }
+            })
             .then((resp) => {
                 console.log('resp', resp)
                 if (!xmsg.transformer) {
