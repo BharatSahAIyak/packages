@@ -2,6 +2,7 @@
   "label": "STT Transformer",
   "type": "SPEECH_TO_TEXT",
   "class": "GenericTransformer",
+  "eventId": "TE-111",
   "description": "A transformer capable of converting speech to text.",
   "version": 1,
   "outputType": "static",

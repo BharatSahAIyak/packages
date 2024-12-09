@@ -2,6 +2,7 @@
     "label": "Label Classifier",
     "type": "LABEL_CLASSIFIER",
     "class": "SwitchCaseTransformer",
+    "eventId": "TE-106",
     "description": "A transformer used to classify a given text to a context label.",
     "version": 1,
     "outputType": "dynamic",

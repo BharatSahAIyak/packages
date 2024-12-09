@@ -1,5 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 import get from 'lodash/get';
 import set from 'lodash/set';
 import { TelemetryLogger } from "../../common/telemetry";
@@ -23,8 +24,7 @@ export class FieldSetterTransformer implements ITransformer {
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = ((performance.timeOrigin + performance.now()) * 1000);
         console.log("Field Setter called.");
-
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime, config['eventId']);
         if (!this.config.setters) {
             throw new Error('`config.setters` is a required parameter!');
         }
@@ -54,14 +54,13 @@ export class FieldSetterTransformer implements ITransformer {
             }
         });
 
-
         if (allResolved) {
-            this.telemetryLogger.sendLogTelemetry(xmsg, `All fields resolved and set successfully`, startTime);
+            this.telemetryLogger.sendLogTelemetry(xmsg, `All fields resolved and set successfully`, startTime, config['eventId']);
         } else {
-            this.telemetryLogger.sendLogTelemetry(xmsg, `Some fields failed to resolve`, startTime);
+            this.telemetryLogger.sendLogTelemetry(xmsg, `Some fields failed to resolve`, startTime, config['eventId']);
         }
-
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
+        
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, config['eventId']);
         return xmsgCopy;
     }
 

@@ -4,6 +4,7 @@ import { Events } from "@samagra-x/uci-side-effects";
 import { TelemetryLogger } from "../../common/telemetry";
 import get from 'lodash/get';
 import { cloneDeep, set } from "lodash";
+const config = require('./config.json');
 
 export class HttpGetTransformer implements ITransformer {
 
@@ -87,7 +88,7 @@ export class HttpGetTransformer implements ITransformer {
                         if (contentType && contentType.includes('application/json')) {
                             return resp.json();
                         } else {
-                            this.telemetryLogger.sendLogTelemetry(xmsg, `Response type: Text`, startTime)
+                            this.telemetryLogger.sendLogTelemetry(xmsg, `Response type: Text`, startTime, config['eventId'])
                             return resp.text();
                         }
                     }
@@ -106,7 +107,7 @@ export class HttpGetTransformer implements ITransformer {
                 console.error(`GET request failed. Reason: ${ex}`);
                 throw ex;
             });
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, config['eventId']);
         return xmsg;
     }
 

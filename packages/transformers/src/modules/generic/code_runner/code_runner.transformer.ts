@@ -1,5 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 import { Events } from "@samagra-x/uci-side-effects";
 import { TelemetryLogger } from "../../common/telemetry";
 const ivm = require('isolated-vm');
@@ -19,7 +20,7 @@ export class CodeRunnerTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = ((performance.timeOrigin + performance.now()) * 1000);
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime, config['eventId']);
         if (!this.config?.code) {
             throw new Error('config.code is required');
         }
@@ -54,7 +55,7 @@ export class CodeRunnerTransformer implements ITransformer {
                 throw new Error('XMessage must be returned as a stringified JSON!');
             }
         }
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime, config['eventId']);
         return xmsg;
     }
 }

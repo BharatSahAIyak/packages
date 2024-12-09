@@ -1,5 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 import { Events } from "@samagra-x/uci-side-effects";
 import get from 'lodash/get';
 import { TelemetryLogger } from "../../common/telemetry";
@@ -20,9 +21,9 @@ export class FieldToStateTransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = ((performance.timeOrigin + performance.now()) * 1000);
-        this.telemetryLogger.sendLogTelemetry(xmsg, `FIELD STATE TRANSFORMER : ${this.config.transformerId} started`, startTime);
-
-        if (!this.config.target) {
+        this.telemetryLogger.sendLogTelemetry(xmsg, `FIELD STATE TRANSFORMER : ${this.config.transformerId} started`, startTime, config['eventId']);
+        
+        if(!this.config.target){
             this.config.target = 'payload.text';
         }
 
@@ -39,8 +40,8 @@ export class FieldToStateTransformer {
         else {
             xmsg.transformer!.metaData!.state = 'STATE_NOT_AVAILABLE';
         }
-
-        this.telemetryLogger.sendLogTelemetry(xmsg, `FIELD TO STATE Transformer generated state: ${xmsg.transformer!.metaData!.state}`, startTime);
+        
+        this.telemetryLogger.sendLogTelemetry(xmsg, `FIELD TO STATE Transformer generated state: ${xmsg.transformer!.metaData!.state}`, startTime, config['eventId']);
         console.log(`LABEL_CLASSIFIER generated state: ${xmsg.transformer!.metaData!.state}`);
         return xmsg;
     }

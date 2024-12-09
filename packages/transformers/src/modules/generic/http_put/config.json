@@ -1,6 +1,7 @@
 {
   "label": "HTTP PUT Transformer",
   "type": "HTTP_PUT",
+  "eventId": "TE-122",
   "class": "GenericTransformer",
   "description": "A transformer capable of making HTTP PUT request.",
   "version": 1,

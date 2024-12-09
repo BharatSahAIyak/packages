@@ -1,6 +1,7 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common";
 import { TelemetryLogger } from "../../common/telemetry";
+const config = require('./config.json')
 
 export class HttpDeleteTransformer implements ITransformer {
 
@@ -65,7 +66,7 @@ export class HttpDeleteTransformer implements ITransformer {
         console.error(`DELETE request failed. Reason: ${ex}`);
         throw ex;
       });
-    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
+    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, config['eventId']);
     return xmsg;
   }
 

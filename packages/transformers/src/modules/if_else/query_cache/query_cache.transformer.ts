@@ -1,5 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 import { HttpGetTransformer } from "../../generic/http_get/http.get.transformer";
 import { TelemetryLogger } from "../../common/telemetry";
 
@@ -14,7 +15,7 @@ export class QueryCacheTransformer implements ITransformer {
     private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000));
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000), config['eventId']);
         if (!this.config.url) {
             this.telemetryLogger.sendErrorTelemetry(xmsg, 'url must be provided!');
             throw new Error('`url` must be provided!');
@@ -46,7 +47,7 @@ export class QueryCacheTransformer implements ITransformer {
                 xmsg.transformer!.metaData!.cacheResponse = queryResponse;
                 xmsg.payload.text = this.config.persist ? queryResponse : xmsg.payload.text;
                 xmsg.transformer!.metaData!.state = 'if';
-                this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, ((performance.timeOrigin + performance.now()) * 1000));
+                this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, ((performance.timeOrigin + performance.now()) * 1000), config['eventId']);
             })
             .catch((err) => {
                 console.log(`Failed to get a cache hit. Reason: ${err}`);

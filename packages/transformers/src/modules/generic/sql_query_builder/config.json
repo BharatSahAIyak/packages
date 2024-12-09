@@ -2,6 +2,7 @@
     "label": "SQL LLM Transformer",
     "type": "SQLLLM",
     "class": "GenericTransformer",
+    "eventId": "TE-116",
     "description": "A transformer capable of generating SQL queries based on prompt.",
     "version": 1,
     "outputType": "static",

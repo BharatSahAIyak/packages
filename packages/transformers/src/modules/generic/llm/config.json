@@ -2,6 +2,7 @@
     "label": "LLM Transformer",
     "type": "LLM",
     "class": "GenericTransformer",
+    "eventId": "TE-104",
     "description": "A node useful for LLM model integration.",
     "version": 1,
     "outputType": "static",
