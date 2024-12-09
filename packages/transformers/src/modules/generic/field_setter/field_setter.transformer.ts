@@ -16,12 +16,12 @@ export class FieldSetterTransformer implements ITransformer {
     ///          You can also use placeholders {{}} inside a JSON value.
     constructor(
         readonly config: Record<string, any>,
-    ) { }
+    ) {}
 
     private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = Date.now();
+        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
         console.log("Field Setter called.");
         this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
         if (!this.config.setters) {
@@ -58,7 +58,7 @@ export class FieldSetterTransformer implements ITransformer {
         } else {
             this.telemetryLogger.sendLogTelemetry(xmsg, `Some fields failed to resolve`, startTime);
         }
-        
+
         this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
         return xmsgCopy;
     }
@@ -120,9 +120,9 @@ export class FieldSetterTransformer implements ITransformer {
             value = value.replaceAll(
                 replacement[0],
                 replacement[1] ?
-                typeof replacement[1] == 'object' ?
-                JSON.stringify(replacement[1]) : replacement[1]
-                : ''
+                    typeof replacement[1] == 'object' ?
+                        JSON.stringify(replacement[1]) : replacement[1]
+                    : ''
             );
         });
         return value;

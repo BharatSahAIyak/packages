@@ -10,11 +10,11 @@ export class NeuralCoreferenceTransformer implements ITransformer {
     /// Accepted config properties:
     ///     prompt: GPT prompt used to get coreferenced output.
     ///     APIKey: openAI API key.
-    constructor(readonly config: Record<string, any>) { }
+    constructor(readonly config: Record<string, any>) {}
     private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = Date.now();
+        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
         this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
         console.log("NEURAL_COREFERENCE transformer called.");
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length) {
@@ -40,12 +40,12 @@ export class NeuralCoreferenceTransformer implements ITransformer {
         this.config.prompt = [{
             role: "user",
             content: this.config.prompt
-            .replace('{{user_history}}',`${xmsg.transformer?.metaData?.userHistory.map((message: any)=>message.from == 'admin' ? `AI:${message.payload.text}`: `USER:${message.payload.text}`).join("\n")}`)
-            .replace('{{user_question}}',xmsg.payload.text)
+                .replace('{{user_history}}', `${xmsg.transformer?.metaData?.userHistory.map((message: any) => message.from == 'admin' ? `AI:${message.payload.text}` : `USER:${message.payload.text}`).join("\n")}`)
+                .replace('{{user_question}}', xmsg.payload.text)
         }];
 
-        if(this.config.provider?.toLowerCase() == "groq"){
-            llm = new Groq({apiKey: this.config.APIKey});
+        if (this.config.provider?.toLowerCase() == "groq") {
+            llm = new Groq({ apiKey: this.config.APIKey });
             const serviceContext = serviceContextFromDefaults({ llm });
             response = await serviceContext.llm.chat({
                 messages: this.config.prompt,
@@ -55,16 +55,16 @@ export class NeuralCoreferenceTransformer implements ITransformer {
                 throw ex;
             });
         } else {
-            let openAIConfig:any = {
+            let openAIConfig: any = {
                 apiKey: this.config.APIKey
             }
-            if([
+            if ([
                 'krutrim',
                 'mistralai',
                 'meta',
                 'google'
-            ].indexOf(this.config.provider)!=-1) {
-                openAIConfig['baseURL']='https://cloud.olakrutrim.com/v1';
+            ].indexOf(this.config.provider) != -1) {
+                openAIConfig['baseURL'] = 'https://cloud.olakrutrim.com/v1';
             }
             const openai = new OpenAI(openAIConfig);
             response = await openai.chat.completions.create({
@@ -78,7 +78,7 @@ export class NeuralCoreferenceTransformer implements ITransformer {
         }
 
         let userArray: any;
-        if(this.config.provider?.toLowerCase() == "groq") response.message.content?.split('User: ')
+        if (this.config.provider?.toLowerCase() == "groq") response.message.content?.split('User: ')
         else userArray = response["choices"][0].message.content?.split('User: ');
         xmsg.payload.text = userArray[userArray.length - 1];
         this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
