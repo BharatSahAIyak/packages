@@ -89,6 +89,7 @@ describe('HttpGetTransformer', () => {
       ...mockXMessage,
       transformer: {
         metaData: {
+          eventId: "TE-101",
           httpResponse: { key: 'value', status: 200 },
         },
       },

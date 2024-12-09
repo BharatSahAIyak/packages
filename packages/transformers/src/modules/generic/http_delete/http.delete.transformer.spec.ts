@@ -89,6 +89,7 @@ describe('HttpDeleteTransformer', () => {
       ...mockXMessage,
       transformer: {
         metaData: {
+          "eventId": "TE-120",
           httpResponse: { key: 'value', status: 200 },
         },
       },
