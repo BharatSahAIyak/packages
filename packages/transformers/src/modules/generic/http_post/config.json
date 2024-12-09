@@ -2,6 +2,7 @@
     "label": "HTTP POST Transformer",
     "type": "HTTP_POST",
     "class": "GenericTransformer",
+    "eventId": "TE-102",
     "description": "A transformer capable of making HTTP POST request.",
     "version": 1,
     "outputType": "static",

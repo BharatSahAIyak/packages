@@ -2,6 +2,7 @@
     "label": "Simple Retry",
     "type": "SIMPLE_RETRY",
     "class": "RetryTransformer",
+    "eventId": "TE-115",
     "description": "A transformer used to retry a flow.",
     "version": 1,
     "outputType": "static",

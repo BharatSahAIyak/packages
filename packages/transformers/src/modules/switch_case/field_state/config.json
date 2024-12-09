@@ -2,6 +2,7 @@
     "label": "Field State",
     "type": "FIELD_STATE",
     "class": "SwitchCaseTransformer",
+    "eventId": "TE-119",
     "description": "A transformer that outputs the value of a field as its state, provided the field is defined",
     "version": 1,
     "outputType": "dynamic",

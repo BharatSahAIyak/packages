@@ -1,5 +1,6 @@
 import { ButtonChoice, MediaCategory, MessageMedia, MessageType, XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 // import OpenAI from 'openai';
 import moment from "moment";
 import { generateSentences } from "./stream/tokenizer";
@@ -34,7 +35,7 @@ export class LLMTransformer implements ITransformer {
     // TODO: use TRANSLATE transformer directly instead of repeating code
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = ((performance.timeOrigin + performance.now()) * 1000);
-        this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM Started`, startTime);
+        this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM Started`, startTime, config['eventId']);
         console.log("LLM transformer called.");
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length) {
             xmsg.transformer = {
@@ -143,7 +144,7 @@ export class LLMTransformer implements ITransformer {
             content: xmsg?.payload?.text
         })
         xmsg.transformer.metaData!.prompt = prompt;
-        this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Prompt prepared ${JSON.stringify(prompt,null,3)}`, startTime)
+        this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Prompt prepared ${JSON.stringify(prompt,null,3)}`, startTime, config['eventId'])
         console.log(`LLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt,null,3)}`);
 
         //llamaIndex implementaion
@@ -234,7 +235,7 @@ export class LLMTransformer implements ITransformer {
                 }
             }
             xmsg.payload.media = media;
-            this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
+            this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime, config['eventId']);
         } else {
             const newMessageId = uuid4();
             if (!this.config.outboundURL) {
@@ -348,7 +349,7 @@ export class LLMTransformer implements ITransformer {
                     streamStartLatency
                 }
             }
-            this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime);
+            this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM generated response!`, startTime, config['eventId']);
         }
         delete process.env['OPENAI_API_KEY'];
         return xmsg;
@@ -524,10 +525,11 @@ export class LLMTransformer implements ITransformer {
         })
     }
 
-    private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number) {
-        const xmgCopy = { ...xmsg };
+    private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number, eventId?: string) {
+        const xmgCopy = {...xmsg};
         xmgCopy.transformer!.metaData!.telemetryLog = log;
         xmgCopy.transformer!.metaData!.stateExecutionTime = ((performance.timeOrigin + performance.now()) * 1000) - startTime;
+        xmgCopy.transformer!.metaData!.eventId = eventId;
         this.config.eventBus.pushEvent({
             eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
             transformerId: this.config.transformerId,

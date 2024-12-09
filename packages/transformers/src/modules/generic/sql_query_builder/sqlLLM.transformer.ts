@@ -5,6 +5,7 @@ import { ITransformer } from "../../common";
 import getBhashiniConfig from '../translate/bhashini/bhashini.getConfig';
 import computeBhashini from "../translate/bhashini/bhashini.compute";
 import { TelemetryLogger } from "../../common/telemetry";
+const config = require('./config.json');
 
 export class SQLLLMTransformer implements ITransformer {
 
@@ -25,8 +26,8 @@ export class SQLLLMTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log("SQLLLMTransformer transformer called.");
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000));
-        if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length) {
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000), config['eventId']);
+        if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length){
             xmsg.transformer = {
                 ...xmsg.transformer,
                 metaData: {
@@ -175,7 +176,7 @@ export class SQLLLMTransformer implements ITransformer {
         }
         console.log("xmsg", xmsg)
         await this.sendMessage(xmsg)
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, ((performance.timeOrigin + performance.now()) * 1000));
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, (performance.timeOrigin + performance.now()), config['eventId']);
         return xmsg;
     }
 

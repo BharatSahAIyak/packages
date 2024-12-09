@@ -1,5 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 import getBhashiniConfig from "./bhashini/bhashini.getConfig";
 import computeBhashini from "./bhashini/bhashini.compute";
 import computeAzure from "./azure/azure.compute";
@@ -26,7 +27,7 @@ export class TranslateTransformer implements ITransformer {
     if (!this.config.outputLanguage) {
       this.config.inputLanguage = xmsg?.transformer?.metaData?.outputLanguage || 'en';
     }
-    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} started!`, startTime);
+    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} started!`, startTime, config['eventId']);
     if (!xmsg.transformer) {
       xmsg.transformer = {
         metaData: {}
@@ -81,7 +82,7 @@ export class TranslateTransformer implements ITransformer {
         transalatedQuery: xmsg.payload.text
       }
     }
-    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} finished!`, startTime);
+    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} finished!`, startTime, config['eventId']);
     return xmsg;
   }
 

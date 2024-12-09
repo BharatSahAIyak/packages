@@ -2,6 +2,7 @@
     "label": "Neural Coreference",
     "type": "NEURAL_COREFERENCE",
     "class": "GenericTransformer",
+    "eventId": "TE-107",
     "description": "A transformer capable of modifying payload based on coreferenced text.",
     "version": 1,
     "outputType": "static",

@@ -1,5 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 import { Events } from "@samagra-x/uci-side-effects";
 import { TelemetryLogger } from "../../common/telemetry";
 import get from 'lodash/get';
@@ -16,7 +17,7 @@ export class HttpPostTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = ((performance.timeOrigin + performance.now()) * 1000);
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime, config['eventId']);
         console.log("HTTP POST transformer called.");
 
         this.config.url = this.config.url ?? xmsg.transformer?.metaData?.httpUrl;
@@ -110,7 +111,7 @@ export class HttpPostTransformer implements ITransformer {
                 console.error(`POST request failed. Reason: ${ex}`);
                 throw ex;
             });
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, config['eventId']);
         return xmsg;
     }
 

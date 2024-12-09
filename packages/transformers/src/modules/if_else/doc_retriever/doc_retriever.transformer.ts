@@ -1,5 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const transformerConfig = require('./config.json');
 import axios from 'axios';
 const qs = require('qs');
 import { v4 as uuid4 } from 'uuid';
@@ -21,7 +22,7 @@ export class DocRetrieverTransformer implements ITransformer {
     private readonly telemetryLogger = new TelemetryLogger(this.config);
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = ((performance.timeOrigin + performance.now()) * 1000);
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime, transformerConfig['eventId']);
         console.log("DOC_RETRIEVER transformer called.");
         if (!xmsg.transformer) {
             xmsg.transformer = {
@@ -75,7 +76,7 @@ export class DocRetrieverTransformer implements ITransformer {
                 xmsg.payload.text = this.config.staticNoContentResponse;
                 xmsg.payload.metaData!['staticResponse'] = true;
             }
-            this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
+            this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, transformerConfig['eventId']);
             return xmsg;
         } catch (ex) {
             this.telemetryLogger.sendErrorTelemetry(xmsg, `DOC_RETRIEVER failed. Reason: ${ex}`);

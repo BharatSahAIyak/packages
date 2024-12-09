@@ -2,6 +2,7 @@
     "label": "User Feedback Loop",
     "type": "USER_FEEDBACK_LOOP",
     "class": "StateRestoreTransformer",
+    "eventId": "TE-109",
     "description": "A transformer used to send a given prompt to user and wait for feedback.",
     "version": 1,
     "outputType": "static",

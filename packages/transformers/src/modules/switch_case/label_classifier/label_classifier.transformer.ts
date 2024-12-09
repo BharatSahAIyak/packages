@@ -1,5 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 import { HttpPostTransformer } from "../../generic";
 import { Events } from "@samagra-x/uci-side-effects";
 import { TelemetryLogger } from "../../common/telemetry";
@@ -29,7 +30,7 @@ export class LabelClassifierTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         const startTime = ((performance.timeOrigin + performance.now()) * 1000);
-        this.telemetryLogger.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER : ${this.config.transformerId} started`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER : ${this.config.transformerId} started`, startTime, config['eventId']);
         if (!xmsg.transformer) {
             xmsg.transformer = {
                 metaData: {}
@@ -83,7 +84,7 @@ export class LabelClassifierTransformer implements ITransformer {
                 if (this.config.persistLabel) {
                     xmsg.transformer!.metaData!.existingLabel = xmsg.transformer!.metaData!.state;
                 }
-                this.telemetryLogger.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER generated state: ${xmsg.transformer!.metaData!.state}`, startTime);
+                this.telemetryLogger.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER generated state: ${xmsg.transformer!.metaData!.state}`, startTime, config['eventId']);
                 console.log(`LABEL_CLASSIFIER generated state: ${xmsg.transformer!.metaData!.state}`);
             })
             .catch((err) => {

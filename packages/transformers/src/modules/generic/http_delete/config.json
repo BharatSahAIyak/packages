@@ -2,6 +2,7 @@
   "label": "HTTP DELETE Transformer",
   "type": "HTTP_DELETE",
   "class": "GenericTransformer",
+  "eventId": "TE-120",
   "description": "A transformer capable of making HTTP DELETE request.",
   "version": 1,
   "outputType": "static",

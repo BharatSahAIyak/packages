@@ -2,6 +2,7 @@
     "label": "Document Retriever",
     "type": "DOC_RETRIEVER",
     "class": "IfElseTransformer",
+    "eventId": "TE-108",
     "description": "A transformer capable retrieving similar document chunks.",
     "version": 1,
     "outputType": "static",

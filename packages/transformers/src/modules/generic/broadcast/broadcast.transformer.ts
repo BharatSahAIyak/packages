@@ -1,5 +1,6 @@
 import { MediaCategory, XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 import { TelemetryLogger } from "../../common/telemetry";
 
 export class BroadcastTransformer implements ITransformer {
@@ -12,7 +13,7 @@ export class BroadcastTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log("Broadcast transformer called.");
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000));
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Date.now(), config['eventId']);
         xmsg.payload.subject = this.config.title;
         xmsg.payload.text = this.config.body;
         if (!xmsg.payload.media) {
@@ -46,7 +47,7 @@ export class BroadcastTransformer implements ITransformer {
             }
         }
 
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, ((performance.timeOrigin + performance.now()) * 1000));
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Date.now(), config['eventId']);
         return xmsg;
     }
 }

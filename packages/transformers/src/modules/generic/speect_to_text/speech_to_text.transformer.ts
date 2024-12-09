@@ -1,6 +1,7 @@
 import { MessageMedia, XMessage } from "@samagra-x/xmessage";
 import axios, { AxiosResponse } from "axios";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 import { TelemetryLogger } from "../../common/telemetry";
 var FormData = require('form-data');
 
@@ -76,7 +77,7 @@ export class SpeechToTextTransformer implements ITransformer {
     if (this.persist) {
       xmsg.payload.text = speechToTextData;
     }
-    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.constructor.name} finished!`, ((performance.timeOrigin + performance.now()) * 1000));
+    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.constructor.name} finished!`, ((performance.timeOrigin + performance.now()) * 1000), config['eventId']);
     return xmsg;
   }
 }
