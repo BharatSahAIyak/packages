@@ -21,51 +21,103 @@ export class FieldSetterTransformer implements ITransformer {
     private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
+        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
         console.log("Field Setter called.");
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000));
+
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
         if (!this.config.setters) {
             throw new Error('`config.setters` is a required parameter!');
         }
         const xmsgCopy = { ...xmsg };
         const setters: Record<string, string> = this.config.setters;
+        let allResolved = true;
         Object.entries(setters).forEach((entry) => {
-            if (entry[1] && typeof entry[1] === 'object') {
-                this.resolvePlaceholders(entry[1], xmsg);
-                set(xmsgCopy, entry[0], entry[1]);
-            }
-            else {
-                set(xmsgCopy, entry[0], this.getResolvedValue(entry[1], xmsg));
+            try {
+                if (entry[1] && typeof entry[1] === 'object') {
+                    const resolved = this.resolvePlaceholders(entry[1], xmsg);
+                    if (!resolved) {
+                        allResolved = false;
+                    }
+                    set(xmsgCopy, entry[0], entry[1]);
+                }
+                else {
+                    const resolvedValue = this.getResolvedValue(entry[1], xmsg);
+                    if (resolvedValue === undefined) {
+                        allResolved = false;
+                        this.telemetryLogger.sendErrorTelemetry(xmsg, `Failed to resolve value for ${entry[0]}`);
+                    }
+                    set(xmsgCopy, entry[0], resolvedValue ?? '');
+                }
+            } catch (error) {
+                allResolved = false;
+                this.telemetryLogger.sendErrorTelemetry(xmsg, `Error setting field ${entry[0]}: ${error}`);
             }
         });
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, ((performance.timeOrigin + performance.now()) * 1000));
+
+
+        if (allResolved) {
+            this.telemetryLogger.sendLogTelemetry(xmsg, `All fields resolved and set successfully`, startTime);
+        } else {
+            this.telemetryLogger.sendLogTelemetry(xmsg, `Some fields failed to resolve`, startTime);
+        }
+
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
         return xmsgCopy;
     }
 
     /// Recursively resolves all the placeholders inside a JSON.
-    private resolvePlaceholders(jsonValue: Record<string, any>, xmsg: XMessage) {
+    private resolvePlaceholders(jsonValue: Record<string, any>, xmsg: XMessage): boolean {
+        let allResolved = true;
         Object.entries(jsonValue).forEach(([key, value]) => {
-            if (value && typeof value === 'object') {
-                this.resolvePlaceholders(jsonValue[key], xmsg);
-            }
-            else {
-                set(jsonValue, key, this.getResolvedValue(value, xmsg));
+            try {
+                if (value && typeof value === 'object') {
+                    const resolved = this.resolvePlaceholders(jsonValue[key], xmsg);
+                    if (!resolved) {
+                        allResolved = false;
+                    }
+                }
+                else {
+                    const resolvedValue = this.getResolvedValue(value, xmsg);
+                    if (resolvedValue === undefined) {
+                        allResolved = false;
+                    }
+                    set(jsonValue, key, resolvedValue ?? '');
+                }
+            } catch (error) {
+                allResolved = false;
             }
         });
+        return allResolved;
     }
 
     /// Gets resolved value of a string containing placeholders
     /// by extracting it from XMessage.
-    private getResolvedValue(value: string, xmsg: XMessage): string {
+    private getResolvedValue(value: string, xmsg: XMessage): string | undefined {
         const xmsgPlaceholder = /\{\{msg:([^}]*)\}\}/g;
         const historyPlaceholder = /\{\{history:([^}]*)\}\}/g;
         const replacements: Record<string, any> = {};
         let matched;
+        let hasUnresolvedPlaceholders = false;
+
         while ((matched = xmsgPlaceholder.exec(value)) !== null) {
-            replacements[matched[0]] = get(xmsg, matched[1]);
+            const extracted = get(xmsg, matched[1]);
+            if (extracted === undefined) {
+                hasUnresolvedPlaceholders = true;
+            }
+            replacements[matched[0]] = extracted;
         }
         while ((matched = historyPlaceholder.exec(value)) !== null) {
-            replacements[matched[0]] = get(xmsg.transformer?.metaData?.userHistory[0] ?? {}, matched[1]);
+            const extracted = get(xmsg.transformer?.metaData?.userHistory[0] ?? {}, matched[1]);
+            if (extracted === undefined) {
+                hasUnresolvedPlaceholders = true;
+            }
+            replacements[matched[0]] = extracted;
         }
+
+        if (hasUnresolvedPlaceholders) {
+            return undefined;
+        }
+
         Object.entries(replacements).forEach((replacement) => {
             value = value.replaceAll(
                 replacement[0],

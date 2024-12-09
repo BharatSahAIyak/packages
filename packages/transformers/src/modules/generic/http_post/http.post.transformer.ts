@@ -80,14 +80,19 @@ export class HttpPostTransformer implements ITransformer {
         })
             .then(resp => {
                 if (!resp.ok) {
-                    this.telemetryLogger.sendErrorTelemetry(xmsg, `Request failed with code: ${resp.status}`);
+                    this.telemetryLogger.sendErrorTelemetry(xmsg, `"HTTP POST url - ${this.config.url}; HTTP POST body - ${typeof this.config.body === 'string' ? this.config.body : JSON.stringify(this.config.body ?? {})}; HTTP POST headers - ${new Headers(this.config.headers)} Request failed with code: ${resp.status}`);
                     throw new Error(`Request failed with code: ${resp.status}`);
                 } else {
                     const contentType = resp.headers.get('content-type');
                     if (contentType && contentType.includes('application/json')) {
                         return resp.json();
                     } else {
-                        return resp.text();
+                        const contentType = resp.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return resp.json();
+                        } else {
+                            return resp.text();
+                        }
                     }
                 }
             })

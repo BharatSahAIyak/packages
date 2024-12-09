@@ -76,14 +76,20 @@ export class HttpGetTransformer implements ITransformer {
         })
             .then(resp => {
                 if (!resp.ok) {
-                    this.telemetryLogger.sendErrorTelemetry(xmsg, `Request failed with code: ${resp.status}`);
+                    this.telemetryLogger.sendErrorTelemetry(xmsg, `Query: ${this.config.url}${this.config.query ?? ''}; Headers: ${JSON.stringify(this.config.headers)}; Request failed with code: ${resp.status}`);
                     throw new Error(`Request failed with code: ${resp.status}`);
                 } else {
                     const contentType = resp.headers.get('content-type');
                     if (contentType && contentType.includes('application/json')) {
                         return resp.json();
                     } else {
-                        return resp.text();
+                        const contentType = resp.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return resp.json();
+                        } else {
+                            this.telemetryLogger.sendLogTelemetry(xmsg, `Response type: Text`, startTime)
+                            return resp.text();
+                        }
                     }
                 }
             })
