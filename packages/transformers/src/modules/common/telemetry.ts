@@ -20,13 +20,13 @@ export class TelemetryLogger {
     public async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number, eventId?: string) {
         const xmgCopy = {...xmsg};
         xmgCopy.transformer!.metaData!.telemetryLog = log;
-        xmgCopy.transformer!.metaData!.stateExecutionTime = Date.now() - startTime;
+        xmgCopy.transformer!.metaData!.stateExecutionTime = ((performance.timeOrigin + performance.now()) * 1000) - startTime;
         xmgCopy.transformer!.metaData!.eventId = eventId;
         this.config.eventBus.pushEvent({
           eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
           transformerId: this.config.transformerId,
           eventData: xmgCopy,
-          timestamp: Date.now(),
+          timestamp: ((performance.timeOrigin + performance.now()) * 1000),
         })
     }
 }

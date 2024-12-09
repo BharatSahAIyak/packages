@@ -13,7 +13,7 @@ export class BroadcastTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log("Broadcast transformer called.");
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Date.now(), config['eventId']);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000), config['eventId']);
         xmsg.payload.subject = this.config.title;
         xmsg.payload.text = this.config.body;
         if (!xmsg.payload.media) {
@@ -47,7 +47,7 @@ export class BroadcastTransformer implements ITransformer {
             }
         }
 
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Date.now(), config['eventId']);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, ((performance.timeOrigin + performance.now()) * 1000), config['eventId']);
         return xmsg;
     }
 }
