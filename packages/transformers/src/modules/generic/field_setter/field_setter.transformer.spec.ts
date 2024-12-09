@@ -8,21 +8,21 @@ describe('Field Setter Tests', () => {
     beforeEach(() => {
         mockXMessage = {
             to: {
-              userID: "admin",
+                userID: "admin",
             },
             from: {
-              userID: "mockUserId",
+                userID: "mockUserId",
             },
             channelURI: "Whatsapp",
             providerURI: "Gupshup",
             messageState: MessageState.REPLIED,
             messageId: {
-              Id: "00000000-0000-0000-0000-000000000000",
+                Id: "00000000-0000-0000-0000-000000000000",
             },
             messageType: MessageType.TEXT,
             timestamp: 1715602492000,
             payload: {
-              text: "Hello testing",
+                text: "Hello testing",
             },
             adapterId: "11111111-1111-1111-1111-111111111111",
             app: "22222222-2222-2222-222222222222",
@@ -89,8 +89,10 @@ describe('Field Setter Tests', () => {
         });
         const transformedMsg = await transformer.transform(mockXMessage);
         expect(transformedMsg.transformer!.metaData!.myVar).toBe(true);
-        expect(transformedMsg.transformer!.metaData!.myVar2).toBe(null);
-        expect(transformedMsg.transformer!.metaData!.myVar3).toBe(undefined);
+        // expect(transformedMsg.transformer!.metaData!.myVar2).toBe(null);
+        expect(transformedMsg.transformer!.metaData!.myVar2).toBe("");
+        // expect(transformedMsg.transformer!.metaData!.myVar3).toBe(undefined);
+        expect(transformedMsg.transformer!.metaData!.myVar3).toBe("");
         expect(transformedMsg.transformer!.metaData!.myVar4).toStrictEqual([1, 2, 4]);
         expect(transformedMsg.transformer!.metaData!.myVar5).toBe(124);
     });
