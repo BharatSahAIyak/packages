@@ -84,8 +84,13 @@ export class HttpGetTransformer implements ITransformer {
                     if (contentType && contentType.includes('application/json')) {
                         return resp.json();
                     } else {
-                        this.telemetryLogger.sendLogTelemetry(xmsg, `Response type: Text`, startTime, config['eventId'])
-                        return resp.text();
+                        const contentType = resp.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return resp.json();
+                        } else {
+                            this.telemetryLogger.sendLogTelemetry(xmsg, `Response type: Text`, startTime, config['eventId'])
+                            return resp.text();
+                        }
                     }
                 }
             })
