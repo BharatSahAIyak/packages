@@ -1,6 +1,7 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common";
 import { TelemetryLogger } from "../../common/telemetry";
+const config = require('./config.json')
 
 export class HttpDeleteTransformer implements ITransformer {
 
