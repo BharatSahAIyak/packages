@@ -79,3 +79,33 @@ yarn link
 ```bash
 yarn link @samagra-x/uci-adapters-factory
 ```
+
+## Publishing Adapters and Adapter Factory
+
+In order to publish the changes to an adapter, do your changes and make sure to test them out using the steps above.
+
+1. Navigate to the root of the adapter you want to publish, build the package using the `build` command (we use `yarn` as our preferred package manager)
+```bash
+yarn build
+```
+
+2. Publish the newer version of this package
+```bash
+npm publish --access=public
+```
+
+3. Navigate to [adapter factory](./factory/) and update the version of the said adapter
+```bash
+yarn remove <OLDER_VERSION_OF_ADPTER>
+yarn add <NEWER_VERSION_OF_ADAPTER>
+```
+
+4. Build the [adapter factory](./factory/) using the `build` command
+```bash
+yarn build
+```
+
+5. Publish the [adapter factory](./factory/) with a newer version
+```bash
+npm publish --access=public
+```
