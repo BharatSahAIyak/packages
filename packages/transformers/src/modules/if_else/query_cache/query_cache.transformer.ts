@@ -14,7 +14,7 @@ export class QueryCacheTransformer implements ITransformer {
     private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Date.now());
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000));
         if (!this.config.url) {
             this.telemetryLogger.sendErrorTelemetry(xmsg, 'url must be provided!');
             throw new Error('`url` must be provided!');
@@ -38,21 +38,21 @@ export class QueryCacheTransformer implements ITransformer {
             eventBus: this.config.eventBus,
         });
         await httpTransformer.transform(xmsg)
-        .then((resp) => {
-            const queryResponse = resp.transformer!.metaData!.httpResponse?.answer;
-            if (!queryResponse) {
-                throw new Error(`Cache API returned empty data: ${JSON.stringify(resp.transformer!.metaData!.httpResponse)}`);
-            }
-            xmsg.transformer!.metaData!.cacheResponse = queryResponse;
-            xmsg.payload.text = this.config.persist ? queryResponse : xmsg.payload.text;
-            xmsg.transformer!.metaData!.state = 'if';
-            this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Date.now());
-        })
-        .catch((err) => {
-            console.log(`Failed to get a cache hit. Reason: ${err}`);
-            this.telemetryLogger.sendErrorTelemetry(xmsg, `Failed to get a cache hit. Reason: ${err}`);
-            xmsg.transformer!.metaData!.state = 'else';
-        });
+            .then((resp) => {
+                const queryResponse = resp.transformer!.metaData!.httpResponse?.answer;
+                if (!queryResponse) {
+                    throw new Error(`Cache API returned empty data: ${JSON.stringify(resp.transformer!.metaData!.httpResponse)}`);
+                }
+                xmsg.transformer!.metaData!.cacheResponse = queryResponse;
+                xmsg.payload.text = this.config.persist ? queryResponse : xmsg.payload.text;
+                xmsg.transformer!.metaData!.state = 'if';
+                this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, ((performance.timeOrigin + performance.now()) * 1000));
+            })
+            .catch((err) => {
+                console.log(`Failed to get a cache hit. Reason: ${err}`);
+                this.telemetryLogger.sendErrorTelemetry(xmsg, `Failed to get a cache hit. Reason: ${err}`);
+                xmsg.transformer!.metaData!.state = 'else';
+            });
         return xmsg;
     }
 }

@@ -20,13 +20,13 @@ export class SQLLLMTransformer implements ITransformer {
     ///     bhashiniURL: Base url for bhashini (required if provider is set to bhashini)
     ///     prompt: LLM prompt. (optional)
     ///     temperature: The sampling temperature, between 0 and 1. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic. (default: `0`)
-    constructor(readonly config: Record<string, any>) { }
+    constructor(readonly config: Record<string, any>) {}
     private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log("SQLLLMTransformer transformer called.");
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Date.now());
-        if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length){
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000));
+        if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length) {
             xmsg.transformer = {
                 ...xmsg.transformer,
                 metaData: {
@@ -49,7 +49,7 @@ export class SQLLLMTransformer implements ITransformer {
         if (!this.config.outputLanguage) {
             this.config.outputLanguage = 'en';
         }
-        if(this.config.outputLanguage!='en') {
+        if (this.config.outputLanguage != 'en') {
             if (!this.config.bhashiniUserId) {
                 this.telemetryLogger.sendErrorTelemetry(xmsg, '`bhashiniUserId` not defined in SQLLLM transformer');
                 throw new Error('`bhashiniUserId` not defined in SQLLLM transformer');
@@ -76,7 +76,7 @@ export class SQLLLMTransformer implements ITransformer {
             throw new Error('`xlsxIds` not defined in SQLLLM transformer');
         }
         console.log(this.config.xlsxIds)
-        let excelId =  this.config.xlsxIds[0];
+        let excelId = this.config.xlsxIds[0];
         let formdata = new FormData();
         formdata.append("format", "sql");
         formdata.append("taskId", excelId);
@@ -88,7 +88,7 @@ export class SQLLLMTransformer implements ITransformer {
         let sqlResponse: any = await fetch(`${this.config.excelParserURL}/download/`, requestOptions)
         sqlResponse = await sqlResponse.json()
         let sql: any;
-        if(!sqlResponse.error) {
+        if (!sqlResponse.error) {
             sql = await fetch(sqlResponse.data.url)
             sql = await sql.text()
         } else {
@@ -107,8 +107,8 @@ export class SQLLLMTransformer implements ITransformer {
                 content: `question: $${xmsg.payload.text}`
             }
         ]
-        console.log(`SQLLLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt,null,3)}`);
-        const openai = new OpenAI({apiKey: this.config.APIKey});
+        console.log(`SQLLLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt, null, 3)}`);
+        const openai = new OpenAI({ apiKey: this.config.APIKey });
         const response: any = await openai.chat.completions.create({
             model: this.config.model,
             messages: prompt,
@@ -119,7 +119,7 @@ export class SQLLLMTransformer implements ITransformer {
             throw ex;
         });
         sql = response["choices"][0].message.content.replace(/\*\*/g, '*') || "";
-        sql = sql?.replace('sql','').trim();
+        sql = sql?.replace('sql', '').trim();
         console.log("SQLLLM - sql", sql)
 
         formdata = new FormData();
@@ -134,7 +134,7 @@ export class SQLLLMTransformer implements ITransformer {
 
         let sqlResult: any = await fetch(`${this.config.excelParserURL}/query/`, requestOptions)
         sqlResult = await sqlResult.json()
-        if(!sqlResult.error) {
+        if (!sqlResult.error) {
             sqlResult = sqlResult.data
         } else {
             this.telemetryLogger.sendErrorTelemetry(xmsg, `${sqlResult.error} in SQLLLM transformer`);
@@ -144,14 +144,14 @@ export class SQLLLMTransformer implements ITransformer {
         prompt = [
             {
                 role: 'system',
-                content: `Structure the response statement as answering the user question\nAssuming answer for sql query: ${sql} is - ${JSON.stringify(sqlResult,null,3)}.`
+                content: `Structure the response statement as answering the user question\nAssuming answer for sql query: ${sql} is - ${JSON.stringify(sqlResult, null, 3)}.`
             },
             {
                 role: 'user',
                 content: `question: $${xmsg.payload.text}`
             }
         ]
-        console.log(`SQLLLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt,null,3)}`);
+        console.log(`SQLLLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt, null, 3)}`);
         const finalResponse: any = await openai.chat.completions.create({
             model: this.config.model,
             messages: prompt,
@@ -166,36 +166,36 @@ export class SQLLLMTransformer implements ITransformer {
         xmsg.from = xmsg.to;
         xmsg.to = from;
         xmsg.payload.text = answer;
-        if(this.config.outputLanguage!='en') {
+        if (this.config.outputLanguage != 'en') {
             xmsg.payload.text = (await this.translateBhashini(
                 'en',
                 this.config.outputLanguage,
                 xmsg.payload.text!
             ))['translated']
         }
-        console.log("xmsg",xmsg)
+        console.log("xmsg", xmsg)
         await this.sendMessage(xmsg)
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Date.now());
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, ((performance.timeOrigin + performance.now()) * 1000));
         return xmsg;
     }
 
     //triggering inboud here itself for now to enable streaming feature
     //TODO: add a queue at orchestrator and ping orchestrator here such that it tirggres outbound.
-    async sendMessage(xmsg: XMessage){
+    async sendMessage(xmsg: XMessage) {
         console.log(`sending message to ${this.config.outboundURL}...`)
-        try{
-          var myHeaders = new Headers();
-          myHeaders.append("Content-Type", "application/json");
-          var requestOptions = {
-            method: "POST",
-            headers: myHeaders,
-            body: JSON.stringify(xmsg),
-          };
-          await fetch(`${this.config.outboundURL}`, requestOptions)
-          return;
-        } catch (error){
+        try {
+            var myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+            var requestOptions = {
+                method: "POST",
+                headers: myHeaders,
+                body: JSON.stringify(xmsg),
+            };
+            await fetch(`${this.config.outboundURL}`, requestOptions)
+            return;
+        } catch (error) {
             console.log("outbound error....")
-          console.log(error)
+            console.log(error)
         }
     }
 
@@ -203,53 +203,53 @@ export class SQLLLMTransformer implements ITransformer {
         source: string,
         target: string,
         text: string
-      ) {
+    ) {
         try {
-          let config = {
-            "language": {
-              "sourceLanguage": source,
-              "targetLanguage": target
+            let config = {
+                "language": {
+                    "sourceLanguage": source,
+                    "targetLanguage": target
+                }
             }
-          }
-          let bhashiniConfig: any = await getBhashiniConfig(
-            'translation', 
-            config,
-            this.config.bhashiniUserId,
-            this.config.bhashiniAPIKey,
-            this.config.bhashiniURL
-          )
-          let textArray = text.replace(/\n\n/g, "\n").split("\n")
-          for (let i = 0; i < textArray.length; i++) {
-            let response: any = await computeBhashini(
-              bhashiniConfig?.pipelineInferenceAPIEndPoint?.inferenceApiKey?.value,
-              "translation",
-              bhashiniConfig?.pipelineResponseConfig[0].config[0].serviceId,
-              bhashiniConfig?.pipelineInferenceAPIEndPoint?.callbackUrl,
-              config,
-              {
-                "input": [
-                  {
-                    "source": textArray[i]
-                  }
-                ]
-              }
+            let bhashiniConfig: any = await getBhashiniConfig(
+                'translation',
+                config,
+                this.config.bhashiniUserId,
+                this.config.bhashiniAPIKey,
+                this.config.bhashiniURL
             )
-            if (response["error"]) {
-              console.log(response["error"])
-              throw new Error(response["error"])
+            let textArray = text.replace(/\n\n/g, "\n").split("\n")
+            for (let i = 0; i < textArray.length; i++) {
+                let response: any = await computeBhashini(
+                    bhashiniConfig?.pipelineInferenceAPIEndPoint?.inferenceApiKey?.value,
+                    "translation",
+                    bhashiniConfig?.pipelineResponseConfig[0].config[0].serviceId,
+                    bhashiniConfig?.pipelineInferenceAPIEndPoint?.callbackUrl,
+                    config,
+                    {
+                        "input": [
+                            {
+                                "source": textArray[i]
+                            }
+                        ]
+                    }
+                )
+                if (response["error"]) {
+                    console.log(response["error"])
+                    throw new Error(response["error"])
+                }
+                textArray[i] = response?.pipelineResponse[0]?.output[0]?.target
             }
-            textArray[i] = response?.pipelineResponse[0]?.output[0]?.target
-          }
-          return {
-            translated: textArray.join('\n'),
-            error: null
-          }
+            return {
+                translated: textArray.join('\n'),
+                error: null
+            }
         } catch (error) {
-          console.log(error)
-          return {
-            translated: "",
-            error: error
-          }
+            console.log(error)
+            return {
+                translated: "",
+                error: error
+            }
         }
-      }
+    }
 }

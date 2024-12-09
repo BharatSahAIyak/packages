@@ -15,7 +15,7 @@ export class HttpPutTransformer implements ITransformer {
   private readonly telemetryLogger = new TelemetryLogger(this.config);
 
   async transform(xmsg: XMessage): Promise<XMessage> {
-    const startTime = Date.now();
+    const startTime = ((performance.timeOrigin + performance.now()) * 1000);
     this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
     console.log("HTTP PUT transformer called.");
 
