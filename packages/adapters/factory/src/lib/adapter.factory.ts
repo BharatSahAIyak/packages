@@ -13,6 +13,7 @@ import { DiscordProvider } from '@samagra-x/uci-adapters-discord';
 import { SlackProvider } from '@samagra-x/uci-adapters-slack';
 import { TelegramBotProvider } from '@samagra-x/uci-adapters-telegram-bot';
 import { GupshupWhatsappProvider } from '@samagra-x/uci-adapters-gupshup-whatsapp-adapter';
+import { GupshupWhatsappV2Provider } from '@samagra-x/uci-adapters-gupshup-whatsapp-v2-adapter';
 import { PwaBotProvider } from '@samagra-x/uci-adapters-pwa';
 import { FcmProvider } from '@samagra-x/uci-adapters-fcm';
 
@@ -44,6 +45,7 @@ const chatTypes: string[] = [
 ];
 const xmessageType: string[] = [
     'GupshupWhatsapp',
+    'GupshupWhatsappV2',
     'PwaPwa',
     'FirebaseFcm'
 ];
@@ -71,6 +73,8 @@ export class AdapterFactory {
                 return new TelegramBotProvider(consumerData.config);
             case 'GupshupWhatsapp':
                 return new GupshupWhatsappProvider(consumerData.config);
+            case 'GupshupWhatsappV2':
+                return new GupshupWhatsappV2Provider(consumerData.config);
             case 'PwaPwa':
                 return new PwaBotProvider(consumerData.config);
             case 'FirebaseFcm':
