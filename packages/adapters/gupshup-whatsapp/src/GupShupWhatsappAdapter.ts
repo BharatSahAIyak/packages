@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { GSWhatsAppMessage, MethodType, UserHistoryMessage } from './types';
+import { GSWhatsAppMessage, MethodType } from './types';
 import {
   StylingTag,
   MessageId,
@@ -69,7 +69,7 @@ type GSResponse = {
   status: string;
 }
 
-type GSWhatsappOutBoundResponse = {
+export type GSWhatsappOutBoundResponse = {
   response: GSResponse;
 }
 
@@ -88,9 +88,9 @@ interface UserSearchResponse {
 export class GupshupWhatsappProvider implements XMessageProvider {
 
   private readonly providerConfig?: IGSWhatsappConfig;
-  private readonly userHistory: UserHistoryMessage[];
+  private userHistory: XMessage[];
 
-  constructor(config?: IGSWhatsappConfig, userHistory: UserHistoryMessage[] = []) {
+  constructor(config?: IGSWhatsappConfig, userHistory: XMessage[] = []) {
     this.providerConfig = config;
     this.userHistory = userHistory;
   }
@@ -155,6 +155,26 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     // console.log('Inbound interactive text:', text);
     return text;
   };
+
+  private getUserById = async (userId: string): Promise<string> => {
+    const url = `${this.providerConfig?.fusionAuthUrl}/api/user/${userId}`;
+    
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': this.providerConfig?.authToken,
+          'Content-Type': 'application/json',
+          'X-FusionAuth-Application-Id': this.providerConfig?.applicationId,
+        },
+      });
+  
+      return response.data?.user?.data?.loginId;
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      throw error;
+    }
+  };
+  
   
   private getMediaCategoryByMimeType = (mimeType: string): MediaCategory | undefined => {
     let category: MediaCategory | undefined = undefined;
@@ -265,7 +285,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     return uuid4();
   }
 
-  private getLastMessageTimestamp(userHistory: UserHistoryMessage[]): number {
+  private getLastMessageTimestamp(userHistory: XMessage[]): number {
     if (!userHistory || userHistory.length === 0) {
       return 0;
     }
@@ -277,18 +297,27 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     return currentTimestamp - lastMessageTimestamp > TEN_MINUTES;
   }
 
-  private manageConversation(xmsg: XMessage): void {
+  updateConversationIdBasedOnUserHistory(xmsg: XMessage, userHistory: any): XMessage {
+    this.userHistory = userHistory
+    xmsg = this.manageConversation(xmsg)
+    return xmsg;
+  }
+
+  private manageConversation(xmsg: XMessage): XMessage {
     const currentTimestamp = Date.now();
     const lastMessageTimestamp = this.getLastMessageTimestamp(this.userHistory);
 
     if (this.shouldCreateNewConversation(lastMessageTimestamp, currentTimestamp)) {
       xmsg.messageId.conversationId = this.generateConversationId();
     } else if (this.userHistory.length > 0) {
-      const lastConversationId = this.userHistory[0]?.conversationId;
+      const lastConversationId = this.userHistory[0]?.messageId.conversationId;
       xmsg.messageId.conversationId = lastConversationId || this.generateConversationId();
     } else {
       xmsg.messageId.conversationId = this.generateConversationId();
     }
+
+    return xmsg;
+
   }
 
   private processedXMessage = (
@@ -397,9 +426,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   // Convert GupShupWhatsAppMessage to XMessage
   convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
     const message = msg as GSWhatsAppMessage;
-    const phoneNumber = message.mobile?.substring(2);
+    const phoneNumber = message.mobile;
     const from: SenderReceiverInfo = { 
       userID: '',
+      deviceID: phoneNumber
     };
     const to: SenderReceiverInfo = { userID: 'admin' };
 
@@ -410,8 +440,9 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         userId = await this.registerUser(phoneNumber);
       }
 
-      from.userID = userId || phoneNumber;
+      from.userID = userId as string;
     } else {
+      // not relevant for bhasai
       from.userID = phoneNumber;
     }
 
@@ -433,7 +464,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       for (const reportMsg of participantJsonList) {
         const eventType = reportMsg.eventType;
         xmsgPayload.text = '';
-        from.userID = reportMsg.destAddr.substring(2);
+        from.deviceID = reportMsg.destAddr;
         messageState[0] = this.getMessageState(eventType);
       }
 
@@ -448,7 +479,6 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       );
     }
     else if (thumbsUpEmojis.includes(message.text ?? '')) {
-      from.userID = message.mobile.substring(2);
       return this.processedXMessage(
         message,
         xmsgPayload,
@@ -460,7 +490,6 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       );
     }
     else if (thumbsDownEmojis.includes(message.text ?? '')) {
-      from.userID = message.mobile.substring(2);
       return this.processedXMessage(
         message,
         xmsgPayload,
@@ -472,7 +501,6 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       );
     }
     else if (message.type === 'text' && message.text) {
-      from.userID = message.mobile.substring(2);
       messageState[0] = MessageState.REPLIED;
       if (message.text.startsWith('\\register')) {
         xmsgPayload.text = message.text.replace('\\register ', '').trim();
@@ -499,7 +527,6 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         );
       }
     } else if (message.type === 'interactive') {
-      from.userID = message.mobile.substring(2);
   
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.text = this.getInboundInteractiveContentText(message);
@@ -511,10 +538,9 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         from,
         messageState[0],
         messageIdentifier,
-        messageType
+        MessageType.TEXT
       );
     } else if (message.type === 'location') {
-      from.userID = message.mobile.substring(2);
   
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.location = this.getInboundLocationParams(message);
@@ -530,7 +556,6 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         messageType
       );
     } else if (this.isInboundMediaMessage(message.type)) {
-      from.userID = message.mobile.substring(2);
   
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.text = '';
@@ -546,7 +571,6 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         messageType
       );
     } else if (message.type === 'button') {
-      from.userID = message.mobile.substring(2);
 
       return this.processedXMessage(
         message,
@@ -569,7 +593,6 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     username2Way: string,
     password2Way: string
   ): Promise<void> => {
-    const phoneNumber = '91' + xMsg.to.userID;
     const optInBuilder = new URL('https://media.smsgupshup.com/GatewayAPI/rest');
     optInBuilder.searchParams.append('v', '1.1');
     optInBuilder.searchParams.append('format', 'json');
@@ -578,7 +601,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     optInBuilder.searchParams.append('userid', usernameHSM);
     optInBuilder.searchParams.append('password', passwordHSM);
     optInBuilder.searchParams.append('channel', 'Whatsapp');
-    optInBuilder.searchParams.append('send_to', phoneNumber);
+    optInBuilder.searchParams.append('send_to', xMsg.to?.deviceID as string);
     optInBuilder.searchParams.append('messageId', '123456789');
   
     const expanded = optInBuilder;
@@ -599,10 +622,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     };
   }
 
-  private sendOutboundMessage = (url: string): Promise<GSWhatsappOutBoundResponse> => {
+  sendOutboundMessage = (url: string, body: any): Promise<GSWhatsappOutBoundResponse> => {
     return new Promise<GSWhatsappOutBoundResponse>((resolve, reject) => {
       axios.create()
-        .get<GSWhatsappOutBoundResponse>(url)
+        .post<GSWhatsappOutBoundResponse>(url, body)
         .then((response: AxiosResponse<GSWhatsappOutBoundResponse>) => {
           resolve(response.data);
         })
@@ -710,6 +733,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       ) {
         let text: string = xMsg.payload.text || '';
         let builder = this.getURIBuilder();
+        xMsg.to.userID = await this.getUserById(xMsg.to.userID)
   
         if (xMsg.messageState === MessageState.OPTED_IN) {
           text += this.renderMessageChoices(xMsg.payload.buttonChoices?.choices || []);
@@ -720,10 +744,9 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             this.providerConfig.username2Way,
             this.providerConfig.password2Way,
           );
-  
           builder.set('channel', xMsg.channelURI.toLowerCase());
-          builder.set('send_to', '91' + xMsg.to.userID);
-          builder.set('phone_number', '91' + xMsg.to.userID);
+          builder.set('send_to',xMsg.to.deviceID as string);
+          builder.set('phone_number', xMsg.to.deviceID as string);
         } else if (
           xMsg.messageType !== null &&
           xMsg.messageType === MessageType.HSM
@@ -745,7 +768,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             this.providerConfig.passwordHSM,
           );
   
-          builder.set('send_to', '91' + xMsg.to.userID);
+          builder.set('send_to', xMsg.to.deviceID as string);
           builder.set('msg', text);
           builder.set('isHSM', 'true');
           builder.set('msg_type', MessageType.HSM);
@@ -770,7 +793,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             this.providerConfig.passwordHSM,
           );
   
-          builder.set('send_to', '91' + xMsg.to.userID);
+          builder.set('send_to', xMsg.to.deviceID as string);
           builder.set('msg', text);
           builder.set('isTemplate', 'true');
           builder.set('msg_type', MessageType.HSM);
@@ -788,8 +811,8 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             this.providerConfig.password2Way,
           );
   
-          builder.set('send_to', '91' + xMsg.to.userID);
-          builder.set('phone_number', '91' + xMsg.to.userID);
+          builder.set('send_to', xMsg.to.deviceID as string);
+          builder.set('phone_number', xMsg.to.deviceID as string);
           builder.set('msg_type', xMsg.messageType);
           builder.set('channel', 'Whatsapp');
           if (xMsg.messageId.Id) {
@@ -852,14 +875,18 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         }
   
         console.log(text);
+        const postParams = Object.fromEntries(builder);
+
+        
         const expanded = new URL(
-          `https://media.smsgupshup.com/GatewayAPI/rest?${builder}`
+          `https://media.smsgupshup.com/GatewayAPI/rest`
         );
         // console.log(expanded);
   
         try {
           const response: GSWhatsappOutBoundResponse = await this.sendOutboundMessage(
-            expanded.toString()
+            expanded.toString(),
+            postParams
           );
   
           if (response !== null && response.response.status === 'success') {

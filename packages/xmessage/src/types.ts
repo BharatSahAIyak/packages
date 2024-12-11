@@ -179,4 +179,5 @@ export interface XMessageProvider {
   // This function only converts one type to another, and
   // does not send the actual message to user.
   convertXmsgToMsg?(xmsg: XMessage): Promise<any>;
+  updateConversationIdBasedOnUserHistory?(xmsg: XMessage, userHistory: any): XMessage;
 }
