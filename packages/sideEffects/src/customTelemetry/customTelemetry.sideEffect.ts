@@ -96,6 +96,8 @@ export class CustomTelemetrySideEffect implements ISideEffect {
             eventData: subEventData
         };
 
+        subEventData['xmessage'] = sideEffectData.eventData;
+        
         if (sideEffectData.eventName == Events.CUSTOM_TELEMETRY_EVENT_LOG) {
             subEventData['eventLog'] = sideEffectData.eventData.transformer?.metaData?.telemetryLog;
         }
