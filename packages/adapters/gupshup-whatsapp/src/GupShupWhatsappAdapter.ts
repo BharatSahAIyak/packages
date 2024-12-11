@@ -343,7 +343,6 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         payload: xmsgPayload,
         transformer: existingTransformer
     };
-    XMessage
     this.manageConversation(xmsg);
     return xmsg;
   };
