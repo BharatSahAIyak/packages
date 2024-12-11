@@ -1,9 +1,7 @@
-import { GupshupWhatsappProvider, IGSWhatsappConfig } from './GupShupWhatsappAdapter';
-import { MediaCategory, MessageState, MessageType, StylingTag, XMessage } from '@samagra-x/xmessage';
+import { GupshupWhatsappProvider, IGSWhatsappConfig, GSWhatsappOutBoundResponse } from './GupShupWhatsappAdapter';
+import { MediaCategory, MessageId, MessageState, MessageType, StylingTag, XMessage } from '@samagra-x/xmessage';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import { UserHistoryMessage } from './types';
-
 const mockGSWhatsappReport = {
   externalId: 'report-123',
   eventType: 'SENT',
@@ -16,6 +14,8 @@ const mockGSWhatsappReport = {
   extra: 'Some extra information for the report',
 };
 
+const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest(.*)$/;
+
 const baseMockXMessage: XMessage = {
   messageType: MessageType.TEXT,
   messageId: {
@@ -23,7 +23,8 @@ const baseMockXMessage: XMessage = {
     channelMessageId: "4305161194925220864-131632492725500592",
   },
   to: {
-    userID: "9999999999",
+    userID: "919999999999",
+    deviceID: "919999999999",
   },
   from: {
     userID: "admin",
@@ -50,15 +51,20 @@ describe('gupshup whatsapp adapter', () => {
   let adapter: GupshupWhatsappProvider;
 
   beforeAll(() => {
+    console.log = jest.fn()
     mock = new MockAdapter(axios);
   })
 
   beforeEach(() => {
+    mock.onGet(/[\s\S]*/).reply(() => {
+      return [200, { response: { status: 'success' } }];
+    });
+
     const mockCredentials: IGSWhatsappConfig  = {
       password2Way: "pass2Way",
       passwordHSM: "passHSM",
-      username2Way: "9999999999",
-      usernameHSM: "9999999999",
+      username2Way: "200XXXXXXX",
+      usernameHSM: "200XXXXXXX",
       userServiceUrl: "http://mock-url",
       fusionAuthUrl: "http://mock-fusion-auth",
       applicationId: "mock-app-id",
@@ -66,6 +72,15 @@ describe('gupshup whatsapp adapter', () => {
     };
 
     adapter = new GupshupWhatsappProvider(mockCredentials);
+    adapter.sendOutboundMessage = jest.fn((a:string,b:any)=> { return Promise.resolve( {
+      response: {
+        id: "",
+        phone: "",
+        details: "",
+        status: "success",
+      }
+
+    })})
   })
 
   afterEach(() => {
@@ -75,15 +90,16 @@ describe('gupshup whatsapp adapter', () => {
   it("Send Simple Text Whatsapp message", async () => {
     const mockSimpleMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
     mockSimpleMessage.payload.text = 'Simple Message';
-    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=TEXT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&msg=Simple+Message'
-    const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
-    let actualParametersPassed: string | undefined = '';
-    mock.onGet(urlRegex).reply(config => {
-      actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
-      return [200, { response: { status: 'success' } }];
-    });
+    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=200XXXXXXX&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=TEXT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&msg=Simple+Message'
+
     await adapter.sendMessage(mockSimpleMessage);
-    expect(actualParametersPassed).toBe(expectedParameters);
+    const getParams = new URLSearchParams(expectedParameters);
+    const expectedBody = Object.fromEntries(getParams)
+
+    expect(adapter.sendOutboundMessage).toHaveBeenCalledWith(
+      expect.stringMatching(urlRegex),
+      expect.objectContaining(expectedBody)
+    );
   })
 
   it("Send List Options Whatsapp message", async () => {
@@ -94,15 +110,15 @@ describe('gupshup whatsapp adapter', () => {
       {key: 'option2', text: 'Option 2'},
       {key: 'option3', text: 'Option 3'}
     ];
-    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=TEXT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&interactive_type=list&action=%7B%22button%22%3A%22Options%22%2C%22sections%22%3A%5B%7B%22title%22%3A%22Choose+an+option%22%2C%22rows%22%3A%5B%7B%22id%22%3A%22option1%22%2C%22title%22%3A%22Option+1%22%7D%2C%7B%22id%22%3A%22option2%22%2C%22title%22%3A%22Option+2%22%7D%2C%7B%22id%22%3A%22option3%22%2C%22title%22%3A%22Option+3%22%7D%5D%7D%5D%7D&msg=Testing+bot'
-    const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
-    let actualParametersPassed: string | undefined = '';
-    mock.onGet(urlRegex).reply(config => {
-      actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
-      return [200, { response: { status: 'success' } }];
-    });
+    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=200XXXXXXX&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=TEXT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&interactive_type=list&action=%7B%22button%22%3A%22Options%22%2C%22sections%22%3A%5B%7B%22title%22%3A%22Choose+an+option%22%2C%22rows%22%3A%5B%7B%22id%22%3A%22option1%22%2C%22title%22%3A%22Option+1%22%7D%2C%7B%22id%22%3A%22option2%22%2C%22title%22%3A%22Option+2%22%7D%2C%7B%22id%22%3A%22option3%22%2C%22title%22%3A%22Option+3%22%7D%5D%7D%5D%7D&msg=Testing+bot'
+    const getParams = new URLSearchParams(expectedParameters);
+    const expectedBody = Object.fromEntries(getParams)
+
     await adapter.sendMessage(mockListXMessage);
-    expect(actualParametersPassed).toBe(expectedParameters);
+    expect(adapter.sendOutboundMessage).toHaveBeenCalledWith(
+      expect.stringMatching(urlRegex),
+      expect.objectContaining(expectedBody)
+    );
   })
 
   it("Send Quick Button Options Whatsapp message", async () => {
@@ -113,16 +129,19 @@ describe('gupshup whatsapp adapter', () => {
       {key: 'option2', text: 'Option 2'},
       {key: 'option3', text: 'Option 3'}
     ];
-    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=TEXT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&interactive_type=dr_button&action=%7B%22buttons%22%3A%5B%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option1%22%2C%22title%22%3A%22Option+1%22%7D%7D%2C%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option2%22%2C%22title%22%3A%22Option+2%22%7D%7D%2C%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option3%22%2C%22title%22%3A%22Option+3%22%7D%7D%5D%7D&msg=Testing+bot'
-    const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
-    let actualParametersPassed: string | undefined = '';
-    mock.onGet(urlRegex).reply(config => {
-      actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
-      return [200, { response: { status: 'success' } }];
-    });
+    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMessage&userid=200XXXXXXX&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=TEXT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&interactive_type=dr_button&action=%7B%22buttons%22%3A%5B%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option1%22%2C%22title%22%3A%22Option+1%22%7D%7D%2C%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option2%22%2C%22title%22%3A%22Option+2%22%7D%7D%2C%7B%22type%22%3A%22reply%22%2C%22reply%22%3A%7B%22id%22%3A%22option3%22%2C%22title%22%3A%22Option+3%22%7D%7D%5D%7D&msg=Testing+bot'
+    const getParams = new URLSearchParams(expectedParameters);
+    const expectedBody = Object.fromEntries(getParams)
+
     await adapter.sendMessage(mockListXMessage);
-    expect(actualParametersPassed).toBe(expectedParameters);
+    expect(adapter.sendOutboundMessage).toHaveBeenCalledWith(
+      expect.stringMatching(urlRegex),
+      expect.objectContaining(expectedBody)
+    );
   })
+  
+
+  
 
   it("Send Image Whatsapp message", async () => {
     const mockListXMessage: XMessage = JSON.parse(JSON.stringify(baseMockXMessage));
@@ -133,15 +152,16 @@ describe('gupshup whatsapp adapter', () => {
         caption: 'This is a caption'
       }
     ];
-    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMediaMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=IMAGE&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&media_url=http%3A%2F%2Ffakeurl.jpg&caption=This+is+a+caption&isHSM=false'
-    const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
-    let actualParametersPassed: string | undefined = '';
-    mock.onGet(urlRegex).reply(config => {
-      actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
-      return [200, { response: { status: 'success' } }];
-    });
+    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMediaMessage&userid=200XXXXXXX&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=IMAGE&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&media_url=http%3A%2F%2Ffakeurl.jpg&caption=This+is+a+caption&isHSM=false'
+    const getParams = new URLSearchParams(expectedParameters);
+    const expectedBody = Object.fromEntries(getParams)
+
     await adapter.sendMessage(mockListXMessage);
-    expect(actualParametersPassed).toBe(expectedParameters);
+    expect(adapter.sendOutboundMessage).toHaveBeenCalledWith(
+      expect.stringMatching(urlRegex),
+      expect.objectContaining(expectedBody)
+    );
+
   })
 
   it("Send Document Whatsapp message", async () => {
@@ -154,15 +174,15 @@ describe('gupshup whatsapp adapter', () => {
         filename: 'filename'
       }
     ];
-    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMediaMessage&userid=9999999999&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=DOCUMENT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&media_url=http%3A%2F%2Ffakeurl.pdf&caption=This+is+a+caption&filename=filename&isHSM=false'
-    const urlRegex = /^https:\/\/media\.smsgupshup\.com\/GatewayAPI\/rest\?(.*)$/;
-    let actualParametersPassed: string | undefined = '';
-    mock.onGet(urlRegex).reply(config => {
-      actualParametersPassed = (config.url?.match(urlRegex) ?? [])[1];
-      return [200, { response: { status: 'success' } }];
-    });
+    const expectedParameters = 'v=1.1&format=json&auth_scheme=plain&extra=Samagra&data_encoding=text&messageId=123456789&method=SendMediaMessage&userid=200XXXXXXX&password=pass2Way&send_to=919999999999&phone_number=919999999999&msg_type=DOCUMENT&channel=Whatsapp&msg_id=4305161194925220864-131632492725500592&media_url=http%3A%2F%2Ffakeurl.pdf&caption=This+is+a+caption&filename=filename&isHSM=false'
+    const getParams = new URLSearchParams(expectedParameters);
+    const expectedBody = Object.fromEntries(getParams)
+
     await adapter.sendMessage(mockListXMessage);
-    expect(actualParametersPassed).toBe(expectedParameters);
+    expect(adapter.sendOutboundMessage).toHaveBeenCalledWith(
+      expect.stringMatching(urlRegex),
+      expect.objectContaining(expectedBody)
+    );
   })
 
   // TODO: Not Working, fix this when HSM template is working.
@@ -191,7 +211,7 @@ describe('gupshup whatsapp adapter', () => {
     }
     const expectedXMessage = {
       to: { userID: 'admin' },
-      from: { userID: '9999999999' },
+      from: { userID: null , deviceID: "919999999999"}, //userId is null because fusion auth url exists but isn't sending anything useful back
       channelURI: 'Whatsapp',
       providerURI: 'Gupshup',
       messageState: 'DELIVERED',
@@ -223,9 +243,9 @@ describe('gupshup whatsapp adapter', () => {
       "waNumber": "918888888888",
       "name": "User"
     };
-    const expectedAudioMessage: XMessage = {
+    const expectedAudioMessage = {
       to: { userID: 'admin' },
-      from: { userID: '9999999999' },
+      from: { userID: null, deviceID: '919999999999' },
       channelURI: 'Whatsapp',
       providerURI: 'Gupshup',
       messageState: MessageState.REPLIED,
@@ -266,18 +286,18 @@ describe('gupshup whatsapp adapter', () => {
       "waNumber": "918888888888",
       "name": "User"
     };
-    const expectedXMessage: XMessage = {
+    const expectedXMessage = {
       to: { userID: 'admin' },
-      from: { userID: '9999999999' },
+      from: {userID: null, deviceID: '919999999999'  },
       channelURI: 'Whatsapp',
       providerURI: 'Gupshup',
       messageState: MessageState.REPLIED,
       messageId: {
-        Id: 'testId',
+        Id:expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i), //uuid
         conversationId: expect.any(String)
       },
       messageType: MessageType.VIDEO,
-      timestamp: 0,
+      timestamp: 1715681599000,
       payload: {
         text: "",
         media: [
@@ -294,9 +314,7 @@ describe('gupshup whatsapp adapter', () => {
     };
     const xmsg = await adapter.convertMessageToXMsg(mockAudioMessage);
     expect(xmsg.messageId.Id).toBeDefined();
-    xmsg.messageId.Id = 'testId';
     expect(xmsg.timestamp).toBeGreaterThan(0);
-    xmsg.timestamp = 0;
     expect(xmsg).toStrictEqual(expectedXMessage);
   });
 
@@ -309,9 +327,9 @@ describe('gupshup whatsapp adapter', () => {
       "waNumber": "918888888888",
       "name": "User"
     };
-    const expectedXMessage: XMessage = {
+    const expectedXMessage = {
       to: { userID: 'admin' },
-      from: { userID: '9999999999' },
+      from: { userID: null, deviceID: '919999999999' },
       channelURI: 'Whatsapp',
       providerURI: 'Gupshup',
       messageState: MessageState.REPLIED,
@@ -377,30 +395,35 @@ describe('Conversation Management', () => {
     it('should reuse conversationId for messages within 10 minutes', async () => {
         const currentTime = Date.now();
         const fiveMinutesAgo = new Date(currentTime - (5 * 60 * 1000));
-        const existingConversationId = '123456789';
+        const existingConversationId = '1a171d8f-0f51-40a6-b3c0-19c21549242d';
         
-        const userHistory: UserHistoryMessage[] = [{
-            id: 11,
-            app: "BOT_ID_1",
-            messageType: "TEXT",
-            channelMessageId: "CHANNEL_MESSAGE_ID_1",
-            adapterId: "3073705e-7e9d-4b7b-96f8-0f2d84351628",
-            orgId: "5a8d8a57-cd84-4670-8f75-e8ede4504752",
-            ownerId: "2fc6a82e-0bd1-4e58-a752-98eba6211c9c",
-            messageId: "fe9cdbdd-d04e-4db1-bf7e-653265b185e4",
-            to: "USER_ID_2",
-            from: "admin",
-            channelURI: "Pwa",
-            providerURI: "Pwa",
-            timestamp: fiveMinutesAgo.toISOString(),
-            messageState: "REPLIED",
-            lastMessageID: undefined,
-            conversationId: existingConversationId,
-            payload: {
-                text: "Hello User",
-                metaData: {}
-            }
-        }];
+        const userHistory: XMessage[] = [{
+          app: "BOT_ID_1",
+          messageType: MessageType.TEXT,
+          adapterId: "3073705e-7e9d-4b7b-96f8-0f2d84351628",
+          orgId: "5a8d8a57-cd84-4670-8f75-e8ede4504752",
+          ownerId: "2fc6a82e-0bd1-4e58-a752-98eba6211c9c",
+          messageId: MessageId.builder()
+                     .setId('fe9cdbdd-d04e-4db1-bf7e-653265b185e4')
+                     .setChannelMessageId("CHANNEL_MESSAGE_ID_1")
+                     .build(),
+          to: { 
+            userID: 'USER_ID_2',
+          },
+          from: { 
+            userID: 'admin',
+          },
+          channelURI: "Pwa",
+          providerURI: "Pwa",
+          timestamp: fiveMinutesAgo.getTime(),
+          messageState: MessageState.REPLIED,
+          lastMessageID: undefined,
+          payload: {
+              text: "Hello User",
+              metaData: {}
+          }
+      }]
+        userHistory[0].messageId.conversationId = existingConversationId
 
         const adapterWithHistory = new GupshupWhatsappProvider(credentials, userHistory);
 
@@ -420,21 +443,23 @@ describe('Conversation Management', () => {
         const fifteenMinutesAgo = new Date(currentTime - (15 * 60 * 1000));
         const existingConversationId = '123456789';
         
-        const userHistory: UserHistoryMessage[] = [{
-            id: 11,
+        const userHistory: XMessage[] = [{
             app: "BOT_ID_1",
-            messageType: "TEXT",
-            channelMessageId: "CHANNEL_MESSAGE_ID_1",
+            messageType: MessageType.TEXT,
             adapterId: "3073705e-7e9d-4b7b-96f8-0f2d84351628",
             orgId: "5a8d8a57-cd84-4670-8f75-e8ede4504752",
             ownerId: "2fc6a82e-0bd1-4e58-a752-98eba6211c9c",
-            messageId: existingConversationId,
-            to: "USER_ID_2",
-            from: "admin",
+            messageId: MessageId.builder().setId(existingConversationId).setChannelMessageId("CHANNEL_MESSAGE_ID_1").build(),
+            to: { 
+              userID: 'USER_ID_2',
+            },
+            from: { 
+              userID: 'admin',
+            },
             channelURI: "Pwa",
             providerURI: "Pwa",
-            timestamp: fifteenMinutesAgo.toISOString(),
-            messageState: "REPLIED",
+            timestamp: fifteenMinutesAgo.getTime(),
+            messageState: MessageState.REPLIED,
             lastMessageID: undefined,
             payload: {
                 text: "Hello User",
