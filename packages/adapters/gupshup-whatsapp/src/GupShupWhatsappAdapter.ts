@@ -293,8 +293,8 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   }
 
   private shouldCreateNewConversation(lastMessageTimestamp: number, currentTimestamp: number): boolean {
-    const TEN_MINUTES = 10 * 60 * 1000; // 10 minutes in milliseconds
-    return currentTimestamp - lastMessageTimestamp > TEN_MINUTES;
+    const TWENTY_MINUTES = 20 * 60 * 1000; // 20 minutes in milliseconds
+    return currentTimestamp - lastMessageTimestamp > TWENTY_MINUTES;
   }
 
   updateConversationIdBasedOnUserHistory(xmsg: XMessage, userHistory: any): XMessage {
