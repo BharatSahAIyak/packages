@@ -2,6 +2,7 @@
     "label": "Field Setter Transformer",
     "type": "FIELD_SETTER",
     "class": "GenericTransformer",
+    "eventId": "TE-105",
     "description": "A field setter that can set XMessage fields from user history or current XMessage.",
     "version": 1,
     "outputType": "static",

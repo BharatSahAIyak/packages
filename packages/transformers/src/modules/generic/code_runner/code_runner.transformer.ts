@@ -1,5 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 import { Events } from "@samagra-x/uci-side-effects";
 import { TelemetryLogger } from "../../common/telemetry";
 const ivm = require('isolated-vm');
@@ -14,12 +15,12 @@ export class CodeRunnerTransformer implements ITransformer {
     /// will be provided in the context as a stringified JSON in $0.
     /// Note: If the `XMessage` is modified, the function must returned
     /// the modified `XMessage` as a stringified JSON.
-    constructor(readonly config: Record<string, any>) { }
+    constructor(readonly config: Record<string, any>) {}
     private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = Date.now();
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime);
+        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime, config['eventId']);
         if (!this.config?.code) {
             throw new Error('config.code is required');
         }
@@ -32,12 +33,12 @@ export class CodeRunnerTransformer implements ITransformer {
         const context = isolate.createContextSync();
         const jail = context.global;
         jail.setSync('global', jail.derefInto());
-        const xmsgCopy: Partial<XMessage> = { };
+        const xmsgCopy: Partial<XMessage> = {};
         xmsgCopy.payload = xmsg.payload;
         xmsgCopy.transformer = xmsg.transformer;
         const codeResult = context.evalClosureSync(
             this.config.code,
-            [ JSON.stringify(xmsgCopy) ],
+            [JSON.stringify(xmsgCopy)],
             {
                 timeout: 30_000,
             }
@@ -54,7 +55,7 @@ export class CodeRunnerTransformer implements ITransformer {
                 throw new Error('XMessage must be returned as a stringified JSON!');
             }
         }
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime, config['eventId']);
         return xmsg;
     }
 }

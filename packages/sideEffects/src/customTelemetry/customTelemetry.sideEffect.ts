@@ -90,7 +90,7 @@ export class CustomTelemetrySideEffect implements ISideEffect {
             actorId: sideEffectData.eventData.from?.userID || sideEffectData.eventData.to.userID,
             actorType: 'System',
             env: process.env.ENVIRONMENT || 'UNKNOWN',
-            eventId: eventId ?? 'UNKNOWN_EVENT_ID',
+            eventId: eventId || sideEffectData.eventData.transformer?.metaData?.eventId || 'UNKNOWN_EVENT_ID',
             event: 'Transformer Execution',
             subEvent: sideEffectData.eventName,
             eventData: subEventData

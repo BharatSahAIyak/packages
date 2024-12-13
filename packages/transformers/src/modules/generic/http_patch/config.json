@@ -2,6 +2,7 @@
   "label": "HTTP PATCH Transformer",
   "type": "HTTP_PATCH",
   "class": "GenericTransformer",
+  "eventId": "TE-121",
   "description": "A transformer capable of making HTTP PATCH request.",
   "version": 1,
   "outputType": "static",

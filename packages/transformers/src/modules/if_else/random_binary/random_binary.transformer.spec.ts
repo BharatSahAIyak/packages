@@ -5,12 +5,12 @@ import { TelemetryLogger } from "../../common/telemetry";
 describe("RandomBinaryTransformer", () => {
     let mockEventBus: { pushEvent: jest.Mock };
     let mockConfig: { eventBus: any, transformerId: string };
-    let mockTelemetryLogger: {sendLogTelemetry: jest.Mock, sendErrorTelemetry: jest.Mock};
+    let mockTelemetryLogger: { sendLogTelemetry: jest.Mock, sendErrorTelemetry: jest.Mock };
 
     beforeEach(() => {
         mockEventBus = { pushEvent: jest.fn() };
         mockConfig = { eventBus: mockEventBus, transformerId: 'random-binary-transformer-id' };
-        mockTelemetryLogger = {sendLogTelemetry: jest.fn(), sendErrorTelemetry: jest.fn()};
+        mockTelemetryLogger = { sendLogTelemetry: jest.fn(), sendErrorTelemetry: jest.fn() };
         jest.spyOn(TelemetryLogger.prototype, 'sendLogTelemetry').mockImplementation(mockTelemetryLogger.sendLogTelemetry);
     });
 
@@ -49,8 +49,8 @@ describe("RandomBinaryTransformer", () => {
             await transformer.transform(xmsg);
 
             expect(mockTelemetryLogger.sendLogTelemetry).toHaveBeenCalledTimes(2);
-            expect(mockTelemetryLogger.sendLogTelemetry).toHaveBeenCalledWith(xmsg, `${mockConfig.transformerId} started!`, expect.any(Number));
-            expect(mockTelemetryLogger.sendLogTelemetry).toHaveBeenCalledWith(xmsg, `${mockConfig.transformerId} finished!`, expect.any(Number));
+            expect(mockTelemetryLogger.sendLogTelemetry).toHaveBeenCalledWith(xmsg, `${mockConfig.transformerId} started!`, expect.any(Number), "TE-114");
+            expect(mockTelemetryLogger.sendLogTelemetry).toHaveBeenCalledWith(xmsg, `${mockConfig.transformerId} finished!`, expect.any(Number), "TE-114");
         });
     });
 });

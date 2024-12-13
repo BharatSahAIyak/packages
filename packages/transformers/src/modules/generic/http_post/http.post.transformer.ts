@@ -1,5 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 import { Events } from "@samagra-x/uci-side-effects";
 import { TelemetryLogger } from "../../common/telemetry";
 import get from 'lodash/get';
@@ -11,19 +12,42 @@ export class HttpPostTransformer implements ITransformer {
     ///     url: Url of the endpoint. If not provided, `XMessage.transformer.metaData.httpUrl` will be used.
     ///     headers: Headers for request. If not provided, `XMessage.transformer.metaData.httpHeaders` will be used. (optional).
     ///     body: Body for the HTTP POST request. If not provided, `XMessage.transformer.metaData.httpBody` will be used. (optional)
-    constructor(readonly config: Record<string, any>) { }
+    constructor(readonly config: Record<string, any>) {}
     private readonly telemetryLogger = new TelemetryLogger(this.config);
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = Date.now();
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
+        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime, config['eventId']);
         console.log("HTTP POST transformer called.");
 
         this.config.url = this.config.url ?? xmsg.transformer?.metaData?.httpUrl;
         this.config.headers = this.config.headers ?? xmsg.transformer?.metaData?.httpHeaders ?? {};
         this.config.headers = typeof this.config.headers === 'string' ? JSON.parse(this.config.headers || "{}") : this.config.headers ?? {};
         this.config.headers['Content-Type'] = 'application/json';
-        
+        console.log("==== BEFORE =====")
+        console.log(JSON.stringify(this.config.headers, null, 2))
+        console.log("==== BEFORE END=====")
+
+
+        const httpHeadersCopy: Record<string, string> = cloneDeep(this.config.headers);
+
+        Object.entries(this.config.headers as Record<string, any>).forEach((entry) => {
+            if (entry[1] && typeof entry[1] === 'object') {
+                this.resolvePlaceholders(entry[1], xmsg);
+                set(httpHeadersCopy, entry[0], entry[1]);
+            }
+            else {
+                set(httpHeadersCopy, entry[0], this.getResolvedValue(entry[1], xmsg));
+            }
+        });
+        console.log("==== AFTER =====")
+
+        this.config.headers = httpHeadersCopy;
+
+        console.log("==== AFTER END =====")
+
+        console.log(JSON.stringify(this.config.headers, null, 2))
+
         this.config.body = this.config.body ?? xmsg.transformer?.metaData?.httpBody ?? {};
         const httpBodyCopy: Record<string, string> = cloneDeep(this.config.body);
 
@@ -38,7 +62,7 @@ export class HttpPostTransformer implements ITransformer {
         });
 
         this.config.body = httpBodyCopy;
-        
+
 
         console.log("HTTP POST url-", this.config.url)
         console.log("HTTP POST body -", typeof this.config.body === 'string' ? this.config.body : JSON.stringify(this.config.body ?? {}));
@@ -48,39 +72,46 @@ export class HttpPostTransformer implements ITransformer {
             this.telemetryLogger.sendErrorTelemetry(xmsg, '`url` not defined in HTTP_POST transformer');
             throw new Error('`url` not defined in HTTP_POST transformer');
         }
+
+        this.config.url = this.processURL(this.config.url, xmsg);
         await fetch(this.config.url, {
             method: 'POST',
             body: typeof this.config.body === 'string' ? this.config.body : JSON.stringify(this.config.body ?? {}),
             headers: new Headers(this.config.headers),
         })
-        .then(resp => {
-            if (!resp.ok) {
-                this.telemetryLogger.sendErrorTelemetry(xmsg, `Request failed with code: ${resp.status}`);
-                throw new Error(`Request failed with code: ${resp.status}`);
-            } else {
-                const contentType = resp.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    return resp.json();
+            .then(resp => {
+                if (!resp.ok) {
+                    this.telemetryLogger.sendErrorTelemetry(xmsg, `"HTTP POST url - ${this.config.url}; HTTP POST body - ${typeof this.config.body === 'string' ? this.config.body : JSON.stringify(this.config.body ?? {})}; HTTP POST headers - ${new Headers(this.config.headers)} Request failed with code: ${resp.status}`);
+                    throw new Error(`Request failed with code: ${resp.status}`);
                 } else {
-                    return resp.text();
+                    const contentType = resp.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return resp.json();
+                    } else {
+                        const contentType = resp.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return resp.json();
+                        } else {
+                            return resp.text();
+                        }
+                    }
                 }
-            }
-        })
-        .then((resp) => {
-            console.log('resp',resp)
-            if (!xmsg.transformer) {
-                xmsg.transformer = {
-                    metaData: {}
-                };
-            }
-            xmsg.transformer.metaData!.httpResponse = resp;
-        })
-        .catch((ex) => {
-            this.telemetryLogger.sendErrorTelemetry(xmsg, `POST request failed. Reason: ${ex}`);
-            console.error(`POST request failed. Reason: ${ex}`);
-            throw ex;
-        });
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
+            })
+            .then((resp) => {
+                console.log('resp', resp)
+                if (!xmsg.transformer) {
+                    xmsg.transformer = {
+                        metaData: {}
+                    };
+                }
+                xmsg.transformer.metaData!.httpResponse = resp;
+            })
+            .catch((ex) => {
+                this.telemetryLogger.sendErrorTelemetry(xmsg, `POST request failed. Reason: ${ex}`);
+                console.error(`POST request failed. Reason: ${ex}`);
+                throw ex;
+            });
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, config['eventId']);
         return xmsg;
     }
 
@@ -113,11 +144,24 @@ export class HttpPostTransformer implements ITransformer {
             value = value.replaceAll(
                 replacement[0],
                 replacement[1] ?
-                typeof replacement[1] == 'object' ?
-                JSON.stringify(replacement[1]) : replacement[1]
-                : ''
+                    typeof replacement[1] == 'object' ?
+                        JSON.stringify(replacement[1]) : replacement[1]
+                    : ''
             );
         });
         return value;
+    }
+
+    private processURL(url: string, xmsg: XMessage) {
+        return url.split('/').map((part: string) => {
+            const msgPlaceholderRegex = /\{\{\s*msg:([^}]+)\s*\}\}/;
+            const match = msgPlaceholderRegex.exec(part);
+            if (match) {
+                const path = match[0];
+                part = part.replace(msgPlaceholderRegex, this.getResolvedValue(path, xmsg));
+                console.log(part)
+            }
+            return part;
+        }).join('/')
     }
 }

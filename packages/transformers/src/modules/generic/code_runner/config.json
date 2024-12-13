@@ -2,6 +2,7 @@
     "label": "Code Runner Transformer",
     "type": "CODE_RUNNER",
     "class": "GenericTransformer",
+    "eventId":"TE-103",
     "description": "A node capable of executing arbitary code in isolated environment",
     "version": 1,
     "outputType": "static",

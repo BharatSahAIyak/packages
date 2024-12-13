@@ -2,6 +2,7 @@
     "label": "Random Binary",
     "type": "RANDOM_BINARY",
     "class": "IfElseTransformer",
+    "eventId": "TE-114",
     "description": "A transformer that randomly generates an output state.",
     "version": 1,
     "outputType": "static",

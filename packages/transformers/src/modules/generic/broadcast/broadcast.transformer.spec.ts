@@ -18,32 +18,32 @@ describe('BroadcastTransformer', () => {
             icon: 'http://example.com/icon.jpg',
             deeplink: 'http://example.com/deeplink'
         };
-        
+
         mockXMessage = {
             to: {
-              userID: "XXXXXX",
+                userID: "XXXXXX",
             },
             from: {
-              userID: "mockUserId",
-              deviceID: "FCM-Token"
+                userID: "mockUserId",
+                deviceID: "FCM-Token"
             },
             channelURI: "Whatsapp",
             providerURI: "Gupshup",
             messageState: MessageState.ENQUEUED,
             messageId: {
-              Id: "00000000-0000-0000-0000-000000000000",
+                Id: "00000000-0000-0000-0000-000000000000",
             },
             messageType: MessageType.BROADCAST,
             timestamp: 1715602492000,
             payload: {
-              text: "Hello testing",
+                text: "Hello testing",
             },
             adapterId: "11111111-1111-1111-1111-111111111111",
             app: "22222222-2222-2222-222222222222",
             ownerId: "33333333-3333-3333-333333333333",
             orgId: "44444444-4444-4444-444444444444",
             transformer: {
-             
+
             }
         };
     });
@@ -54,8 +54,8 @@ describe('BroadcastTransformer', () => {
 
         await transformer.transform(mockXMessage);
 
-        expect(sendLogTelemetrySpy).toHaveBeenCalledWith(mockXMessage, `${mockConfig.transformerId} started!`, expect.any(Number));
-        expect(sendLogTelemetrySpy).toHaveBeenCalledWith(mockXMessage, `${mockConfig.transformerId} finished!`, expect.any(Number));
+        expect(sendLogTelemetrySpy).toHaveBeenCalledWith(mockXMessage, `${mockConfig.transformerId} started!`, expect.any(Number), "TE-112");
+        expect(sendLogTelemetrySpy).toHaveBeenCalledWith(mockXMessage, `${mockConfig.transformerId} finished!`, expect.any(Number), "TE-112");
     });
 
     it('should transform the xmsg object correctly', async () => {
@@ -83,7 +83,7 @@ describe('BroadcastTransformer', () => {
         mockConfig.metaData = {
             test: 'test'
         };
-        
+
         transformer = new BroadcastTransformer(mockConfig);
         const transformedXMessage = await transformer.transform(mockXMessage);
 
@@ -95,7 +95,7 @@ describe('BroadcastTransformer', () => {
     it('should transform the xmsg object correctly with without any metaData', async () => {
         mockConfig.metaData = {};
         transformer = new BroadcastTransformer(mockConfig);
-        const transformedXMessage = await transformer.transform(mockXMessage);        
+        const transformedXMessage = await transformer.transform(mockXMessage);
         expect(transformedXMessage?.payload?.metaData?.broadcastData).toEqual({
             deeplink: mockConfig.deeplink,
         });

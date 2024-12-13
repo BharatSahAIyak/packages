@@ -2,6 +2,7 @@
     "label": "Query Cache Transformer",
     "type": "QUERY_CACHE",
     "class": "IfElseTransformer",
+    "eventId": "TE-118",
     "description": "A transformer capable caching query responses.",
     "version": 1,
     "outputType": "static",

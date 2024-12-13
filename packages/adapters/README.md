@@ -52,3 +52,64 @@ Creating a new adapter is quite a simple process. Here is a step by step guide o
 
 A number of adapters here are taken from
 https://github.com/novuhq/novu
+
+
+## Local Setup and Testing
+
+To test out changes to any of the individual adapters which are being exposed and used using the [@samagra-x/uci-adapters-factory](./factory/) you can follow the below mentioned steps:
+
+1. Make changes to your adapter and build the package and then link the package (we use `yarn` as our preferred package manager)
+```bash
+yarn build
+yarn link
+```
+
+2. Navigate to the [factory](./factory/) folder and link the package you just built in step 1
+```bash
+yarn link <NAME_OF_YOUR_PACKAGE>
+```
+
+3. Build the UCI Adapters Factory using the `build` command and create the link for it.
+```bash
+yarn build
+yarn link
+```
+
+4. Navigate to the project wherever you want to use uci-adapters and link the adapters factory
+```bash
+yarn link @samagra-x/uci-adapters-factory
+```
+
+## Publishing Adapters and Adapter Factory
+
+In order to publish the changes to an adapter, do your changes and make sure to test them out using the steps above.
+
+1. Navigate to the root of the adapter you want to publish, build the package using the `build` command (we use `yarn` as our preferred package manager)
+```bash
+yarn build
+```
+
+2. Publish the newer version of this package
+```bash
+npm publish --access=public
+```
+
+3. Navigate to [adapter factory](./factory/) and update the version of the said adapter
+```bash
+yarn remove <OLDER_VERSION_OF_ADPTER>
+yarn add <NEWER_VERSION_OF_ADAPTER>
+```
+
+4. Build the [adapter factory](./factory/) using the `build` command
+```bash
+yarn build
+```
+
+5. Publish the [adapter factory](./factory/) with a newer version
+```bash
+npm publish --access=public
+```
+
+**Note**: While publishing, updating the version is a mandatory step, the `package.json` file has a key named `version` which follows [semantic-versioning](https://semver.org/) and the semantic version needs to be updated (incremented in most cases) for a new version to be published to the npm registr (npm will publish any version which is not already present in it's registry but a good convention is just to keep the version numbers incremental).
+
+

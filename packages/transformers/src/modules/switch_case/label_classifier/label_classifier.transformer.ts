@@ -1,10 +1,11 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const config = require('./config.json');
 import { HttpPostTransformer } from "../../generic";
 import { Events } from "@samagra-x/uci-side-effects";
 import { TelemetryLogger } from "../../common/telemetry";
 
-export class LabelClassifierTransformer implements ITransformer{
+export class LabelClassifierTransformer implements ITransformer {
 
     config: Record<string, any>;
     private readonly telemetryLogger: TelemetryLogger;
@@ -20,16 +21,16 @@ export class LabelClassifierTransformer implements ITransformer{
     ///     minimumThreshold: number: If provided, a label must reach this threshold score to be considered for final result. Default is 0. (optional)
     ///
     ///     Note: `existingLabel` can also be passed in XMessage `metaData.existingLabel`.
-    constructor(config: Record<string, any>){ 
+    constructor(config: Record<string, any>) {
         this.config = config;
         this.telemetryLogger = new TelemetryLogger(this.config);
     }
 
-    
+
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = Date.now();
-        this.telemetryLogger.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER : ${this.config.transformerId} started`, startTime);
+        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER : ${this.config.transformerId} started`, startTime, config['eventId']);
         if (!xmsg.transformer) {
             xmsg.transformer = {
                 metaData: {}
@@ -45,52 +46,52 @@ export class LabelClassifierTransformer implements ITransformer{
             transformerId: `INTERNAL_HTTP_POST_${this.config.transformerId}`,
         });
         await httpTransformer.transform(xmsg)
-        .then((resp) => {
-            this.config.supersedeThreshold = this.config.supersedeThreshold ?? 0.95;
-            this.config.suppressionThreshold = this.config.suppressionThreshold ?? 0.95;
-            this.config.minimumThreshold = this.config.minimumThreshold ?? 0;
-            this.config.persistLabel = this.config.persistLabel ?? false;
-            this.config.suppressedLabels = this.config.suppressedLabels ?? [];
-            let outputState;
-            let result: {
-                label: string,
-                score: string,
-            }[] = resp.transformer!.metaData!.httpResponse[0];
-            result = result.filter(
-                (val) =>
-                !((this.config.suppressedLabels.includes(val.label) && (val.score < this.config.suppressionThreshold)) ||
-                val.score < this.config.minimumThreshold)
-            );
-            if (result.length != 0) {
-                if (this.config.existingLabel || xmsg.transformer!.metaData!.existingLabel) {
-                    if (result[0].score >= this.config.supersedeThreshold) {
-                        outputState = result[0].label;
+            .then((resp) => {
+                this.config.supersedeThreshold = this.config.supersedeThreshold ?? 0.95;
+                this.config.suppressionThreshold = this.config.suppressionThreshold ?? 0.95;
+                this.config.minimumThreshold = this.config.minimumThreshold ?? 0;
+                this.config.persistLabel = this.config.persistLabel ?? false;
+                this.config.suppressedLabels = this.config.suppressedLabels ?? [];
+                let outputState;
+                let result: {
+                    label: string,
+                    score: string,
+                }[] = resp.transformer!.metaData!.httpResponse[0];
+                result = result.filter(
+                    (val) =>
+                        !((this.config.suppressedLabels.includes(val.label) && (val.score < this.config.suppressionThreshold)) ||
+                            val.score < this.config.minimumThreshold)
+                );
+                if (result.length != 0) {
+                    if (this.config.existingLabel || xmsg.transformer!.metaData!.existingLabel) {
+                        if (result[0].score >= this.config.supersedeThreshold) {
+                            outputState = result[0].label;
+                        }
+                        else {
+                            outputState = this.config.existingLabel || xmsg.transformer!.metaData!.existingLabel;
+                        }
                     }
                     else {
-                        outputState = this.config.existingLabel || xmsg.transformer!.metaData!.existingLabel;
+                        outputState = result[0].label;
                     }
                 }
-                else {
-                    outputState = result[0].label;
+                if (outputState != undefined) {
+                    xmsg.transformer!.metaData!.state = outputState;
                 }
-            }
-            if (outputState != undefined) {
-                xmsg.transformer!.metaData!.state = outputState;
-            }
-            else {
-                xmsg.transformer!.metaData!.state = 'STATE_NOT_AVAILABLE';
-            }
-            if (this.config.persistLabel) {
-                xmsg.transformer!.metaData!.existingLabel = xmsg.transformer!.metaData!.state;
-            }
-            this.telemetryLogger.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER generated state: ${xmsg.transformer!.metaData!.state}`, startTime);
-            console.log(`LABEL_CLASSIFIER generated state: ${xmsg.transformer!.metaData!.state}`);
-        })
-        .catch((err) => {
-            this.telemetryLogger.sendErrorTelemetry(xmsg, `LabelClassifier failed with error: ${err}`);
-            console.error(`LabelClassifier failed with error: ${err}`);
-            throw err;
-        });
+                else {
+                    xmsg.transformer!.metaData!.state = 'STATE_NOT_AVAILABLE';
+                }
+                if (this.config.persistLabel) {
+                    xmsg.transformer!.metaData!.existingLabel = xmsg.transformer!.metaData!.state;
+                }
+                this.telemetryLogger.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER generated state: ${xmsg.transformer!.metaData!.state}`, startTime, config['eventId']);
+                console.log(`LABEL_CLASSIFIER generated state: ${xmsg.transformer!.metaData!.state}`);
+            })
+            .catch((err) => {
+                this.telemetryLogger.sendErrorTelemetry(xmsg, `LabelClassifier failed with error: ${err}`);
+                console.error(`LabelClassifier failed with error: ${err}`);
+                throw err;
+            });
         return xmsg;
     }
 

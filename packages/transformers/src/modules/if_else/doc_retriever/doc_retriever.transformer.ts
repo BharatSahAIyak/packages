@@ -1,5 +1,6 @@
 import { XMessage } from "@samagra-x/xmessage";
 import { ITransformer } from "../../common/transformer.interface";
+const transformerConfig = require('./config.json');
 import axios from 'axios';
 const qs = require('qs');
 import { v4 as uuid4 } from 'uuid';
@@ -17,11 +18,11 @@ export class DocRetrieverTransformer implements ITransformer {
     ///     logic: String Type of retrieval logic that needs to be used. Accepted values: "custom" | "topK" (optional). Default: "topK",
     ///     recipeConfig: JSON (optional) Optional JSON configuration for the search recipe. Used for advanced query customization.
     ///     threshold: Precentage similarity threshold.
-    constructor(readonly config: Record<string, any>) { }
+    constructor(readonly config: Record<string, any>) {}
     private readonly telemetryLogger = new TelemetryLogger(this.config);
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = Date.now();
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime);
+        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime, transformerConfig['eventId']);
         console.log("DOC_RETRIEVER transformer called.");
         if (!xmsg.transformer) {
             xmsg.transformer = {
@@ -35,7 +36,7 @@ export class DocRetrieverTransformer implements ITransformer {
         if (!this.config.topK) {
             this.config.topK = 6;
         }
-        
+
         try {
             let qsData: any = {
                 'requestId': uuid4(),
@@ -47,7 +48,7 @@ export class DocRetrieverTransformer implements ITransformer {
                 'recipeConfig': JSON.stringify(this.config.recipeConfig || {}),
                 'threshold': this.config.threshold || 0
             }
-            if(this.config.algorithm) {
+            if (this.config.algorithm) {
                 qsData['algorithm'] = this.config.algorithm
             }
             let data = qs.stringify(qsData);
@@ -56,26 +57,26 @@ export class DocRetrieverTransformer implements ITransformer {
                 method: 'post',
                 maxBodyLength: Infinity,
                 url: `${this.config.url}/data/retrieve`,
-                headers: { 
-                  'orgId': xmsg.orgId, 
-                  'botId': xmsg.app,
-                  'Content-Type': 'application/x-www-form-urlencoded',
+                headers: {
+                    'orgId': xmsg.orgId,
+                    'botId': xmsg.app,
+                    'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                data : data
+                data: data
             };
 
             console.log(`retrieving chunks via POST '${`${this.config.url}/data/retrieve`}'`);
-            console.log("With config:",config)
+            console.log("With config:", config)
             const response = await axios.request(config);
             const responseData = response.data;
             xmsg.transformer.metaData!.retrievedChunks = responseData;
             xmsg.transformer.metaData!.retrievedChunksStringified = JSON.stringify(responseData);
             xmsg.transformer.metaData!.state = (responseData && responseData.length) ? 'if' : 'else';
-            if(xmsg.transformer.metaData!.state=='else' && this.config.staticNoContentResponse) {
+            if (xmsg.transformer.metaData!.state == 'else' && this.config.staticNoContentResponse) {
                 xmsg.payload.text = this.config.staticNoContentResponse;
                 xmsg.payload.metaData!['staticResponse'] = true;
             }
-            this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime);
+            this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, transformerConfig['eventId']);
             return xmsg;
         } catch (ex) {
             this.telemetryLogger.sendErrorTelemetry(xmsg, `DOC_RETRIEVER failed. Reason: ${ex}`);

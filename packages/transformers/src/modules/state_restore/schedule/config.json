@@ -2,6 +2,7 @@
     "label": "Schedule Transformer",
     "type": "SCHEDULE_TRANSFORMER",
     "class": "StateRestoreTransformer",
+    "eventId": "TE-113",
     "description": "A transformer that enables a user to setup a timer before executing a specific part of the flow.",
     "version": 1,
     "outputType": "static",

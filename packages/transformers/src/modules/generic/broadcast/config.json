@@ -2,6 +2,7 @@
     "label": "Broadcast Transformer",
     "type": "BROADCAST_TRANSFORMER",
     "class": "GenericTransformer",
+    "eventId": "TE-112",
     "description": "A node used to configure broadcast messages.",
     "version": 1,
     "outputType": "static",
