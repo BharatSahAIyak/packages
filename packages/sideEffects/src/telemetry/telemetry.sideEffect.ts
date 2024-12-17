@@ -89,7 +89,7 @@ export class TelemetrySideEffect implements ISideEffect {
             eventData.eventId = 'E042';
         }
 
-        eventData.timestamp = Math.trunc(eventData.timestamp / 1000);
+        eventData.timestamp = Math.trunc(eventData.timestamp);
     
         return eventData;
     }
