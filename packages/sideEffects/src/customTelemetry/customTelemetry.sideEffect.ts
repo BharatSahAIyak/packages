@@ -107,7 +107,7 @@ export class CustomTelemetrySideEffect implements ISideEffect {
             set(subEventData, entry[0], get(sideEffectData.eventData, entry[1])); // setters have values as xMsg fields
         });
 
-        eventData.timestamp = Math.trunc(eventData.timestamp / 1000);
+        eventData.timestamp = Math.trunc(eventData.timestamp);
 
         return eventData;
     }
