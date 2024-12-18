@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { GSWhatsAppMessage, MethodType } from './types';
+import { GSWhatsAppMessage, MethodType, UserHistoryMessage } from './types';
 import {
   StylingTag,
   MessageId,
@@ -89,15 +89,17 @@ export class GupshupWhatsappProvider implements XMessageProvider {
 
   private readonly providerConfig?: IGSWhatsappConfig;
   private userHistory: XMessage[];
+  private callback: ((userHistory: XMessage[]) => boolean) | undefined;
 
-  constructor(config?: IGSWhatsappConfig, userHistory: XMessage[] = []) {
+  constructor(config?: IGSWhatsappConfig, userHistory: XMessage[] = [], callback: undefined | ((userHistory: XMessage[]) => boolean) = undefined) {
     this.providerConfig = config;
     this.userHistory = userHistory;
+    this.callback = callback;
   }
 
   private getMessageState = (eventType: String): MessageState => {
     let messageState: MessageState;
-  
+
     switch (eventType) {
       case 'SENT':
         messageState = MessageState.SENT;
@@ -113,28 +115,28 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         // TODO: Save the state of the message and reason in this case.
         break;
     }
-  
+
     return messageState;
   };
-  
+
   private isInboundMediaMessage = (type: String) => {
     // Implement the logic to check if the message type is a media message
     return (
       type === 'image' || type === 'audio' || type === 'video' || type === 'file'
     );
   };
-  
+
   private getInboundInteractiveContentText = (message: GSWhatsAppMessage) => {
     let text: string = '';
     const interactiveContent: string | undefined = message.interactive;
-  
+
     if (interactiveContent && interactiveContent.length > 0) {
       try {
         const node: any = JSON.parse(interactiveContent);
         // console.log('interactive content node:', node);
-  
+
         const type: string = node.type !== undefined ? node.type : '';
-  
+
         if (type.toLowerCase() === 'list_reply') {
           text =
             node.list_reply !== undefined && node.list_reply.title !== undefined
@@ -143,7 +145,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         } else if (type.toLowerCase() === 'button_reply') {
           text =
             node.button_reply !== undefined &&
-            node.button_reply.title !== undefined
+              node.button_reply.title !== undefined
               ? node.button_reply.title
               : '';
         }
@@ -151,14 +153,14 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         console.error('Exception in getInboundInteractiveContentText:', error);
       }
     }
-  
+
     // console.log('Inbound interactive text:', text);
     return text;
   };
 
   private getUserById = async (userId: string): Promise<string> => {
     const url = `${this.providerConfig?.fusionAuthUrl}/api/user/${userId}`;
-    
+
     try {
       const response = await axios.get(url, {
         headers: {
@@ -167,15 +169,15 @@ export class GupshupWhatsappProvider implements XMessageProvider {
           'X-FusionAuth-Application-Id': this.providerConfig?.applicationId,
         },
       });
-  
+
       return response.data?.user?.data?.loginId;
     } catch (error) {
       console.error('Error fetching user details:', error);
       throw error;
     }
   };
-  
-  
+
+
   private getMediaCategoryByMimeType = (mimeType: string): MediaCategory | undefined => {
     let category: MediaCategory | undefined = undefined;
     if (FileUtil.isFileTypeImage(mimeType)) {
@@ -189,7 +191,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     }
     return category;
   };
-  
+
   private getMediaInfo = async (message: GSWhatsAppMessage) => {
     const result: MessageMedia = {};
     let mime_type = '';
@@ -221,15 +223,15 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         throw error;
       }
     }
-  
+
     return result;
   };
-  
+
   private getMessageTypeByMediaCategory = (
     category: MediaCategory
   ): MessageType => {
     let messageType: MessageType = MessageType.TEXT;
-  
+
     if (category !== null) {
       if (category === MediaCategory.IMAGE) {
         messageType = MessageType.IMAGE;
@@ -241,7 +243,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         messageType = MessageType.DOCUMENT;
       }
     }
-  
+
     return messageType;
   };
   private getInboundLocationParams = (
@@ -253,12 +255,12 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     let name: string = '';
     let url: string = '';
     const locationContent: string | undefined = message.location;
-  
+
     if (locationContent && locationContent.length > 0) {
       try {
         const node: any = JSON.parse(locationContent);
         // console.log('locationcontent node:', node);
-  
+
         longitude =
           node.longitude !== undefined ? parseFloat(node.longitude) : null;
         latitude = node.latitude !== undefined ? parseFloat(node.latitude) : null;
@@ -269,7 +271,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         console.error('Exception in getInboundLocationParams:', error);
       }
     }
-  
+
     const location: LocationParams = {
       latitude: latitude,
       longitude: longitude,
@@ -277,7 +279,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       url: url,
       name: name,
     };
-  
+
     return location;
   };
 
@@ -299,15 +301,16 @@ export class GupshupWhatsappProvider implements XMessageProvider {
 
   updateConversationIdBasedOnUserHistory(xmsg: XMessage, userHistory: any): XMessage {
     this.userHistory = userHistory
-    xmsg = this.manageConversation(xmsg)
+    xmsg = this.manageConversation(xmsg);
     return xmsg;
   }
 
   private manageConversation(xmsg: XMessage): XMessage {
+    console.log("===================")
     const currentTimestamp = Date.now();
     const lastMessageTimestamp = this.getLastMessageTimestamp(this.userHistory);
-
-    if (this.shouldCreateNewConversation(lastMessageTimestamp, currentTimestamp)) {
+    console.log(`execution result: ${this.callback && this.callback(this.userHistory)}`)
+    if ((this.callback && this.callback(this.userHistory)) || (!this.callback && this.shouldCreateNewConversation(lastMessageTimestamp, currentTimestamp))) {
       xmsg.messageId.conversationId = this.generateConversationId();
     } else if (this.userHistory.length > 0) {
       const lastConversationId = this.userHistory[0]?.messageId.conversationId;
@@ -317,7 +320,6 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     }
 
     return xmsg;
-
   }
 
   private processedXMessage = (
@@ -330,40 +332,41 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     messageType: MessageType
   ): XMessage => {
     const existingTransformer = (message as any).transformer || { metaData: {} };
-    
+
     const xmsg = {
-        to: to,
-        from: from,
-        channelURI: 'Whatsapp',
-        providerURI: 'Gupshup',
-        messageState: messageState,
-        messageId: messageIdentifier,
-        messageType: messageType,
-        timestamp: parseInt(message.timestamp as string) || Date.now(),
-        payload: xmsgPayload,
-        transformer: existingTransformer
+      to: to,
+      from: from,
+      channelURI: 'Whatsapp',
+      providerURI: 'Gupshup',
+      messageState: messageState,
+      messageId: messageIdentifier,
+      messageType: messageType,
+      timestamp: parseInt(message.timestamp as string) || Date.now(),
+      payload: xmsgPayload,
+      transformer: existingTransformer
     };
+
     this.manageConversation(xmsg);
     return xmsg;
   };
-  
+
   private renderMessageChoices = (buttonChoices: ButtonChoice[] | null): string => {
     const processedChoicesBuilder: string[] = [];
-  
+
     if (buttonChoices !== null) {
       for (const choice of buttonChoices) {
         processedChoicesBuilder.push(choice.text + '\n');
       }
-  
+
       if (processedChoicesBuilder.length > 0) {
         // Remove the trailing newline character
         return processedChoicesBuilder.join('').slice(0, -1);
       }
     }
-  
+
     return '';
   };
-  
+
   private async searchUser(phoneNumber: string): Promise<string | null> {
     try {
       const response = await axios.get<UserSearchResponse>(
@@ -375,7 +378,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
           }
         }
       );
-      
+
       if (response.data.total > 0) {
         return response.data.users[0].id;
       }
@@ -385,7 +388,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       return null;
     }
   }
-  
+
   private async registerUser(phoneNumber: string): Promise<string | null> {
     try {
       const response = await axios.post<any>(
@@ -411,7 +414,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
           }
         }
       );
-      
+
       if (response.data.responseCode === 'OK' && response.data.result?.id) {
         return response.data.result.id;
       }
@@ -422,12 +425,12 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       return null;
     }
   }
-  
+
   // Convert GupShupWhatsAppMessage to XMessage
   convertMessageToXMsg = async (msg: any): Promise<XMessage> => {
     const message = msg as GSWhatsAppMessage;
     const phoneNumber = message.mobile;
-    const from: SenderReceiverInfo = { 
+    const from: SenderReceiverInfo = {
       userID: '',
       deviceID: phoneNumber
     };
@@ -527,10 +530,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         );
       }
     } else if (message.type === 'interactive') {
-  
+
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.text = this.getInboundInteractiveContentText(message);
-  
+
       return this.processedXMessage(
         message,
         xmsgPayload,
@@ -541,11 +544,11 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         MessageType.TEXT
       );
     } else if (message.type === 'location') {
-  
+
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.location = this.getInboundLocationParams(message);
       xmsgPayload.text = '';
-  
+
       return this.processedXMessage(
         message,
         xmsgPayload,
@@ -556,10 +559,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         messageType
       );
     } else if (this.isInboundMediaMessage(message.type)) {
-  
+
       messageState[0] = MessageState.REPLIED;
       xmsgPayload.text = '';
-      xmsgPayload.media = [ await this.getMediaInfo(message) ];
+      xmsgPayload.media = [await this.getMediaInfo(message)];
 
       return this.processedXMessage(
         message,
@@ -582,10 +585,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         messageType
       );
     }
-  
+
     throw new Error('Invalid message type');
   };
-  
+
   private optInUser = async (
     xMsg: XMessage,
     usernameHSM: string,
@@ -603,10 +606,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     optInBuilder.searchParams.append('channel', 'Whatsapp');
     optInBuilder.searchParams.append('send_to', xMsg.to?.deviceID as string);
     optInBuilder.searchParams.append('messageId', '123456789');
-  
+
     const expanded = optInBuilder;
     // console.log(expanded);
-  
+
     try {
       const response = await axios.get<string>(expanded.toString());
       // console.log(response.data);
@@ -614,7 +617,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       console.error('Error:', error.response?.data || error.message || error);
     }
   }
-  
+
   private createSectionRow = (id: string, title: string): SectionRow => {
     return {
       id: id,
@@ -634,12 +637,12 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         });
     });
   }
-  
+
   private getOutboundListActionContent = (xMsg: XMessage): string => {
     const rows: SectionRow[] = xMsg.payload.buttonChoices?.choices?.map((choice) =>
       this.createSectionRow(choice.key, choice.text)
     ) || [{ id: '', title: '' }];
-  
+
     const action: Action = {
       button: 'Options',
       sections: [
@@ -649,25 +652,25 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         },
       ],
     };
-  
+
     try {
       const content: string = JSON.stringify(action);
       const node: Action = JSON.parse(content);
       const data: { button?: string; sections?: Section[] } = {};
-  
+
       data.button = node.button || undefined;
       data.sections = node.sections || undefined;
       return JSON.stringify(data);
     } catch (error: any) {
       console.error(`Exception in getOutboundListActionContent: ${error}`);
     }
-  
+
     return '';
   }
-  
+
   private getOutboundQRBtnActionContent = (xMsg: XMessage): string => {
     const buttons: Button[] = [];
-  
+
     xMsg.payload.buttonChoices?.choices?.forEach((choice) => {
       const button: Button = {
         type: 'reply',
@@ -678,25 +681,25 @@ export class GupshupWhatsappProvider implements XMessageProvider {
       };
       buttons.push(button);
     });
-  
+
     const action: Action = {
       buttons: buttons,
     };
-  
+
     try {
       const content: string = JSON.stringify(action);
       const node = JSON.parse(content);
       const data: any = {};
-  
+
       data.buttons = node.buttons;
       return JSON.stringify(data);
     } catch (error: any) {
       console.error(`Exception in getOutboundQRBtnActionContent: ${error}`);
     }
-  
+
     return '';
   }
-  
+
   private getURIBuilder = (): URLSearchParams => {
     const queryParams = new URLSearchParams();
     queryParams.append('v', '1.1');
@@ -707,7 +710,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     queryParams.append('messageId', '123456789');
     return queryParams;
   }
-  
+
   private setBuilderCredentialsAndMethod = (
     queryParams: URLSearchParams,
     method: string,
@@ -719,9 +722,9 @@ export class GupshupWhatsappProvider implements XMessageProvider {
     queryParams.append('password', password);
     return queryParams;
   }
-  
+
   // Convert XMessage to GupShupWhatsAppMessage
-  async sendMessage (xMsg: XMessage) {
+  async sendMessage(xMsg: XMessage) {
     if (!this.providerConfig) {
       console.error("Configuration not set for adapter!");
       return;
@@ -734,10 +737,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         let text: string = xMsg.payload.text || '';
         let builder = this.getURIBuilder();
         xMsg.to.userID = await this.getUserById(xMsg.to.userID)
-  
+
         if (xMsg.messageState === MessageState.OPTED_IN) {
           text += this.renderMessageChoices(xMsg.payload.buttonChoices?.choices || []);
-  
+
           builder = this.setBuilderCredentialsAndMethod(
             builder,
             MethodType.OPTIN,
@@ -745,7 +748,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             this.providerConfig.password2Way,
           );
           builder.set('channel', xMsg.channelURI.toLowerCase());
-          builder.set('send_to',xMsg.to.deviceID as string);
+          builder.set('send_to', xMsg.to.deviceID as string);
           builder.set('phone_number', xMsg.to.deviceID as string);
         } else if (
           xMsg.messageType !== null &&
@@ -758,16 +761,16 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             this.providerConfig.username2Way,
             this.providerConfig.password2Way,
           );
-  
+
           text += this.renderMessageChoices(xMsg.payload.buttonChoices?.choices || []);
-  
+
           builder = this.setBuilderCredentialsAndMethod(
             builder,
             MethodType.SIMPLEMESSAGE,
             this.providerConfig.usernameHSM,
             this.providerConfig.passwordHSM,
           );
-  
+
           builder.set('send_to', xMsg.to.deviceID as string);
           builder.set('msg', text);
           builder.set('isHSM', 'true');
@@ -783,16 +786,16 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             this.providerConfig.username2Way,
             this.providerConfig.password2Way,
           );
-  
+
           text += this.renderMessageChoices(xMsg.payload.buttonChoices?.choices || []);
-  
+
           builder = this.setBuilderCredentialsAndMethod(
             builder,
             MethodType.OPTIN,
             this.providerConfig.usernameHSM,
             this.providerConfig.passwordHSM,
           );
-  
+
           builder.set('send_to', xMsg.to.deviceID as string);
           builder.set('msg', text);
           builder.set('isTemplate', 'true');
@@ -810,7 +813,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             this.providerConfig.username2Way,
             this.providerConfig.password2Way,
           );
-  
+
           builder.set('send_to', xMsg.to.deviceID as string);
           builder.set('phone_number', xMsg.to.deviceID as string);
           builder.set('msg_type', xMsg.messageType);
@@ -827,7 +830,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             if (stylingTag === StylingTag.LIST) {
               const content: string = this.getOutboundListActionContent(xMsg);
               // console.log('list content: ', content);
-  
+
               if (content.length > 0) {
                 builder.set('interactive_type', 'list');
                 builder.set('action', content);
@@ -837,7 +840,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             } else if (stylingTag === StylingTag.QUICKREPLYBTN) {
               const content: string = this.getOutboundQRBtnActionContent(xMsg);
               // console.log('QR btn content: ', content);
-  
+
               if (content.length > 0) {
                 builder.set('interactive_type', 'dr_button');
                 builder.set('action', content);
@@ -856,7 +859,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
               'msg_type',
               this.getMessageTypeByMediaCategory(media.category!)
             );
-  
+
             builder.set('media_url', media.url!);
             if (media.caption) {
               builder.set('caption', media.caption);
@@ -867,28 +870,28 @@ export class GupshupWhatsappProvider implements XMessageProvider {
             builder.set('isHSM', 'false');
             plainText = false;
           }
-  
+
           if (plainText) {
             text += this.renderMessageChoices(xMsg.payload.buttonChoices?.choices || []);
             builder.set('msg', text);
           }
         }
-  
+
         console.log(text);
         const postParams = Object.fromEntries(builder);
 
-        
+
         const expanded = new URL(
           `https://media.smsgupshup.com/GatewayAPI/rest`
         );
         // console.log(expanded);
-  
+
         try {
           const response: GSWhatsappOutBoundResponse = await this.sendOutboundMessage(
             expanded.toString(),
             postParams
           );
-  
+
           if (response !== null && response.response.status === 'success') {
             xMsg.messageId = MessageId.builder()
               .setChannelMessageId(response.response.id)
