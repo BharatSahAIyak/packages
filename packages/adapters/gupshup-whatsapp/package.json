@@ -1,6 +1,6 @@
 {
   "name": "@samagra-x/uci-adapters-gupshup-whatsapp-adapter",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
