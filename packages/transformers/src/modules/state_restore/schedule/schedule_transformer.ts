@@ -15,19 +15,40 @@ export class ScheduleTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log(`SCHEDULE_TRANSFORMER called.`);
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000),config['eventId']);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Math.floor((performance.timeOrigin + performance.now()) * 1000), config['eventId']);
+
+        if (!this.config.restoreState) {
+            this.telemetryLogger.sendErrorTelemetry(xmsg, 'restoreState is required!');
+            throw new Error('restoreState is required!');
+        }
 
         if (!this.config.timerDuration) {
             throw new Error('timerDuration is required!');
         }
 
         const timerId = `timer_${xmsg.from.userID}_${xmsg.channelURI}_${xmsg.providerURI}`;
+
+        if (!xmsg.transformer) {
+            xmsg.transformer = {
+                metaData: {}
+            };
+        }
+
         xmsg.transformer!.metaData!.timerId = timerId;
         xmsg.transformer!.metaData!.timerDuration = this.config.timerDuration;
-        xmsg.transformer!.metaData!.restoreState = this.config.restoreState;
-        xmsg.transformer!.metaData!.resetState = this.config.resetState;
+        /** Ideal way to do this is commented below */
+        // xmsg.transformer!.metaData!.restoreState = this.config.restoreState;
+        // xmsg.transformer!.metaData!.resetState = this.config.resetState;
 
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, ((performance.timeOrigin + performance.now()) * 1000),config['eventId']);
+        /** We are doing things the following way for the sake of backwards compatibility
+         * The transformer states will not be updated from the config
+         */
+
+        xmsg.transformer!.metaData!.restoreState = this.config.resetState ;
+        xmsg.transformer!.metaData!.resetState = this.config.restoreState ;
+
+
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Math.floor((performance.timeOrigin + performance.now()) * 1000), config['eventId']);
         return xmsg;
     }
 }
