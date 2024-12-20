@@ -12,7 +12,7 @@ export class UserFeedbackLoopTransformer implements ITransformer {
 
     async transform(xmsg: XMessage): Promise<XMessage> {
         console.log(`USER_FEEDBACK_LOOP called.`);
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, ((performance.timeOrigin + performance.now()) * 1000),config['eventId']);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, Math.floor((performance.timeOrigin + performance.now()) * 1000), config['eventId']);
         if (!this.config.restoreState) {
             this.telemetryLogger.sendErrorTelemetry(xmsg, 'restoreState is required!');
             throw new Error('restoreState is required!');
@@ -32,7 +32,7 @@ export class UserFeedbackLoopTransformer implements ITransformer {
             }
         }
         xmsg.payload.text = this.config.prompt || xmsg.payload.text;
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, ((performance.timeOrigin + performance.now()) * 1000),config['eventId']);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Math.floor((performance.timeOrigin + performance.now()) * 1000), config['eventId']);
         return xmsg;
     }
 }

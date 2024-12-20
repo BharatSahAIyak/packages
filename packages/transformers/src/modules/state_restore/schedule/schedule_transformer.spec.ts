@@ -6,6 +6,7 @@ jest.mock("../../common/telemetry", () => {
         TelemetryLogger: jest.fn().mockImplementation(() => {
             return {
                 sendLogTelemetry: jest.fn(),
+                sendErrorTelemetry: jest.fn()
             };
         }),
     };
@@ -26,6 +27,7 @@ describe('ScheduleTransformer', () => {
         } as XMessage;
 
         transformer = new ScheduleTransformer({
+            restoreState: 'RESTORE_STATE',
             transformerId: 'test-transformer',
             timerDuration: 5000,
             resetOnReply: false
@@ -34,6 +36,7 @@ describe('ScheduleTransformer', () => {
 
     it('should throw an error if timerDuration is not provided', async () => {
         transformer = new ScheduleTransformer({
+            restoreState: 'some-state',
             transformerId: 'test-transformer'
         });
 
@@ -42,7 +45,7 @@ describe('ScheduleTransformer', () => {
 
     it('should set the correct timerId and timerDuration in xmsg', async () => {
         const result = await transformer.transform(xmsg);
-        const timerId = `timer_user1_channel1_provider1`;
+        const timerId = `timer_user1_channel1_provider1_test-transformer`;
 
         expect(result.transformer?.metaData?.timerId).toBe(timerId);
         expect(result.transformer?.metaData?.timerDuration).toBe(5000);

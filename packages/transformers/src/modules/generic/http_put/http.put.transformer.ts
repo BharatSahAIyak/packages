@@ -16,7 +16,7 @@ export class HttpPutTransformer implements ITransformer {
   private readonly telemetryLogger = new TelemetryLogger(this.config);
 
   async transform(xmsg: XMessage): Promise<XMessage> {
-    const startTime = ((performance.timeOrigin + performance.now()) * 1000);
+    const startTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
     this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime, config['eventId']);
     console.log("HTTP PUT transformer called.");
 
@@ -81,7 +81,8 @@ export class HttpPutTransformer implements ITransformer {
         console.error(`PUT request failed. Reason: ${ex}`);
         throw ex;
       });
-    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, config['eventId']);
+    const endTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
+    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, endTime, config['eventId']);
     return xmsg;
   }
 

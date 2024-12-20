@@ -34,7 +34,7 @@ export class LLMTransformer implements ITransformer {
 
     // TODO: use TRANSLATE transformer directly instead of repeating code
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
+        const startTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
         this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Type: LLM Started`, startTime, config['eventId']);
         console.log("LLM transformer called.");
         if (!xmsg.transformer?.metaData?.userHistory || !xmsg.transformer?.metaData?.userHistory?.length) {
@@ -144,13 +144,13 @@ export class LLMTransformer implements ITransformer {
             content: xmsg?.payload?.text
         })
         xmsg.transformer.metaData!.prompt = prompt;
-        this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Prompt prepared ${JSON.stringify(prompt,null,3)}`, startTime, config['eventId'])
-        console.log(`LLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt,null,3)}`);
+        this.sendLogTelemetry(xmsg, `ID: ${this.config.transformerId} , Prompt prepared ${JSON.stringify(prompt, null, 3)}`, startTime, config['eventId'])
+        console.log(`LLM transformer prompt(${xmsg.messageId.Id}): ${JSON.stringify(prompt, null, 3)}`);
 
         //llamaIndex implementaion
         let llm: any;
         let response: any;
-        let responseStartTime = ((performance.timeOrigin + performance.now()) * 1000);
+        let responseStartTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
         let streamStartLatency;
 
         this.sendLogTelemetry(xmsg, `Triggering LLM with config: ${{
@@ -244,7 +244,7 @@ export class LLMTransformer implements ITransformer {
             let sentences: any, allSentences = [], translatedSentences = [], output = "", counter = 0;
             for await (const chunk of response) {
                 if (!streamStartLatency) {
-                    streamStartLatency = ((performance.timeOrigin + performance.now()) * 1000) - responseStartTime;
+                    streamStartLatency = Math.floor((performance.timeOrigin + performance.now()) * 1000) - responseStartTime;
                 }
                 let currentChunk: any;
                 if (this.config.provider?.toLowerCase() == "groq") currentChunk = chunk.delta || "";
@@ -521,20 +521,20 @@ export class LLMTransformer implements ITransformer {
             eventName: Events.CUSTOM_TELEMETRY_EVENT_ERROR,
             transformerId: this.config.transformerId,
             eventData: xmgCopy,
-            timestamp: ((performance.timeOrigin + performance.now()) * 1000),
+            timestamp: Math.floor((performance.timeOrigin + performance.now()) * 1000),
         })
     }
 
     private async sendLogTelemetry(xmsg: XMessage, log: string, startTime: number, eventId?: string) {
-        const xmgCopy = {...xmsg};
+        const xmgCopy = { ...xmsg };
         xmgCopy.transformer!.metaData!.telemetryLog = log;
-        xmgCopy.transformer!.metaData!.stateExecutionTime = ((performance.timeOrigin + performance.now()) * 1000) - startTime;
+        xmgCopy.transformer!.metaData!.stateExecutionTime = Math.floor((performance.timeOrigin + performance.now()) * 1000) - startTime;
         xmgCopy.transformer!.metaData!.eventId = eventId;
         this.config.eventBus.pushEvent({
             eventName: Events.CUSTOM_TELEMETRY_EVENT_LOG,
             transformerId: this.config.transformerId,
             eventData: xmgCopy,
-            timestamp: ((performance.timeOrigin + performance.now()) * 1000),
+            timestamp: Math.floor((performance.timeOrigin + performance.now()) * 1000),
         })
     }
 
