@@ -66,7 +66,8 @@ export class HttpDeleteTransformer implements ITransformer {
         console.error(`DELETE request failed. Reason: ${ex}`);
         throw ex;
       });
-    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, config['eventId']);
+    const endTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
+    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, endTime, config['eventId']);
     return xmsg;
   }
 

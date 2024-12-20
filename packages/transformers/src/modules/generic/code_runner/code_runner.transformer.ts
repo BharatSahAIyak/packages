@@ -55,7 +55,8 @@ export class CodeRunnerTransformer implements ITransformer {
                 throw new Error('XMessage must be returned as a stringified JSON!');
             }
         }
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, startTime, config['eventId']);
+        const endTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} Finished`, endTime, config['eventId']);
         return xmsg;
     }
 }

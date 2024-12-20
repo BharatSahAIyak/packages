@@ -82,7 +82,8 @@ export class NeuralCoreferenceTransformer implements ITransformer {
         if (this.config.provider?.toLowerCase() == "groq") response.message.content?.split('User: ')
         else userArray = response["choices"][0].message.content?.split('User: ');
         xmsg.payload.text = userArray[userArray.length - 1];
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, config['eventId']);
+        const endTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, endTime, config['eventId']);
         return xmsg;
     }
 

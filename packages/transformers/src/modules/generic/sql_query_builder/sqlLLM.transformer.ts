@@ -176,7 +176,7 @@ export class SQLLLMTransformer implements ITransformer {
         }
         console.log("xmsg", xmsg)
         await this.sendMessage(xmsg)
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, (performance.timeOrigin + performance.now() * 1000), config['eventId']);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, Math.floor((performance.timeOrigin + performance.now()) * 1000), config['eventId']);
         return xmsg;
     }
 

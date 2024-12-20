@@ -82,7 +82,8 @@ export class TranslateTransformer implements ITransformer {
         transalatedQuery: xmsg.payload.text
       }
     }
-    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} finished!`, startTime, config['eventId']);
+    const endTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
+    this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} translation input: ${this.config.inputLanguage} output: ${this.config.outputLanguage} finished!`, endTime, config['eventId']);
     return xmsg;
   }
 

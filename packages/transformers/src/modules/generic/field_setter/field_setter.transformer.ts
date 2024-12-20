@@ -59,8 +59,9 @@ export class FieldSetterTransformer implements ITransformer {
         } else {
             this.telemetryLogger.sendLogTelemetry(xmsg, `Some fields failed to resolve`, startTime, config['eventId']);
         }
-
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, config['eventId']);
+        
+        const endTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, endTime, config['eventId']);
         return xmsgCopy;
     }
 

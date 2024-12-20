@@ -76,7 +76,8 @@ export class DocRetrieverTransformer implements ITransformer {
                 xmsg.payload.text = this.config.staticNoContentResponse;
                 xmsg.payload.metaData!['staticResponse'] = true;
             }
-            this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, transformerConfig['eventId']);
+            const endTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
+            this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, endTime, transformerConfig['eventId']);
             return xmsg;
         } catch (ex) {
             this.telemetryLogger.sendErrorTelemetry(xmsg, `DOC_RETRIEVER failed. Reason: ${ex}`);

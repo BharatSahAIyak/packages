@@ -107,7 +107,8 @@ export class HttpGetTransformer implements ITransformer {
                 console.error(`GET request failed. Reason: ${ex}`);
                 throw ex;
             });
-        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, startTime, config['eventId']);
+        const endTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
+        this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} finished!`, endTime, config['eventId']);
         return xmsg;
     }
 
