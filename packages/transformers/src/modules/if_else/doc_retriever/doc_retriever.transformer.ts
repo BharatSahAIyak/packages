@@ -21,7 +21,7 @@ export class DocRetrieverTransformer implements ITransformer {
     constructor(readonly config: Record<string, any>) {}
     private readonly telemetryLogger = new TelemetryLogger(this.config);
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
+        const startTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
         this.telemetryLogger.sendLogTelemetry(xmsg, `${this.config.transformerId} started!`, startTime, transformerConfig['eventId']);
         console.log("DOC_RETRIEVER transformer called.");
         if (!xmsg.transformer) {

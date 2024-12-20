@@ -29,7 +29,7 @@ export class LabelClassifierTransformer implements ITransformer {
 
 
     async transform(xmsg: XMessage): Promise<XMessage> {
-        const startTime = ((performance.timeOrigin + performance.now()) * 1000);
+        const startTime = Math.floor((performance.timeOrigin + performance.now()) * 1000);
         this.telemetryLogger.sendLogTelemetry(xmsg, `LABEL_CLASSIFIER : ${this.config.transformerId} started`, startTime, config['eventId']);
         if (!xmsg.transformer) {
             xmsg.transformer = {
