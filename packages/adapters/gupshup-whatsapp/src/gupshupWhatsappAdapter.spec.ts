@@ -465,7 +465,101 @@ describe('Conversation Management', () => {
     expect(newXMsg.messageId.conversationId).toBe(existingConversationId);
   });
 
-  it('should generate new conversationId for messages after 10 minutes', async () => {
+  it('should not generate new conversationId for messages after 10 minutes and before 20 minutes', async () => {
+    const currentTime = Date.now();
+    const fifteenMinutesAgo = new Date(currentTime - (15 * 60 * 1000));
+    const existingConversationId = '123456789';
+
+    const userHistory: XMessage[] = [{
+      app: "BOT_ID_1",
+      messageType: MessageType.TEXT,
+      adapterId: "3073705e-7e9d-4b7b-96f8-0f2d84351628",
+      orgId: "5a8d8a57-cd84-4670-8f75-e8ede4504752",
+      ownerId: "2fc6a82e-0bd1-4e58-a752-98eba6211c9c",
+      messageId: {
+        Id: existingConversationId,
+        conversationId: existingConversationId,
+        channelMessageId: "CHANNEL_MESSAGE_ID_1"
+      }, // MessageId.builder().setId(existingConversationId).setChannelMessageId("CHANNEL_MESSAGE_ID_1").build(),
+      to: {
+        userID: 'USER_ID_2',
+      },
+      from: {
+        userID: 'admin',
+      },
+      channelURI: "Pwa",
+      providerURI: "Pwa",
+      timestamp: fifteenMinutesAgo.getTime(),
+      messageState: MessageState.REPLIED,
+      lastMessageID: undefined,
+      payload: {
+        text: "Hello User",
+        metaData: {}
+      }
+    }];
+
+    const adapterWithHistory = new GupshupWhatsappProvider(credentials, userHistory);
+
+    const mockMessage = {
+      mobile: "919999999999",
+      type: "text",
+      text: "Hello",
+      timestamp: currentTime.toString()
+    };
+
+    const newXMsg = await adapterWithHistory.convertMessageToXMsg(mockMessage);
+    expect(newXMsg.messageId.conversationId).toBe(existingConversationId);
+    expect(newXMsg.messageId.conversationId).toBeDefined();
+  });
+
+  it('should generate new conversationId for messages after 20 minutes', async () => {
+    const currentTime = Date.now();
+    const fifteenMinutesAgo = new Date(currentTime - (25 * 60 * 1000));
+    const existingConversationId = '123456789';
+
+    const userHistory: XMessage[] = [{
+      app: "BOT_ID_1",
+      messageType: MessageType.TEXT,
+      adapterId: "3073705e-7e9d-4b7b-96f8-0f2d84351628",
+      orgId: "5a8d8a57-cd84-4670-8f75-e8ede4504752",
+      ownerId: "2fc6a82e-0bd1-4e58-a752-98eba6211c9c",
+      messageId: {
+        Id: existingConversationId,
+        conversationId: existingConversationId,
+        channelMessageId: "CHANNEL_MESSAGE_ID_1"
+      }, // MessageId.builder().setId(existingConversationId).setChannelMessageId("CHANNEL_MESSAGE_ID_1").build(),
+      to: {
+        userID: 'USER_ID_2',
+      },
+      from: {
+        userID: 'admin',
+      },
+      channelURI: "Pwa",
+      providerURI: "Pwa",
+      timestamp: fifteenMinutesAgo.getTime(),
+      messageState: MessageState.REPLIED,
+      lastMessageID: undefined,
+      payload: {
+        text: "Hello User",
+        metaData: {}
+      }
+    }];
+
+    const adapterWithHistory = new GupshupWhatsappProvider(credentials, userHistory);
+
+    const mockMessage = {
+      mobile: "919999999999",
+      type: "text",
+      text: "Hello",
+      timestamp: currentTime.toString()
+    };
+
+    const newXMsg = await adapterWithHistory.convertMessageToXMsg(mockMessage);
+    expect(newXMsg.messageId.conversationId).not.toBe(existingConversationId);
+    expect(newXMsg.messageId.conversationId).toBeDefined();
+  });
+
+  it('should respect callback over the timeout default', async () => {
     const currentTime = Date.now();
     const fifteenMinutesAgo = new Date(currentTime - (15 * 60 * 1000));
     const existingConversationId = '123456789';
@@ -507,7 +601,205 @@ describe('Conversation Management', () => {
     expect(newXMsg.messageId.conversationId).not.toBe(existingConversationId);
     expect(newXMsg.messageId.conversationId).toBeDefined();
   });
+});
 
+
+describe('Conversation Management with callback', () => {
+  let mock: MockAdapter;
+  let adapter: GupshupWhatsappProvider;
+
+  const credentials: IGSWhatsappConfig = {
+    password2Way: "pass2Way",
+    passwordHSM: "passHSM",
+    username2Way: "9999999999",
+    usernameHSM: "9999999999",
+    userServiceUrl: "http://mock-url",
+    fusionAuthUrl: "http://mock-fusion-auth",
+    applicationId: "mock-app-id",
+    authToken: "mock-token",
+    callback: (userHistory) => {
+      return true;
+    }
+  };
+  beforeAll(() => {
+    console.log = jest.fn()
+    mock = new MockAdapter(axios);
+  })
+
+  beforeEach(() => {
+    mock.onGet(/[\s\S]*/).reply(() => {
+      return [200, { response: { status: 'success' } }];
+    });
+    adapter = new GupshupWhatsappProvider(credentials);
+    adapter.sendOutboundMessage = jest.fn((a: string, b: any) => {
+      return Promise.resolve({
+        response: {
+          id: "",
+          phone: "",
+          details: "",
+          status: "success",
+        }
+
+      })
+    })
+  });
+
+  afterEach(() => {
+    mock.reset();
+  })
+
+  it('should generate new conversationId for first message', async () => {
+    const mockMessage = {
+      "mobile": "919999999999",
+      "type": "text",
+      "text": "Hello",
+      "timestamp": Date.now().toString(),
+    };
+
+    const xmsg = await adapter.convertMessageToXMsg(mockMessage);
+    expect(xmsg.messageId.conversationId).toBeDefined();
+    expect(typeof xmsg.messageId.conversationId).toBe('string');
+  });
+
+  it('should reuse conversationId for messages within 10 minutes', async () => {
+    const currentTime = Date.now();
+    const fiveMinutesAgo = new Date(currentTime - (5 * 60 * 1000));
+    const existingConversationId = '1a171d8f-0f51-40a6-b3c0-19c21549242d';
+
+    const userHistory: XMessage[] = [{
+      app: "BOT_ID_1",
+      messageType: MessageType.TEXT,
+      adapterId: "3073705e-7e9d-4b7b-96f8-0f2d84351628",
+      orgId: "5a8d8a57-cd84-4670-8f75-e8ede4504752",
+      ownerId: "2fc6a82e-0bd1-4e58-a752-98eba6211c9c",
+      messageId: MessageId.builder()
+        .setId('fe9cdbdd-d04e-4db1-bf7e-653265b185e4')
+        .setChannelMessageId("CHANNEL_MESSAGE_ID_1")
+        .build(),
+      to: {
+        userID: 'USER_ID_2',
+      },
+      from: {
+        userID: 'admin',
+      },
+      channelURI: "Pwa",
+      providerURI: "Pwa",
+      timestamp: fiveMinutesAgo.getTime(),
+      messageState: MessageState.REPLIED,
+      lastMessageID: undefined,
+      payload: {
+        text: "Hello User",
+        metaData: {}
+      }
+    }]
+    userHistory[0].messageId.conversationId = existingConversationId
+
+    const adapterWithHistory = new GupshupWhatsappProvider(credentials, userHistory);
+
+    const mockMessage = {
+      mobile: "919999999999",
+      type: "text",
+      text: "Hello",
+      timestamp: currentTime.toString()
+    };
+
+    const newXMsg = await adapterWithHistory.convertMessageToXMsg(mockMessage);
+    expect(newXMsg.messageId.conversationId).not.toBe(existingConversationId);
+  });
+
+  it('should not generate new conversationId for messages after 10 minutes and before 20 minutes', async () => {
+    const currentTime = Date.now();
+    const fifteenMinutesAgo = new Date(currentTime - (15 * 60 * 1000));
+    const existingConversationId = '123456789';
+
+    const userHistory: XMessage[] = [{
+      app: "BOT_ID_1",
+      messageType: MessageType.TEXT,
+      adapterId: "3073705e-7e9d-4b7b-96f8-0f2d84351628",
+      orgId: "5a8d8a57-cd84-4670-8f75-e8ede4504752",
+      ownerId: "2fc6a82e-0bd1-4e58-a752-98eba6211c9c",
+      messageId: {
+        Id: existingConversationId,
+        conversationId: existingConversationId,
+        channelMessageId: "CHANNEL_MESSAGE_ID_1"
+      }, // MessageId.builder().setId(existingConversationId).setChannelMessageId("CHANNEL_MESSAGE_ID_1").build(),
+      to: {
+        userID: 'USER_ID_2',
+      },
+      from: {
+        userID: 'admin',
+      },
+      channelURI: "Pwa",
+      providerURI: "Pwa",
+      timestamp: fifteenMinutesAgo.getTime(),
+      messageState: MessageState.REPLIED,
+      lastMessageID: undefined,
+      payload: {
+        text: "Hello User",
+        metaData: {}
+      }
+    }];
+
+    const adapterWithHistory = new GupshupWhatsappProvider(credentials, userHistory);
+
+    const mockMessage = {
+      mobile: "919999999999",
+      type: "text",
+      text: "Hello",
+      timestamp: currentTime.toString()
+    };
+
+    const newXMsg = await adapterWithHistory.convertMessageToXMsg(mockMessage);
+    expect(newXMsg.messageId.conversationId).toBeDefined();
+    expect(newXMsg.messageId.conversationId).not.toBe(existingConversationId);
+  });
+
+  it('should generate new conversationId for messages after 20 minutes', async () => {
+    const currentTime = Date.now();
+    const fifteenMinutesAgo = new Date(currentTime - (25 * 60 * 1000));
+    const existingConversationId = '123456789';
+
+    const userHistory: XMessage[] = [{
+      app: "BOT_ID_1",
+      messageType: MessageType.TEXT,
+      adapterId: "3073705e-7e9d-4b7b-96f8-0f2d84351628",
+      orgId: "5a8d8a57-cd84-4670-8f75-e8ede4504752",
+      ownerId: "2fc6a82e-0bd1-4e58-a752-98eba6211c9c",
+      messageId: {
+        Id: existingConversationId,
+        conversationId: existingConversationId,
+        channelMessageId: "CHANNEL_MESSAGE_ID_1"
+      }, // MessageId.builder().setId(existingConversationId).setChannelMessageId("CHANNEL_MESSAGE_ID_1").build(),
+      to: {
+        userID: 'USER_ID_2',
+      },
+      from: {
+        userID: 'admin',
+      },
+      channelURI: "Pwa",
+      providerURI: "Pwa",
+      timestamp: fifteenMinutesAgo.getTime(),
+      messageState: MessageState.REPLIED,
+      lastMessageID: undefined,
+      payload: {
+        text: "Hello User",
+        metaData: {}
+      }
+    }];
+
+    const adapterWithHistory = new GupshupWhatsappProvider(credentials, userHistory);
+
+    const mockMessage = {
+      mobile: "919999999999",
+      type: "text",
+      text: "Hello",
+      timestamp: currentTime.toString()
+    };
+
+    const newXMsg = await adapterWithHistory.convertMessageToXMsg(mockMessage);
+    expect(newXMsg.messageId.conversationId).not.toBe(existingConversationId);
+    expect(newXMsg.messageId.conversationId).toBeDefined();
+  });
 
   it('should respect callback over the timeout default', async () => {
     const currentTime = Date.now();
@@ -538,9 +830,7 @@ describe('Conversation Management', () => {
       }
     }];
 
-    const adapterWithHistory = new GupshupWhatsappProvider(credentials, userHistory, (userHistory) => {
-      return true;
-    });
+    const adapterWithHistory = new GupshupWhatsappProvider(credentials, userHistory);
 
     const mockMessage = {
       mobile: "919999999999",
