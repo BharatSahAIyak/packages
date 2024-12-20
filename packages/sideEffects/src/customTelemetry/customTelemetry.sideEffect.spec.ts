@@ -84,7 +84,7 @@ describe('CustomTelemetrySideEffect', () => {
     expect(sentData[0]).toMatchObject({
       generator: 'Transformer',
       version: '0.0.1',
-      timestamp: 1631234567, // Note: Timestamp is truncated to seconds
+      timestamp: 1631234567890, // Note: Timestamp is truncated to seconds
       actorId: 'test-user',
       actorType: 'System',
       eventId: 'E012',
