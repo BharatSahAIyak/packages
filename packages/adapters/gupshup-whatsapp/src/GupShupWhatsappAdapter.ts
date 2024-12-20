@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { GSWhatsAppMessage, MethodType, UserHistoryMessage } from './types';
+import { GSWhatsAppMessage, MethodType } from './types';
 import {
   StylingTag,
   MessageId,
@@ -26,7 +26,8 @@ export type IGSWhatsappConfig = {
   userServiceUrl: string,
   fusionAuthUrl: string,
   applicationId: string,
-  authToken: string
+  authToken: string,
+  callback?: (userHistory: XMessage[]) => boolean
 };
 
 type GSWhatsappReport = {
@@ -91,10 +92,10 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   private userHistory: XMessage[];
   private callback: ((userHistory: XMessage[]) => boolean) | undefined;
 
-  constructor(config?: IGSWhatsappConfig, userHistory: XMessage[] = [], callback: undefined | ((userHistory: XMessage[]) => boolean) = undefined) {
+  constructor(config?: IGSWhatsappConfig, userHistory: XMessage[] = []) {
     this.providerConfig = config;
     this.userHistory = userHistory;
-    this.callback = callback;
+    this.callback = config?.callback;
   }
 
   private getMessageState = (eventType: String): MessageState => {
