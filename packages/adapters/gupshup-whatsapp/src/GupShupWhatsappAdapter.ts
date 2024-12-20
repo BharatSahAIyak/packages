@@ -304,7 +304,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
   }
 
   private manageConversation(xmsg: XMessage): XMessage {
-    const currentTimestamp = Date.now() * 10**6
+    const currentTimestamp = xmsg.timestamp;
     const lastMessageTimestamp = this.getLastMessageTimestamp(this.userHistory);
 
     if (this.shouldCreateNewConversation(lastMessageTimestamp, currentTimestamp)) {
@@ -339,7 +339,7 @@ export class GupshupWhatsappProvider implements XMessageProvider {
         messageState: messageState,
         messageId: messageIdentifier,
         messageType: messageType,
-        timestamp: parseInt(message.timestamp as string) || Date.now(),
+        timestamp: (parseInt(message.timestamp as string) || Date.now()) * 10**3,
         payload: xmsgPayload,
         transformer: existingTransformer
     };
