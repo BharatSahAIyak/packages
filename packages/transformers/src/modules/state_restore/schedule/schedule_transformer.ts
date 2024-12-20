@@ -26,7 +26,7 @@ export class ScheduleTransformer implements ITransformer {
             throw new Error('timerDuration is required!');
         }
 
-        const timerId = `timer_${xmsg.from.userID}_${xmsg.channelURI}_${xmsg.providerURI}`;
+        const timerId = `timer_${xmsg.from.userID}_${xmsg.channelURI}_${xmsg.providerURI}_${this.config.transformerId}`;
 
         if (!xmsg.transformer) {
             xmsg.transformer = {
@@ -43,7 +43,6 @@ export class ScheduleTransformer implements ITransformer {
         /** We are doing things the following way for the sake of backwards compatibility
          * The transformer states will not be updated from the config
          */
-
         xmsg.transformer!.metaData!.restoreState = this.config.resetState ;
         xmsg.transformer!.metaData!.resetState = this.config.restoreState ;
 
